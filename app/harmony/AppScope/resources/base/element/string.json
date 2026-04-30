@@ -1,0 +1,12 @@
+{
+    "string": [
+        {
+            "name": "app_name",
+            "value": "Easy Shot"
+        },
+        {
+            "name": "app_description",
+            "value": "AI pose coach for single-screen and companion-guided mobile photography."
+        }
+    ]
+}

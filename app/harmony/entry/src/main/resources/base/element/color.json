@@ -1,0 +1,76 @@
+{
+    "color": [
+        {
+            "name": "easy_shot_surface",
+            "value": "#FF111827"
+        },
+        {
+            "name": "easy_shot_overlay_subject",
+            "value": "#FF68D391"
+        },
+        {
+            "name": "easy_shot_overlay_composition",
+            "value": "#FFD9A441"
+        },
+        {
+            "name": "easy_shot_text_primary",
+            "value": "#FFF9FAFB"
+        },
+        {
+            "name": "easy_shot_primary",
+            "value": "#FF6366F1"
+        },
+        {
+            "name": "easy_shot_primary_dark",
+            "value": "#FF4F46E5"
+        },
+        {
+            "name": "easy_shot_secondary",
+            "value": "#FF8B5CF6"
+        },
+        {
+            "name": "easy_shot_background",
+            "value": "#FFFFFFFF"
+        },
+        {
+            "name": "easy_shot_background_secondary",
+            "value": "#FFF9FAFB"
+        },
+        {
+            "name": "easy_shot_card_background",
+            "value": "#FFF3F4F6"
+        },
+        {
+            "name": "easy_shot_text_secondary",
+            "value": "#FF6B7280"
+        },
+        {
+            "name": "easy_shot_shutter_active",
+            "value": "#FFEF4444"
+        },
+        {
+            "name": "easy_shot_shutter_disabled",
+            "value": "#FFCCCCCC"
+        },
+        {
+            "name": "easy_shot_save_success",
+            "value": "#FF4CAF50"
+        },
+        {
+            "name": "easy_shot_warning",
+            "value": "#FFF59E0B"
+        },
+        {
+            "name": "easy_shot_error",
+            "value": "#FFEF4444"
+        },
+        {
+            "name": "easy_shot_companion_accent",
+            "value": "#FF06B6D4"
+        },
+        {
+            "name": "easy_shot_divider",
+            "value": "#FFE5E7EB"
+        }
+    ]
+}

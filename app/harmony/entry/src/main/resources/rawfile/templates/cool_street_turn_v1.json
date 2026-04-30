@@ -1,0 +1,65 @@
+{
+    "id": "pose_cool_street_turn_v1",
+    "title": "街拍回头看",
+    "style_tags": [
+        "cool_street",
+        "travel_mood"
+    ],
+    "scene_tags": [
+        "街拍",
+        "户外",
+        "旅行"
+    ],
+    "shot_type": "half_body",
+    "camera_facing": "rear",
+    "difficulty": "medium",
+    "description": "身体往前走半步，头部回看镜头，留出背景线条增强氛围。",
+    "verbal_steps": [
+        "身体向前迈半步",
+        "肩膀保持放松",
+        "头部回看镜头",
+        "背景留出空间"
+    ],
+    "avatar_image": "avatars/cool/street_turn_v1.png",
+    "annotations": [
+        {
+            "label": "头部回看",
+            "anchor": {
+                "x": 0.56,
+                "y": 0.20
+            }
+        },
+        {
+            "label": "前进一步",
+            "anchor": {
+                "x": 0.48,
+                "y": 0.78
+            }
+        }
+    ],
+    "skeleton": {
+        "tolerance": 0.10,
+        "keypoints": [
+            {
+                "name": "nose",
+                "x": 0.56,
+                "y": 0.18
+            },
+            {
+                "name": "left_shoulder",
+                "x": 0.40,
+                "y": 0.34
+            },
+            {
+                "name": "right_shoulder",
+                "x": 0.62,
+                "y": 0.36
+            },
+            {
+                "name": "left_ankle",
+                "x": 0.46,
+                "y": 0.92
+            }
+        ]
+    }
+}

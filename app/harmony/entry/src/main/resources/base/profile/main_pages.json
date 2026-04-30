@@ -1,0 +1,10 @@
+{
+    "src": [
+        "pages/Index",
+        "pages/CameraGuide",
+        "pages/PhotoReview",
+        "pages/DevicePairing",
+        "pages/CompanionSession",
+        "pages/Settings"
+    ]
+}

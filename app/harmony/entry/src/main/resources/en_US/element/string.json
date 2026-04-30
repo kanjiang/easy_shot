@@ -1,0 +1,312 @@
+{
+    "string": [
+        {
+            "name": "camera_permission_reason",
+            "value": "Used for real-time photo preview and pose guidance."
+        },
+        {
+            "name": "camera_preview_status_idle",
+            "value": "Camera preview is idle."
+        },
+        {
+            "name": "app_title",
+            "value": "Easy Shot"
+        },
+        {
+            "name": "featured_template",
+            "value": "Featured Template"
+        },
+        {
+            "name": "view_details",
+            "value": "View Details"
+        },
+        {
+            "name": "start_shooting",
+            "value": "Start Shooting"
+        },
+        {
+            "name": "template_list_title",
+            "value": "Pose Templates"
+        },
+        {
+            "name": "companion_mode_title",
+            "value": "Companion Mode"
+        },
+        {
+            "name": "companion_mode_description",
+            "value": "Invite a friend to help you take photos with remote pose and composition guidance."
+        },
+        {
+            "name": "start_companion",
+            "value": "Start Companion"
+        },
+        {
+            "name": "back_to_templates",
+            "value": "Back to Templates"
+        },
+        {
+            "name": "camera_guide_title",
+            "value": "Camera Guide"
+        },
+        {
+            "name": "capture_button",
+            "value": "Capture"
+        },
+        {
+            "name": "enable_preview",
+            "value": "Enable Preview"
+        },
+        {
+            "name": "restart_preview",
+            "value": "Restart Preview"
+        },
+        {
+            "name": "stop_preview",
+            "value": "Stop Preview"
+        },
+        {
+            "name": "next_template",
+            "value": "Next Template"
+        },
+        {
+            "name": "improve_alignment",
+            "value": "Improve Alignment"
+        },
+        {
+            "name": "photo_review_title",
+            "value": "Photo Review"
+        },
+        {
+            "name": "no_photo",
+            "value": "No photo available"
+        },
+        {
+            "name": "ai_review_title",
+            "value": "AI Review"
+        },
+        {
+            "name": "ai_review_placeholder",
+            "value": "Photo analysis will be available in a future version, including composition scoring, pose matching, and improvement suggestions."
+        },
+        {
+            "name": "retake_photo",
+            "value": "Retake"
+        },
+        {
+            "name": "photo_saved",
+            "value": "Saved"
+        },
+        {
+            "name": "save_success",
+            "value": "Saved to gallery!"
+        },
+        {
+            "name": "save_failed_prefix",
+            "value": "Save failed: "
+        },
+        {
+            "name": "authorization_failed",
+            "value": "Authorization failed"
+        },
+        {
+            "name": "device_pairing_title",
+            "value": "Device Pairing"
+        },
+        {
+            "name": "enter_companion_session",
+            "value": "Enter Companion Session"
+        },
+        {
+            "name": "back_to_home",
+            "value": "Back to Home"
+        },
+        {
+            "name": "companion_session_title",
+            "value": "Companion Session"
+        },
+        {
+            "name": "end_session",
+            "value": "End Session"
+        },
+        {
+            "name": "shooting_settings",
+            "value": "Shooting Settings"
+        },
+        {
+            "name": "camera_direction_prefix",
+            "value": "Camera Direction: "
+        },
+        {
+            "name": "scene_tags_prefix",
+            "value": "Best for: "
+        },
+        {
+            "name": "verbal_steps_title",
+            "value": "Pose Steps"
+        },
+        {
+            "name": "annotations_title",
+            "value": "Key Annotations"
+        },
+        {
+            "name": "skeleton_title",
+            "value": "Skeleton Keypoints"
+        },
+        {
+            "name": "ability_label",
+            "value": "Easy Shot"
+        },
+        {
+            "name": "app_subtitle",
+            "value": "AI photo coach for your best pose and composition."
+        },
+        {
+            "name": "settings_title",
+            "value": "Settings"
+        },
+        {
+            "name": "privacy_data_title",
+            "value": "Privacy & Data"
+        },
+        {
+            "name": "local_only_mode",
+            "value": "Local Only Mode"
+        },
+        {
+            "name": "local_only_description",
+            "value": "All processing stays on device. No data is uploaded."
+        },
+        {
+            "name": "cloud_advice_title",
+            "value": "Cloud AI Advice"
+        },
+        {
+            "name": "cloud_advice_description",
+            "value": "Get cloud-based pose analysis and improvement suggestions after shooting."
+        },
+        {
+            "name": "allow_upload_title",
+            "value": "Allow Photo Upload"
+        },
+        {
+            "name": "allow_upload_description",
+            "value": "Upload photos for cloud analysis. Photos are not stored or shared."
+        },
+        {
+            "name": "camera_defaults_title",
+            "value": "Camera Defaults"
+        },
+        {
+            "name": "default_camera_label",
+            "value": "Default Camera"
+        },
+        {
+            "name": "camera_rear",
+            "value": "Rear"
+        },
+        {
+            "name": "camera_front",
+            "value": "Front"
+        },
+        {
+            "name": "about_title",
+            "value": "About"
+        },
+        {
+            "name": "app_version",
+            "value": "Easy Shot v0.1.0"
+        },
+        {
+            "name": "about_description",
+            "value": "AI pose coach for single-screen and companion-guided mobile photography."
+        },
+        {
+            "name": "back",
+            "value": "Back"
+        },
+        {
+            "name": "settings_button",
+            "value": "⚙ Settings"
+        },
+        {
+            "name": "skeleton_data_title",
+            "value": "Skeleton Data"
+        },
+        {
+            "name": "remote_shutter",
+            "value": "Remote Shutter"
+        },
+        {
+            "name": "advice_loading",
+            "value": "Getting AI advice…"
+        },
+        {
+            "name": "advice_error",
+            "value": "Failed to get advice. Please try again later."
+        },
+        {
+            "name": "advice_overall_score",
+            "value": "Overall Score"
+        },
+        {
+            "name": "advice_style_match",
+            "value": "Style Match"
+        },
+        {
+            "name": "advice_composition_label",
+            "value": "Composition"
+        },
+        {
+            "name": "advice_pose_label",
+            "value": "Pose"
+        },
+        {
+            "name": "advice_suggestions_label",
+            "value": "Suggestions"
+        },
+        {
+            "name": "distributed_permission_reason",
+            "value": "Used to sync photo guidance data between two devices in companion mode."
+        },
+        {
+            "name": "pose_analysis_title",
+            "value": "Pose Analysis"
+        },
+        {
+            "name": "alignment_score_label",
+            "value": "Alignment Score"
+        },
+        {
+            "name": "alignment_excellent",
+            "value": "Perfect pose — almost exact template match!"
+        },
+        {
+            "name": "alignment_good",
+            "value": "Mostly good, some details can be improved."
+        },
+        {
+            "name": "alignment_needs_work",
+            "value": "Significant deviation — follow the guide to adjust."
+        },
+        {
+            "name": "keypoint_detail_title",
+            "value": "Keypoint Match Details"
+        },
+        {
+            "name": "remote_preview_title",
+            "value": "Remote Preview"
+        },
+        {
+            "name": "waiting_for_preview",
+            "value": "Waiting for preview from peer device…"
+        },
+        {
+            "name": "start_preview_sync",
+            "value": "Start Preview Sync"
+        },
+        {
+            "name": "stop_preview_sync",
+            "value": "Stop Preview Sync"
+        }
+    ]
+}

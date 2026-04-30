@@ -1,0 +1,312 @@
+{
+    "string": [
+        {
+            "name": "camera_permission_reason",
+            "value": "用于实时拍照预览和姿势引导功能。"
+        },
+        {
+            "name": "camera_preview_status_idle",
+            "value": "相机预览未启动。"
+        },
+        {
+            "name": "app_title",
+            "value": "Easy Shot"
+        },
+        {
+            "name": "featured_template",
+            "value": "推荐模板"
+        },
+        {
+            "name": "view_details",
+            "value": "查看详情"
+        },
+        {
+            "name": "start_shooting",
+            "value": "开始拍照"
+        },
+        {
+            "name": "template_list_title",
+            "value": "姿势模板"
+        },
+        {
+            "name": "companion_mode_title",
+            "value": "伴拍模式"
+        },
+        {
+            "name": "companion_mode_description",
+            "value": "邀请好友帮你拍照，远程引导姿势和构图。"
+        },
+        {
+            "name": "start_companion",
+            "value": "开始伴拍"
+        },
+        {
+            "name": "back_to_templates",
+            "value": "返回模板"
+        },
+        {
+            "name": "camera_guide_title",
+            "value": "拍照引导"
+        },
+        {
+            "name": "capture_button",
+            "value": "拍照"
+        },
+        {
+            "name": "enable_preview",
+            "value": "启动预览"
+        },
+        {
+            "name": "restart_preview",
+            "value": "重启预览"
+        },
+        {
+            "name": "stop_preview",
+            "value": "停止预览"
+        },
+        {
+            "name": "next_template",
+            "value": "下一个模板"
+        },
+        {
+            "name": "improve_alignment",
+            "value": "改善对齐"
+        },
+        {
+            "name": "photo_review_title",
+            "value": "拍照复盘"
+        },
+        {
+            "name": "no_photo",
+            "value": "暂无照片"
+        },
+        {
+            "name": "ai_review_title",
+            "value": "AI 点评"
+        },
+        {
+            "name": "ai_review_placeholder",
+            "value": "拍照分析功能将在后续版本中提供，将包括构图评分、姿势匹配度和改进建议。"
+        },
+        {
+            "name": "retake_photo",
+            "value": "重新拍照"
+        },
+        {
+            "name": "photo_saved",
+            "value": "已保存"
+        },
+        {
+            "name": "save_success",
+            "value": "已保存至相册！"
+        },
+        {
+            "name": "save_failed_prefix",
+            "value": "保存失败: "
+        },
+        {
+            "name": "authorization_failed",
+            "value": "授权失败"
+        },
+        {
+            "name": "device_pairing_title",
+            "value": "设备配对"
+        },
+        {
+            "name": "enter_companion_session",
+            "value": "进入伴拍会话"
+        },
+        {
+            "name": "back_to_home",
+            "value": "返回首页"
+        },
+        {
+            "name": "companion_session_title",
+            "value": "伴拍会话"
+        },
+        {
+            "name": "end_session",
+            "value": "结束会话"
+        },
+        {
+            "name": "shooting_settings",
+            "value": "拍摄设置"
+        },
+        {
+            "name": "camera_direction_prefix",
+            "value": "镜头方向："
+        },
+        {
+            "name": "scene_tags_prefix",
+            "value": "适合场景："
+        },
+        {
+            "name": "verbal_steps_title",
+            "value": "动作口令"
+        },
+        {
+            "name": "annotations_title",
+            "value": "关键标注"
+        },
+        {
+            "name": "skeleton_title",
+            "value": "骨骼关节"
+        },
+        {
+            "name": "ability_label",
+            "value": "Easy Shot"
+        },
+        {
+            "name": "app_subtitle",
+            "value": "AI 拍照教练，为你引导最佳姿势与构图。"
+        },
+        {
+            "name": "settings_title",
+            "value": "设置"
+        },
+        {
+            "name": "privacy_data_title",
+            "value": "隐私与数据"
+        },
+        {
+            "name": "local_only_mode",
+            "value": "仅本地模式"
+        },
+        {
+            "name": "local_only_description",
+            "value": "所有处理均在设备本地完成，不上传任何数据。"
+        },
+        {
+            "name": "cloud_advice_title",
+            "value": "云端 AI 建议"
+        },
+        {
+            "name": "cloud_advice_description",
+            "value": "拍照后获取云端姿势分析和改进建议。"
+        },
+        {
+            "name": "allow_upload_title",
+            "value": "允许上传照片"
+        },
+        {
+            "name": "allow_upload_description",
+            "value": "上传照片用于云端分析，照片不会被存储或分享。"
+        },
+        {
+            "name": "camera_defaults_title",
+            "value": "相机默认设置"
+        },
+        {
+            "name": "default_camera_label",
+            "value": "默认镜头"
+        },
+        {
+            "name": "camera_rear",
+            "value": "后置"
+        },
+        {
+            "name": "camera_front",
+            "value": "前置"
+        },
+        {
+            "name": "about_title",
+            "value": "关于"
+        },
+        {
+            "name": "app_version",
+            "value": "Easy Shot v0.1.0"
+        },
+        {
+            "name": "about_description",
+            "value": "AI 姿势教练，为单屏拍照和双机伴拍提供实时引导。"
+        },
+        {
+            "name": "back",
+            "value": "返回"
+        },
+        {
+            "name": "settings_button",
+            "value": "⚙ 设置"
+        },
+        {
+            "name": "skeleton_data_title",
+            "value": "骨架数据"
+        },
+        {
+            "name": "remote_shutter",
+            "value": "遥控快门"
+        },
+        {
+            "name": "advice_loading",
+            "value": "正在获取 AI 建议…"
+        },
+        {
+            "name": "advice_error",
+            "value": "获取建议失败，请稍后重试。"
+        },
+        {
+            "name": "advice_overall_score",
+            "value": "综合评分"
+        },
+        {
+            "name": "advice_style_match",
+            "value": "风格匹配"
+        },
+        {
+            "name": "advice_composition_label",
+            "value": "构图点评"
+        },
+        {
+            "name": "advice_pose_label",
+            "value": "姿势点评"
+        },
+        {
+            "name": "advice_suggestions_label",
+            "value": "改进建议"
+        },
+        {
+            "name": "distributed_permission_reason",
+            "value": "用于伴拍模式下两台设备之间同步拍照引导数据。"
+        },
+        {
+            "name": "pose_analysis_title",
+            "value": "姿势分析"
+        },
+        {
+            "name": "alignment_score_label",
+            "value": "对齐评分"
+        },
+        {
+            "name": "alignment_excellent",
+            "value": "姿势完美，几乎完全匹配模板！"
+        },
+        {
+            "name": "alignment_good",
+            "value": "整体不错，部分细节可以优化。"
+        },
+        {
+            "name": "alignment_needs_work",
+            "value": "与模板差异较大，参考引导调整。"
+        },
+        {
+            "name": "keypoint_detail_title",
+            "value": "各关键点匹配详情"
+        },
+        {
+            "name": "remote_preview_title",
+            "value": "远程预览"
+        },
+        {
+            "name": "waiting_for_preview",
+            "value": "等待对端设备的预览画面…"
+        },
+        {
+            "name": "start_preview_sync",
+            "value": "开始画面同步"
+        },
+        {
+            "name": "stop_preview_sync",
+            "value": "停止画面同步"
+        }
+    ]
+}

@@ -1,0 +1,65 @@
+{
+    "id": "pose_sweet_scissors_cheek_v1",
+    "title": "剪刀手脸颊边",
+    "style_tags": [
+        "sweet_daily",
+        "campus_vibes"
+    ],
+    "scene_tags": [
+        "室内",
+        "咖啡店",
+        "街拍"
+    ],
+    "shot_type": "half_body",
+    "camera_facing": "front_or_rear",
+    "difficulty": "easy",
+    "description": "右手剪刀手贴近脸颊，下巴微收，肩膀轻轻放松。",
+    "verbal_steps": [
+        "身体微侧向镜头",
+        "右手剪刀手贴脸颊",
+        "手肘离身体一点",
+        "下巴微收看镜头"
+    ],
+    "avatar_image": "avatars/sweet/scissors_cheek_v1.png",
+    "annotations": [
+        {
+            "label": "剪刀手贴脸颊",
+            "anchor": {
+                "x": 0.72,
+                "y": 0.24
+            }
+        },
+        {
+            "label": "下巴微收",
+            "anchor": {
+                "x": 0.50,
+                "y": 0.35
+            }
+        }
+    ],
+    "skeleton": {
+        "tolerance": 0.08,
+        "keypoints": [
+            {
+                "name": "nose",
+                "x": 0.50,
+                "y": 0.20
+            },
+            {
+                "name": "right_wrist",
+                "x": 0.71,
+                "y": 0.24
+            },
+            {
+                "name": "right_elbow",
+                "x": 0.78,
+                "y": 0.38
+            },
+            {
+                "name": "left_shoulder",
+                "x": 0.38,
+                "y": 0.35
+            }
+        ]
+    }
+}
