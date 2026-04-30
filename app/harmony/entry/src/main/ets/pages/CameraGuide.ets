@@ -34,6 +34,7 @@ export struct CameraGuide {
   @State private previewSurfaceId: string = '';
   private lastAlignmentResult: PoseAlignmentResult | null = null;
   private latestThumbnail: string = '';
+  @State private isCapturing: boolean = false;
 
   aboutToAppear(): void {
     this.templateState = poseTemplateStore.loadTemplatesFromRawfile(getContext().resourceManager as RawfileResourceManagerLike);
@@ -67,9 +68,11 @@ export struct CameraGuide {
     if (isInSession && companionSessionService.isDistributedMode()) {
       previewSyncService.startSync(
         companionSessionService.getSessionState().sessionId,
-        (): string => {
-          // Will be resolved asynchronously — return empty for sync call
-          void this.getPreviewThumbnail();
+        async (): Promise<string> => {
+          const thumbnail: string = await this.cameraController.capturePreviewThumbnail(PREVIEW_XCOMPONENT_ID);
+          if (thumbnail.length > 0) {
+            this.latestThumbnail = thumbnail;
+          }
           return this.latestThumbnail;
         },
       );
@@ -169,27 +172,35 @@ export struct CameraGuide {
   }
 
   private async capturePhoto(): Promise<void> {
-    const filePath: string = await this.cameraController.capture();
-    if (filePath.length > 0) {
-      const selectedTemplate: PoseTemplate | null = this.templateState.featuredTemplate;
-      const totalPts: number = selectedTemplate ? selectedTemplate.skeleton.keypoints.length : 0;
-      const styleTag: string = selectedTemplate && selectedTemplate.styleTags.length > 0
-        ? selectedTemplate.styleTags[0] : '';
-      router.pushUrl({
-        url: 'pages/PhotoReview',
-        params: {
-          photoFilePath: filePath,
-          templateTitle: this.guideState.templateTitle,
-          templateId: this.guideState.templateId,
-          styleTag: styleTag,
-          alignmentScore: String(this.guideState.guideScore),
-          matchedPoints: String(this.matchedPoints),
-          totalPoints: String(totalPts),
-          keypointDistances: this.lastAlignmentResult
-            ? JSON.stringify(this.lastAlignmentResult.keypointDistances) : '[]',
-          tolerance: selectedTemplate ? String(selectedTemplate.skeleton.tolerance) : '0.1',
-        } as Record<string, string>,
-      });
+    if (this.isCapturing) {
+      return;
+    }
+    this.isCapturing = true;
+    try {
+      const filePath: string = await this.cameraController.capture();
+      if (filePath.length > 0) {
+        const selectedTemplate: PoseTemplate | null = this.templateState.featuredTemplate;
+        const totalPts: number = selectedTemplate ? selectedTemplate.skeleton.keypoints.length : 0;
+        const styleTag: string = selectedTemplate && selectedTemplate.styleTags.length > 0
+          ? selectedTemplate.styleTags[0] : '';
+        router.pushUrl({
+          url: 'pages/PhotoReview',
+          params: {
+            photoFilePath: filePath,
+            templateTitle: this.guideState.templateTitle,
+            templateId: this.guideState.templateId,
+            styleTag: styleTag,
+            alignmentScore: String(this.guideState.guideScore),
+            matchedPoints: String(this.matchedPoints),
+            totalPoints: String(totalPts),
+            keypointDistances: this.lastAlignmentResult
+              ? JSON.stringify(this.lastAlignmentResult.keypointDistances) : '[]',
+            tolerance: selectedTemplate ? String(selectedTemplate.skeleton.tolerance) : '0.1',
+          } as Record<string, string>,
+        });
+      }
+    } finally {
+      this.isCapturing = false;
     }
   }
 
@@ -261,22 +272,22 @@ export struct CameraGuide {
             })
         }
 
-        Text($r('app.string.preview_status_prefix') + this.previewState.status)
+        Text($r('app.string.preview_status_prefix', this.previewState.status))
           .fontSize(14)
 
-        Text($r('app.string.preview_message_prefix') + this.previewState.message)
+        Text($r('app.string.preview_message_prefix', this.previewState.message))
           .fontSize(13)
           .opacity(0.72)
 
-        Text($r('app.string.active_template_prefix') + this.guideState.templateTitle)
+        Text($r('app.string.active_template_prefix', this.guideState.templateTitle))
           .fontSize(14)
 
-        Text($r('app.string.current_prompt_prefix') + this.guideState.primaryPrompt)
+        Text($r('app.string.current_prompt_prefix', this.guideState.primaryPrompt))
           .fontSize(14)
           .opacity(0.75)
 
         if (this.templateState.featuredTemplate) {
-          Text($r('app.string.pose_steps_prefix') + this.templateState.featuredTemplate.verbalSteps.join(' / '))
+          Text($r('app.string.pose_steps_prefix', this.templateState.featuredTemplate.verbalSteps.join(' / ')))
             .fontSize(13)
             .opacity(0.68)
         }

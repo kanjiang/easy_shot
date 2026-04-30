@@ -1,39 +1,39 @@
 import { getStyleLabel } from '../core/style/StyleTags';
 import { CameraFacing, Difficulty, PoseTemplate, ShotType } from '../features/poseTemplate/model/PoseTemplate';
 
-function shotTypeLabel(shotType: ShotType): string {
+function shotTypeLabel(shotType: ShotType): Resource {
   switch (shotType) {
     case ShotType.FULL_BODY:
-      return '全身';
+      return $r('app.string.shot_type_full_body');
     case ShotType.HALF_BODY:
-      return '半身';
+      return $r('app.string.shot_type_half_body');
     case ShotType.SELFIE:
     default:
-      return '自拍';
+      return $r('app.string.shot_type_selfie');
   }
 }
 
-function cameraFacingLabel(cameraFacing: CameraFacing): string {
+function cameraFacingLabel(cameraFacing: CameraFacing): Resource {
   switch (cameraFacing) {
     case CameraFacing.FRONT:
-      return '前置';
+      return $r('app.string.camera_front');
     case CameraFacing.REAR:
-      return '后置';
+      return $r('app.string.camera_rear');
     case CameraFacing.FRONT_OR_REAR:
     default:
-      return '前后置均可';
+      return $r('app.string.camera_facing_both');
   }
 }
 
-function difficultyLabel(difficulty: Difficulty): string {
+function difficultyLabel(difficulty: Difficulty): Resource {
   switch (difficulty) {
     case Difficulty.EASY:
-      return '简单';
+      return $r('app.string.difficulty_easy');
     case Difficulty.MEDIUM:
-      return '中等';
+      return $r('app.string.difficulty_medium');
     case Difficulty.HARD:
     default:
-      return '进阶';
+      return $r('app.string.difficulty_hard');
   }
 }
 
@@ -53,7 +53,7 @@ export struct TemplateDetail {
           .opacity(0.82)
 
         Row({ space: 8 }) {
-          Text(getStyleLabel(this.template.styleTags[0]))
+          Text(getStyleLabel(this.template.styleTags.length > 0 ? this.template.styleTags[0] : ''))
             .fontSize(12)
             .padding({ left: 10, right: 10, top: 5, bottom: 5 })
             .backgroundColor('#1F000000')
@@ -77,10 +77,14 @@ export struct TemplateDetail {
             .fontSize(18)
             .fontWeight(FontWeight.Medium)
 
-          Text($r('app.string.camera_direction_prefix') + cameraFacingLabel(this.template.cameraFacing))
-            .fontSize(14)
+          Row() {
+            Text($r('app.string.camera_direction_prefix'))
+              .fontSize(14)
+            Text(cameraFacingLabel(this.template.cameraFacing))
+              .fontSize(14)
+          }
 
-          Text($r('app.string.scene_tags_prefix') + this.template.sceneTags.join(' / '))
+          Text($r('app.string.scene_tags_prefix', this.template.sceneTags.join(' / ')))
             .fontSize(14)
         }
         .padding(16)
@@ -110,7 +114,7 @@ export struct TemplateDetail {
             .fontWeight(FontWeight.Medium)
 
           ForEach(this.template.annotations, (annotation) => {
-            Text(annotation.label + ' · 锚点 ' + annotation.anchor.x.toFixed(2) + ', ' + annotation.anchor.y.toFixed(2))
+            Text($r('app.string.annotation_display', annotation.label, annotation.anchor.x.toFixed(2), annotation.anchor.y.toFixed(2)))
               .fontSize(14)
               .width('100%')
           })
@@ -125,10 +129,10 @@ export struct TemplateDetail {
             .fontSize(18)
             .fontWeight(FontWeight.Medium)
 
-          Text($r('app.string.tolerance_prefix') + this.template.skeleton.tolerance.toFixed(2))
+          Text($r('app.string.tolerance_prefix', this.template.skeleton.tolerance.toFixed(2)))
             .fontSize(14)
 
-          Text($r('app.string.keypoint_count_prefix') + this.template.skeleton.keypoints.length.toString())
+          Text($r('app.string.keypoint_count_prefix', this.template.skeleton.keypoints.length.toString()))
             .fontSize(14)
         }
         .padding(16)

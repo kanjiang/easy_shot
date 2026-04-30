@@ -26,7 +26,7 @@ export class DistributedTransport {
 
       const options: distributedKVStore.Options = {
         createIfMissing: true,
-        encrypt: false,
+        encrypt: true,
         backup: false,
         autoSync: true,
         kvStoreType: distributedKVStore.KVStoreType.SINGLE_VERSION,

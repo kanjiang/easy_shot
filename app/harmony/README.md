@@ -2,12 +2,12 @@
 
 This directory contains the checked-in source skeleton for the HarmonyOS NEXT app.
 
-**63 source files** across 7 pages, 8 feature modules, 1 reusable component, 9 test suites, 35 test cases, 4 app icon assets, and dark mode theme.
+**63 source files** across 7 pages, 8 feature modules, 1 reusable component, 10 test suites, and dark mode theme.
 
 ## Completed Modules
 
 - **DevEco shell**: root and entry `build-profile.json5` (with signing config placeholder), `hvigorfile.ts`, `module.json5` (icon + label + CAMERA/DISTRIBUTED_DATASYNC/INTERNET permissions), `oh-package.json5`, and `app.json5` (icon + label)
-- **Pose template system**: template model with JSON parser, repository interface, rawfile-backed repository, store state management, manifest, and 2 seeded JSON templates
+- **Pose template system**: template model with JSON parser, repository interface, rawfile-backed repository, store state management, manifest, and 5 seeded JSON templates
 - **Template UI**: template list with featured card on `Index.ets`, dedicated `TemplateDetail.ets` with shooting settings / verbal steps / annotations / skeleton data
 - **Camera Kit integration**: full `CameraController` with Camera Kit preview session, `PhotoOutput` capture with 10s timeout, JPEG buffer extraction via `photoAvailable`, and app sandbox file saving
 - **Photo capture and review**: `PhotoReview.ets` with captured photo display, `SaveButton` security component for media library saving, **pose alignment gauge with per-keypoint heatmap** (`KeypointHeatmap` component), and **AI style advice** (scores, composition/pose review, improvement suggestions)
@@ -17,10 +17,10 @@ This directory contains the checked-in source skeleton for the HarmonyOS NEXT ap
 - **Companion system**: full session state machine, message envelope (11 types including `PREVIEW_FRAME`), device discovery (**real `DeviceManager` + mock fallback**), command handler, `DistributedTransport` (KV Store auto-sync), `PreviewSyncService` (**adaptive frame sync**: LIVE at 2 FPS / THUMBNAIL at 0.5 FPS / STATE_ONLY), remote shutter E2E with capture callback, remote preview display on CompanionSession page
 - **Navigation wiring**: full `router` routing across all 7 pages (Index → CameraGuide → PhotoReview, Index → DevicePairing → CompanionSession, Index → Settings), template ID / photo / alignment / keypoint data params passing
 - **Settings and privacy**: `SettingsModel` + `SettingsStore` with `@kit.ArkData` Preferences persistence, local-only mode / cloud AI toggle / photo upload consent / default camera facing
-- **Resource system**: 76 i18n string entries (zh-CN base + en-US), 18 theme colors (light + dark), 14 dimension tokens, 4 app icon PNGs
+- **Resource system**: 121 i18n string entries (zh-CN base + en-US), 23 theme colors (light + dark), 14 dimension tokens, 4 app icon PNGs
 - **Dark mode**: complete `resources/dark/element/color.json` with 18 color overrides for system dark theme
 - **i18n wiring**: all standalone UI labels replaced with `$r('app.string.xxx')` resource references across 7 pages
-- **Test skeleton**: `@ohos/hypium` dependency, 9 test suites, 35 test cases, shared `TestList.ets` registration
+- **Test skeleton**: `@ohos/hypium` dependency, 10 test suites, shared `TestList.ets` registration
 - **Code review**: full codebase audit completed — 3 issues fixed (TemplateDetail page registration, capture timeout, toast i18n)
 
 ## Source Tree
@@ -47,23 +47,23 @@ entry/src/main/ets/
                          CompanionSession, Settings (7 pages, 6 registered in main_pages.json)
 
 entry/src/main/resources/
-  base/element/          string.json (76 zh-CN), color.json (18), float.json (14)
+  base/element/          string.json (121 zh-CN), color.json (23), float.json (14)
   base/media/            startIcon.png, foreground.png, background.png
   base/profile/          main_pages.json (6 pages)
-  dark/element/          color.json (18 dark theme overrides)
-  en_US/element/         string.json (76 en-US translations)
-  rawfile/templates/     manifest.json, 2 template JSONs
+  dark/element/          color.json (23 dark theme overrides)
+  en_US/element/         string.json (121 en-US translations)
+  rawfile/templates/     manifest.json, 5 template JSONs
 
 entry/src/test/ets/
   camera/                CameraControllerTest (4 tests)
   companion/             CompanionSessionServiceTest (4), RemoteShutterTest (4),
                          DistributedTransportTest (4)
   navigation/            NavigationFlowTest (3 tests)
-  poseDetection/         KeypointMatcherTest (6 tests)
+  poseDetection/         KeypointMatcherTest (6 tests), PoseDetectionTest (8 tests)
   poseTemplate/          PoseTemplateTest (3 tests)
   settings/              SettingsTest (3 tests)
   styleAdvice/           StyleAdviceTest (4 tests)
-  TestList.ets           Registration entry (9 suites, 35 total cases)
+  TestList.ets           Registration entry (10 suites)
 ```
 
 ## Not Yet Done

@@ -71,6 +71,34 @@
         {
             "name": "easy_shot_divider",
             "value": "#FF334155"
+        },
+        {
+            "name": "easy_shot_score_good",
+            "value": "#FF4ADE80"
+        },
+        {
+            "name": "easy_shot_score_medium",
+            "value": "#FFFBBF24"
+        },
+        {
+            "name": "easy_shot_score_low",
+            "value": "#FFF87171"
+        },
+        {
+            "name": "easy_shot_style_accent",
+            "value": "#FF93A8F8"
+        },
+        {
+            "name": "easy_shot_progress_track",
+            "value": "#FF475569"
+        },
+        {
+            "name": "easy_shot_button_text_active",
+            "value": "#FFFFFFFF"
+        },
+        {
+            "name": "easy_shot_button_text_inactive",
+            "value": "#FFE2E8F0"
         }
     ]
 }

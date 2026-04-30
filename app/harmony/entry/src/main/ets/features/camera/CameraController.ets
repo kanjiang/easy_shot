@@ -37,6 +37,7 @@ export class CameraController {
   private previewOutput: camera.PreviewOutput | null = null;
   private photoOutput: camera.PhotoOutput | null = null;
   private captureResolve: ((filePath: string) => void) | null = null;
+  private isCapturing: boolean = false;
   private filesDir: string = '';
   private previewState: CameraPreviewState = createIdlePreviewState();
 
@@ -252,20 +253,23 @@ export class CameraController {
   }
 
   async capture(): Promise<string> {
-    if (!this.canCapture() || this.photoOutput === null) {
+    if (!this.canCapture() || this.photoOutput === null || this.isCapturing) {
       return '';
     }
+    this.isCapturing = true;
     return new Promise<string>((resolve: (filePath: string) => void) => {
       this.captureResolve = resolve;
       const timeoutId: number = setTimeout(() => {
         if (this.captureResolve !== null) {
           this.captureResolve = null;
+          this.isCapturing = false;
           resolve('');
         }
       }, 10000);
       const originalResolve = this.captureResolve;
       this.captureResolve = (filePath: string) => {
         clearTimeout(timeoutId);
+        this.isCapturing = false;
         originalResolve(filePath);
       };
       const settings: camera.PhotoCaptureSetting = {

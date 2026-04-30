@@ -43,8 +43,8 @@ export struct KeypointHeatmap {
           Progress({ value: Math.round(this.alignmentScore * 100), total: 100, type: ProgressType.Ring })
             .width(80)
             .height(80)
-            .color(this.alignmentScore >= 0.8 ? '#33AA55' : this.alignmentScore >= 0.5 ? '#DD9900' : '#CC3333')
-            .backgroundColor('#E5E7EB')
+            .color(this.alignmentScore >= 0.8 ? $r('app.color.easy_shot_score_good') : this.alignmentScore >= 0.5 ? $r('app.color.easy_shot_score_medium') : $r('app.color.easy_shot_score_low'))
+            .backgroundColor($r('app.color.easy_shot_progress_track'))
             .style({ strokeWidth: 8 })
 
           Text(`${Math.round(this.alignmentScore * 100)}`)
@@ -89,7 +89,7 @@ export struct KeypointHeatmap {
               .width('100%')
               .height(6)
               .borderRadius(3)
-              .backgroundColor('#E5E7EB')
+              .backgroundColor($r('app.color.easy_shot_progress_track'))
 
             Row()
               .width(`${item.qualityPercent}%`)

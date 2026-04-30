@@ -98,18 +98,18 @@ struct Settings {
               .layoutWeight(1)
 
             Row({ space: 8 }) {
-              Button(this.settings.defaultCameraFacing === 'rear' ? '◉ 后置' : '○ 后置')
+              Button(this.settings.defaultCameraFacing === 'rear' ? $r('app.string.camera_rear_selected') : $r('app.string.camera_rear_unselected'))
                 .fontSize(14)
-                .backgroundColor(this.settings.defaultCameraFacing === 'rear' ? '#6366F1' : '#E5E7EB')
-                .fontColor(this.settings.defaultCameraFacing === 'rear' ? '#FFFFFF' : '#333333')
+                .backgroundColor(this.settings.defaultCameraFacing === 'rear' ? $r('app.color.easy_shot_primary') : $r('app.color.easy_shot_divider'))
+                .fontColor(this.settings.defaultCameraFacing === 'rear' ? $r('app.color.easy_shot_button_text_active') : $r('app.color.easy_shot_button_text_inactive'))
                 .onClick(() => {
                   this.settings = settingsStore.updateString('defaultCameraFacing', 'rear');
                 })
 
-              Button(this.settings.defaultCameraFacing === 'front' ? '◉ 前置' : '○ 前置')
+              Button(this.settings.defaultCameraFacing === 'front' ? $r('app.string.camera_front_selected') : $r('app.string.camera_front_unselected'))
                 .fontSize(14)
-                .backgroundColor(this.settings.defaultCameraFacing === 'front' ? '#6366F1' : '#E5E7EB')
-                .fontColor(this.settings.defaultCameraFacing === 'front' ? '#FFFFFF' : '#333333')
+                .backgroundColor(this.settings.defaultCameraFacing === 'front' ? $r('app.color.easy_shot_primary') : $r('app.color.easy_shot_divider'))
+                .fontColor(this.settings.defaultCameraFacing === 'front' ? $r('app.color.easy_shot_button_text_active') : $r('app.color.easy_shot_button_text_inactive'))
                 .onClick(() => {
                   this.settings = settingsStore.updateString('defaultCameraFacing', 'front');
                 })

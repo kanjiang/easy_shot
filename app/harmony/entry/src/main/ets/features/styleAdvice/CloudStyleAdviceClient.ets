@@ -39,10 +39,32 @@ export class CloudStyleAdviceClient implements StyleAdviceClient {
         throw new Error(`API returned status ${response.responseCode}`);
       }
 
-      const result: StyleAdvice = JSON.parse(response.result as string) as StyleAdvice;
+      const raw: object = JSON.parse(response.result as string) as object;
+      const result: StyleAdvice = this.validateAdvice(raw);
       return result;
     } finally {
       httpRequest.destroy();
     }
+  }
+
+  private validateAdvice(raw: object): StyleAdvice {
+    const data = raw as Record<string, unknown>;
+
+    const overallScore = typeof data['overallScore'] === 'number' ? data['overallScore'] as number : 0;
+    const styleMatch = typeof data['styleMatch'] === 'number' ? data['styleMatch'] as number : 0;
+    const compositionAdvice = typeof data['compositionAdvice'] === 'string' ? data['compositionAdvice'] as string : '';
+    const poseAdvice = typeof data['poseAdvice'] === 'string' ? data['poseAdvice'] as string : '';
+    const rawSuggestions = Array.isArray(data['suggestions']) ? data['suggestions'] as unknown[] : [];
+    const suggestions: string[] = rawSuggestions
+      .filter((item: unknown): boolean => typeof item === 'string')
+      .map((item: unknown): string => item as string);
+
+    return {
+      overallScore: Math.max(0, Math.min(100, Math.round(overallScore))),
+      styleMatch: Math.max(0, Math.min(100, Math.round(styleMatch))),
+      compositionAdvice,
+      poseAdvice,
+      suggestions,
+    };
   }
 }

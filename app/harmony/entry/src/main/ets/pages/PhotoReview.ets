@@ -158,7 +158,7 @@ struct PhotoReview {
                 Text(`${this.advice.overallScore}`)
                   .fontSize(28)
                   .fontWeight(FontWeight.Bold)
-                  .fontColor(this.advice.overallScore >= 80 ? '#33AA55' : this.advice.overallScore >= 50 ? '#DD9900' : '#CC3333')
+                  .fontColor(this.advice.overallScore >= 80 ? $r('app.color.easy_shot_score_good') : this.advice.overallScore >= 50 ? $r('app.color.easy_shot_score_medium') : $r('app.color.easy_shot_score_low'))
               }
               .alignItems(HorizontalAlign.Center)
 

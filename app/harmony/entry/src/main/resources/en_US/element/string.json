@@ -138,7 +138,7 @@
         },
         {
             "name": "scene_tags_prefix",
-            "value": "Best for: "
+            "value": "Best for: %s"
         },
         {
             "name": "verbal_steps_title",
@@ -314,23 +314,23 @@
         },
         {
             "name": "preview_status_prefix",
-            "value": "Preview status: "
+            "value": "Preview status: %s"
         },
         {
             "name": "preview_message_prefix",
-            "value": "Preview message: "
+            "value": "Preview message: %s"
         },
         {
             "name": "active_template_prefix",
-            "value": "Active template: "
+            "value": "Active template: %s"
         },
         {
             "name": "current_prompt_prefix",
-            "value": "Current prompt: "
+            "value": "Current prompt: %s"
         },
         {
             "name": "pose_steps_prefix",
-            "value": "Pose steps: "
+            "value": "Pose steps: %s"
         },
         {
             "name": "discover_description",
@@ -338,11 +338,11 @@
         },
         {
             "name": "current_role_prefix",
-            "value": "Current role: "
+            "value": "Current role: %s"
         },
         {
             "name": "current_phase_prefix",
-            "value": "Current phase: "
+            "value": "Current phase: %s"
         },
         {
             "name": "host_hint",
@@ -366,7 +366,7 @@
         },
         {
             "name": "device_type_prefix",
-            "value": "Device type: "
+            "value": "Device type: %s"
         },
         {
             "name": "invite_device",
@@ -390,15 +390,15 @@
         },
         {
             "name": "latest_event_prefix",
-            "value": "Latest event: "
+            "value": "Latest event: %s"
         },
         {
             "name": "peer_prefix",
-            "value": "Peer: "
+            "value": "Peer: %s"
         },
         {
             "name": "phase_prefix",
-            "value": "Phase: "
+            "value": "Phase: %s"
         },
         {
             "name": "sync_guide_state",
@@ -422,23 +422,23 @@
         },
         {
             "name": "sync_active_prefix",
-            "value": "Sync active: "
+            "value": "Sync active: %s"
         },
         {
             "name": "guide_score_prefix",
-            "value": "Guide score: "
+            "value": "Guide score: %s"
         },
         {
             "name": "style_prefix",
-            "value": "Style: "
+            "value": "Style: %s"
         },
         {
             "name": "tolerance_prefix",
-            "value": "Tolerance: "
+            "value": "Tolerance: %s"
         },
         {
             "name": "keypoint_count_prefix",
-            "value": "Keypoint count: "
+            "value": "Keypoint count: %s"
         },
         {
             "name": "yes",
@@ -447,6 +447,150 @@
         {
             "name": "no",
             "value": "No"
+        },
+        {
+            "name": "camera_rear_selected",
+            "value": "◉ Rear"
+        },
+        {
+            "name": "camera_rear_unselected",
+            "value": "○ Rear"
+        },
+        {
+            "name": "camera_front_selected",
+            "value": "◉ Front"
+        },
+        {
+            "name": "camera_front_unselected",
+            "value": "○ Front"
+        },
+        {
+            "name": "host_control_panel",
+            "value": "Host Control Panel"
+        },
+        {
+            "name": "companion_control_panel",
+            "value": "Director Control Panel"
+        },
+        {
+            "name": "host_control_desc",
+            "value": "Publish guide updates and keep the companion director screen in sync."
+        },
+        {
+            "name": "companion_control_desc",
+            "value": "Use the companion phone to trigger countdown and remote shutter actions."
+        },
+        {
+            "name": "anchor_prefix",
+            "value": "Anchor %s"
+        },
+        {
+            "name": "shot_type_full_body",
+            "value": "Full Body"
+        },
+        {
+            "name": "shot_type_half_body",
+            "value": "Half Body"
+        },
+        {
+            "name": "shot_type_selfie",
+            "value": "Selfie"
+        },
+        {
+            "name": "camera_facing_both",
+            "value": "Front or Rear"
+        },
+        {
+            "name": "difficulty_easy",
+            "value": "Easy"
+        },
+        {
+            "name": "difficulty_medium",
+            "value": "Medium"
+        },
+        {
+            "name": "difficulty_hard",
+            "value": "Advanced"
+        },
+        {
+            "name": "sync_active_yes",
+            "value": "Sync active: Yes"
+        },
+        {
+            "name": "sync_active_no",
+            "value": "Sync active: No"
+        },
+        {
+            "name": "annotation_display",
+            "value": "%1$s · Anchor %2$s, %3$s"
+        },
+        {
+            "name": "style_label_sweet_daily",
+            "value": "Sweet Daily"
+        },
+        {
+            "name": "style_label_cool_street",
+            "value": "Cool Street"
+        },
+        {
+            "name": "style_label_campus_vibes",
+            "value": "Campus Vibes"
+        },
+        {
+            "name": "style_label_travel_mood",
+            "value": "Travel Mood"
+        },
+        {
+            "name": "mock_composition_excellent",
+            "value": "Excellent composition! Subject well-positioned, balanced frame."
+        },
+        {
+            "name": "mock_composition_good",
+            "value": "Good composition overall, try adjusting the angle slightly for better results."
+        },
+        {
+            "name": "mock_composition_needs_work",
+            "value": "Consider repositioning to place the subject at the golden ratio point."
+        },
+        {
+            "name": "mock_pose_excellent",
+            "value": "Great pose! Almost a perfect template match. Try a more natural expression."
+        },
+        {
+            "name": "mock_pose_good",
+            "value": "Good overall pose, some keypoints are off — watch arm and shoulder positioning."
+        },
+        {
+            "name": "mock_pose_needs_work",
+            "value": "Pose differs significantly from template. Follow the guide to adjust."
+        },
+        {
+            "name": "mock_tip_follow_skeleton",
+            "value": "Try following the skeleton guide to adjust your position"
+        },
+        {
+            "name": "mock_tip_relax_shoulders",
+            "value": "Keep shoulders relaxed and back straight"
+        },
+        {
+            "name": "mock_tip_sweet_daily",
+            "value": "Slightly side-turning adds dynamism to the frame"
+        },
+        {
+            "name": "mock_tip_cool_street",
+            "value": "Try gazing into the distance for more atmosphere"
+        },
+        {
+            "name": "mock_tip_campus_vibes",
+            "value": "Candid walking shots work better for this style"
+        },
+        {
+            "name": "mock_tip_travel_mood",
+            "value": "Use environmental elements as foreground"
+        },
+        {
+            "name": "mock_tip_experiment",
+            "value": "Try different angles to find your best look"
         }
     ]
 }

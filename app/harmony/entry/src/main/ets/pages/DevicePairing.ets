@@ -44,10 +44,10 @@ export struct DevicePairing {
         .fontSize(14)
         .opacity(0.8)
 
-      Text($r('app.string.current_role_prefix') + this.snapshot.sessionState.role)
+      Text($r('app.string.current_role_prefix', this.snapshot.sessionState.role))
         .fontSize(14)
 
-      Text($r('app.string.current_phase_prefix') + this.snapshot.sessionState.phase)
+      Text($r('app.string.current_phase_prefix', this.snapshot.sessionState.phase))
         .fontSize(14)
         .opacity(0.8)
 
@@ -88,7 +88,7 @@ export struct DevicePairing {
               .fontSize(14)
               .fontWeight(FontWeight.Medium)
 
-            Text($r('app.string.device_type_prefix') + device.deviceType)
+            Text($r('app.string.device_type_prefix', device.deviceType))
               .fontSize(12)
               .opacity(0.6)
 
@@ -143,7 +143,7 @@ export struct DevicePairing {
       }
 
       if (this.snapshot.recentEvents.length > 0) {
-        Text($r('app.string.latest_event_prefix') + this.snapshot.recentEvents[0])
+        Text($r('app.string.latest_event_prefix', this.snapshot.recentEvents[0]))
           .fontSize(13)
           .opacity(0.7)
       }

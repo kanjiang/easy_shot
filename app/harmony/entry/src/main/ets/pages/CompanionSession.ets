@@ -4,19 +4,23 @@ import { PreviewFramePayload } from '../core/session/SessionMessage';
 import { SessionSnapshot, companionSessionService } from '../features/companion/CompanionSessionService';
 import { previewSyncService } from '../features/companion/PreviewSyncService';
 import { GuideOverlayRenderer } from '../features/realtimeGuide/GuideOverlayRenderer';
+import { RawfileResourceManagerLike } from '../features/poseTemplate/data/PoseTemplateRepository';
+import { PoseTemplate } from '../features/poseTemplate/model/PoseTemplate';
+import { poseTemplateStore } from '../features/poseTemplate/state/PoseTemplateStore';
 
 @Entry
 @Component
 export struct CompanionSession {
   @State private snapshot: SessionSnapshot = companionSessionService.getSnapshot();
-  private readonly templateIds: string[] = ['pose_sweet_scissors_cheek_v1', 'pose_cool_street_turn_v1'];
-  private readonly templateTitles: string[] = ['Sweet Scissors Pose', 'Cool Street Turn'];
   @State private selectedTemplateIndex: number = 0;
   @State private remoteFrameBase64: string = '';
   @State private previewMode: PreviewMode = PreviewMode.STATE_ONLY;
   @State private isSyncing: boolean = false;
+  private templates: PoseTemplate[] = [];
 
   aboutToAppear(): void {
+    const templateState = poseTemplateStore.loadTemplatesFromRawfile(getContext().resourceManager as RawfileResourceManagerLike);
+    this.templates = templateState.templates;
     this.previewMode = previewSyncService.resolveMode(ConnectionLevel.GOOD, true);
 
     previewSyncService.setOnRemoteFrame((frame: PreviewFramePayload) => {
@@ -48,10 +52,10 @@ export struct CompanionSession {
           .fontSize(24)
           .fontWeight(FontWeight.Bold)
 
-        Text($r('app.string.peer_prefix') + this.snapshot.sessionState.peerDeviceName)
+        Text($r('app.string.peer_prefix', this.snapshot.sessionState.peerDeviceName))
           .fontSize(14)
 
-        Text($r('app.string.phase_prefix') + this.snapshot.sessionState.phase)
+        Text($r('app.string.phase_prefix', this.snapshot.sessionState.phase))
           .fontSize(14)
           .opacity(0.8)
 
@@ -85,13 +89,13 @@ export struct CompanionSession {
         }
 
         Column({ space: 8 }) {
-          Text(this.isHostRole() ? 'Host control panel' : 'Director control panel')
+          Text(this.isHostRole() ? $r('app.string.host_control_panel') : $r('app.string.companion_control_panel'))
             .fontSize(18)
             .fontWeight(FontWeight.Medium)
 
           Text(this.isHostRole()
-            ? 'Publish guide updates and keep the companion director screen in sync.'
-            : 'Use the companion phone to trigger countdown and remote shutter actions.')
+            ? $r('app.string.host_control_desc')
+            : $r('app.string.companion_control_desc'))
             .fontSize(14)
             .opacity(0.72)
         }
@@ -108,11 +112,11 @@ export struct CompanionSession {
 
             Button($r('app.string.switch_template'))
               .onClick(() => {
-                this.selectedTemplateIndex = (this.selectedTemplateIndex + 1) % this.templateIds.length;
-                companionSessionService.sendTemplateSwitch(
-                  this.templateIds[this.selectedTemplateIndex],
-                  this.templateTitles[this.selectedTemplateIndex],
-                );
+                if (this.templates.length > 0) {
+                  this.selectedTemplateIndex = (this.selectedTemplateIndex + 1) % this.templates.length;
+                  const tmpl = this.templates[this.selectedTemplateIndex];
+                  companionSessionService.sendTemplateSwitch(tmpl.id, tmpl.title);
+                }
                 this.refreshView();
               })
           }
@@ -125,7 +129,7 @@ export struct CompanionSession {
                 } else {
                   previewSyncService.startSync(
                     this.snapshot.sessionState.sessionId,
-                    (): string => '',
+                    async (): Promise<string> => '',
                   );
                 }
                 this.isSyncing = previewSyncService.isActive();
@@ -158,17 +162,17 @@ export struct CompanionSession {
             .fontSize(18)
             .fontWeight(FontWeight.Medium)
 
-          Text($r('app.string.preview_status_prefix') + this.previewMode)
+          Text($r('app.string.preview_status_prefix', this.previewMode))
             .fontSize(14)
 
-          Text($r('app.string.sync_active_prefix') + (this.isSyncing ? $r('app.string.yes') : $r('app.string.no')))
+          Text(this.isSyncing ? $r('app.string.sync_active_yes') : $r('app.string.sync_active_no'))
             .fontSize(14)
 
-          Text($r('app.string.guide_score_prefix') + this.snapshot.guideState.guideScore.toFixed(2))
+          Text($r('app.string.guide_score_prefix', this.snapshot.guideState.guideScore.toFixed(2)))
             .fontSize(14)
 
           if (this.snapshot.recentEvents.length > 0) {
-            Text($r('app.string.latest_event_prefix') + this.snapshot.recentEvents[0])
+            Text($r('app.string.latest_event_prefix', this.snapshot.recentEvents[0]))
               .fontSize(13)
               .opacity(0.7)
           }

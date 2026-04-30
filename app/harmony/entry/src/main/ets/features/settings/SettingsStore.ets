@@ -62,7 +62,11 @@ export class SettingsStore {
     this.prefs.putSync('allowPhotoUpload', this.settings.allowPhotoUpload);
     this.prefs.putSync('localOnlyMode', this.settings.localOnlyMode);
     this.prefs.putSync('defaultCameraFacing', this.settings.defaultCameraFacing);
-    this.prefs.flush(() => {});
+    this.prefs.flush((err) => {
+      if (err) {
+        console.error('SettingsStore: flush failed with code ' + err.code);
+      }
+    });
   }
 }
 

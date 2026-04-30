@@ -138,7 +138,7 @@
         },
         {
             "name": "scene_tags_prefix",
-            "value": "适合场景："
+            "value": "适合场景：%s"
         },
         {
             "name": "verbal_steps_title",
@@ -314,23 +314,23 @@
         },
         {
             "name": "preview_status_prefix",
-            "value": "预览状态："
+            "value": "预览状态：%s"
         },
         {
             "name": "preview_message_prefix",
-            "value": "预览消息："
+            "value": "预览消息：%s"
         },
         {
             "name": "active_template_prefix",
-            "value": "当前模板："
+            "value": "当前模板：%s"
         },
         {
             "name": "current_prompt_prefix",
-            "value": "当前提示："
+            "value": "当前提示：%s"
         },
         {
             "name": "pose_steps_prefix",
-            "value": "动作步骤："
+            "value": "动作步骤：%s"
         },
         {
             "name": "discover_description",
@@ -338,11 +338,11 @@
         },
         {
             "name": "current_role_prefix",
-            "value": "当前角色："
+            "value": "当前角色：%s"
         },
         {
             "name": "current_phase_prefix",
-            "value": "当前阶段："
+            "value": "当前阶段：%s"
         },
         {
             "name": "host_hint",
@@ -366,7 +366,7 @@
         },
         {
             "name": "device_type_prefix",
-            "value": "设备类型："
+            "value": "设备类型：%s"
         },
         {
             "name": "invite_device",
@@ -390,15 +390,15 @@
         },
         {
             "name": "latest_event_prefix",
-            "value": "最新事件："
+            "value": "最新事件：%s"
         },
         {
             "name": "peer_prefix",
-            "value": "对端："
+            "value": "对端：%s"
         },
         {
             "name": "phase_prefix",
-            "value": "阶段："
+            "value": "阶段：%s"
         },
         {
             "name": "sync_guide_state",
@@ -422,23 +422,23 @@
         },
         {
             "name": "sync_active_prefix",
-            "value": "同步状态："
+            "value": "同步状态：%s"
         },
         {
             "name": "guide_score_prefix",
-            "value": "引导评分："
+            "value": "引导评分：%s"
         },
         {
             "name": "style_prefix",
-            "value": "风格："
+            "value": "风格：%s"
         },
         {
             "name": "tolerance_prefix",
-            "value": "容差："
+            "value": "容差：%s"
         },
         {
             "name": "keypoint_count_prefix",
-            "value": "关键点数："
+            "value": "关键点数：%s"
         },
         {
             "name": "yes",
@@ -447,6 +447,150 @@
         {
             "name": "no",
             "value": "否"
+        },
+        {
+            "name": "camera_rear_selected",
+            "value": "◉ 后置"
+        },
+        {
+            "name": "camera_rear_unselected",
+            "value": "○ 后置"
+        },
+        {
+            "name": "camera_front_selected",
+            "value": "◉ 前置"
+        },
+        {
+            "name": "camera_front_unselected",
+            "value": "○ 前置"
+        },
+        {
+            "name": "host_control_panel",
+            "value": "主机控制面板"
+        },
+        {
+            "name": "companion_control_panel",
+            "value": "导演控制面板"
+        },
+        {
+            "name": "host_control_desc",
+            "value": "发布引导状态更新，保持伴拍端画面同步。"
+        },
+        {
+            "name": "companion_control_desc",
+            "value": "使用伴拍手机触发倒计时和远程快门。"
+        },
+        {
+            "name": "anchor_prefix",
+            "value": "锚点 %s"
+        },
+        {
+            "name": "shot_type_full_body",
+            "value": "全身"
+        },
+        {
+            "name": "shot_type_half_body",
+            "value": "半身"
+        },
+        {
+            "name": "shot_type_selfie",
+            "value": "自拍"
+        },
+        {
+            "name": "camera_facing_both",
+            "value": "前后置均可"
+        },
+        {
+            "name": "difficulty_easy",
+            "value": "简单"
+        },
+        {
+            "name": "difficulty_medium",
+            "value": "中等"
+        },
+        {
+            "name": "difficulty_hard",
+            "value": "进阶"
+        },
+        {
+            "name": "sync_active_yes",
+            "value": "同步状态：是"
+        },
+        {
+            "name": "sync_active_no",
+            "value": "同步状态：否"
+        },
+        {
+            "name": "annotation_display",
+            "value": "%1$s · 锚点 %2$s, %3$s"
+        },
+        {
+            "name": "style_label_sweet_daily",
+            "value": "甜美日常"
+        },
+        {
+            "name": "style_label_cool_street",
+            "value": "清冷街拍"
+        },
+        {
+            "name": "style_label_campus_vibes",
+            "value": "元气校园"
+        },
+        {
+            "name": "style_label_travel_mood",
+            "value": "旅行氛围"
+        },
+        {
+            "name": "mock_composition_excellent",
+            "value": "构图非常出色！主体位置合理，画面平衡。"
+        },
+        {
+            "name": "mock_composition_good",
+            "value": "构图基本到位，建议稍微调整角度以获得更佳效果。"
+        },
+        {
+            "name": "mock_composition_needs_work",
+            "value": "建议重新调整站位，使身体主体位于画面黄金分割位置。"
+        },
+        {
+            "name": "mock_pose_excellent",
+            "value": "姿势标准，与模板高度匹配！表情再自然一些会更好。"
+        },
+        {
+            "name": "mock_pose_good",
+            "value": "整体姿势不错，部分关键点偏离较大，注意手臂和肩部的位置。"
+        },
+        {
+            "name": "mock_pose_needs_work",
+            "value": "姿势与模板差异较大，建议参考模板引导逐步调整身体各部位。"
+        },
+        {
+            "name": "mock_tip_follow_skeleton",
+            "value": "尝试跟随骨架引导调整站位"
+        },
+        {
+            "name": "mock_tip_relax_shoulders",
+            "value": "注意保持肩部放松、背部挺直"
+        },
+        {
+            "name": "mock_tip_sweet_daily",
+            "value": "微微侧身可以让画面更灵动"
+        },
+        {
+            "name": "mock_tip_cool_street",
+            "value": "可以尝试目光看向远方，增加氛围感"
+        },
+        {
+            "name": "mock_tip_campus_vibes",
+            "value": "自然走动的抓拍效果会更好"
+        },
+        {
+            "name": "mock_tip_travel_mood",
+            "value": "多利用环境元素作为前景"
+        },
+        {
+            "name": "mock_tip_experiment",
+            "value": "多尝试不同角度，找到最佳上镜感"
         }
     ]
 }

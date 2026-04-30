@@ -1,12 +1,18 @@
+import { localeHelper } from '../locale/LocaleHelper';
+
 export class StyleTag {
-  constructor(public readonly value: string, public readonly label: string) {
+  constructor(public readonly value: string, public readonly labelKey: string) {
+  }
+
+  get label(): string {
+    return localeHelper.getString(this.labelKey);
   }
 }
 
-export const SWEET_DAILY: StyleTag = new StyleTag('sweet_daily', '甜美日常');
-export const COOL_STREET: StyleTag = new StyleTag('cool_street', '清冷街拍');
-export const CAMPUS_VIBES: StyleTag = new StyleTag('campus_vibes', '元气校园');
-export const TRAVEL_MOOD: StyleTag = new StyleTag('travel_mood', '旅行氛围');
+export const SWEET_DAILY: StyleTag = new StyleTag('sweet_daily', 'style_label_sweet_daily');
+export const COOL_STREET: StyleTag = new StyleTag('cool_street', 'style_label_cool_street');
+export const CAMPUS_VIBES: StyleTag = new StyleTag('campus_vibes', 'style_label_campus_vibes');
+export const TRAVEL_MOOD: StyleTag = new StyleTag('travel_mood', 'style_label_travel_mood');
 
 export const ALL_STYLE_TAGS: StyleTag[] = [
   SWEET_DAILY,

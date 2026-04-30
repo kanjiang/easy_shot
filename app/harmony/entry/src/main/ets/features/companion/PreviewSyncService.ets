@@ -44,7 +44,7 @@ export class PreviewSyncService {
     }
   }
 
-  startSync(sessionId: string, frameProvider: () => string): void {
+  startSync(sessionId: string, frameProvider: () => Promise<string>): void {
     this.stopSync();
     this.sessionId = sessionId;
     this.frameIndex = 0;
@@ -74,12 +74,12 @@ export class PreviewSyncService {
     return this.intervalId >= 0;
   }
 
-  private async sendFrame(frameProvider: () => string): Promise<void> {
+  private async sendFrame(frameProvider: () => Promise<string>): Promise<void> {
     if (!distributedTransport.isReady()) {
       return;
     }
 
-    const thumbnailBase64: string = frameProvider();
+    const thumbnailBase64: string = await frameProvider();
     if (thumbnailBase64.length === 0) {
       return;
     }

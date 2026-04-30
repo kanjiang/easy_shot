@@ -1,5 +1,6 @@
 import { router } from '@ohos.router';
 import { getStyleLabel } from '../core/style/StyleTags';
+import { localeHelper } from '../core/locale/LocaleHelper';
 import { PoseTemplate } from '../features/poseTemplate/model/PoseTemplate';
 import { RawfileResourceManagerLike } from '../features/poseTemplate/data/PoseTemplateRepository';
 import { PoseTemplateState, poseTemplateStore } from '../features/poseTemplate/state/PoseTemplateStore';
@@ -8,10 +9,11 @@ import { TemplateDetail } from './TemplateDetail';
 @Entry
 @Component
 struct Index {
-  @State private templateState: PoseTemplateState = poseTemplateStore.loadTemplates();
+  @State private templateState: PoseTemplateState = { templates: [], featuredTemplate: null };
   @State private isShowingTemplateDetail: boolean = false;
 
   aboutToAppear(): void {
+    localeHelper.setResourceManager(getContext().resourceManager);
     this.templateState = poseTemplateStore.loadTemplatesFromRawfile(getContext().resourceManager as RawfileResourceManagerLike);
   }
 
@@ -99,11 +101,11 @@ struct Index {
               .fontSize(14)
               .opacity(0.82)
 
-            Text($r('app.string.style_prefix') + getStyleLabel(this.templateState.featuredTemplate.styleTags[0]))
+            Text($r('app.string.style_prefix', getStyleLabel(this.templateState.featuredTemplate.styleTags[0] ?? '')))
               .fontSize(13)
               .opacity(0.72)
 
-            Text('Steps: ' + this.templateState.featuredTemplate.verbalSteps.join(' / '))
+            Text($r('app.string.pose_steps_prefix', this.templateState.featuredTemplate.verbalSteps.join(' / ')))
               .fontSize(13)
               .opacity(0.72)
 
@@ -138,7 +140,7 @@ struct Index {
                 .fontSize(18)
                 .fontWeight(FontWeight.Medium)
 
-              Text(getStyleLabel(template.styleTags[0]) + ' · ' + template.sceneTags.join(' / '))
+              Text(getStyleLabel(template.styleTags.length > 0 ? template.styleTags[0] : '') + ' · ' + template.sceneTags.join(' / '))
                 .fontSize(13)
                 .opacity(0.68)
 
