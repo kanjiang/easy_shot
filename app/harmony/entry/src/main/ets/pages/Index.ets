@@ -99,7 +99,7 @@ struct Index {
               .fontSize(14)
               .opacity(0.82)
 
-            Text('Style: ' + getStyleLabel(this.templateState.featuredTemplate.styleTags[0]))
+            Text($r('app.string.style_prefix') + getStyleLabel(this.templateState.featuredTemplate.styleTags[0]))
               .fontSize(13)
               .opacity(0.72)
 

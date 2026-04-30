@@ -1,0 +1,118 @@
+{
+    "id": "pose_travel_lean_wall_v1",
+    "title": "旅行靠墙",
+    "style_tags": [
+        "travel_mood",
+        "cool_street"
+    ],
+    "scene_tags": [
+        "旅行",
+        "建筑",
+        "胡同",
+        "欧风街道"
+    ],
+    "shot_type": "full_body",
+    "camera_facing": "rear",
+    "difficulty": "medium",
+    "description": "侧身靠墙，一只脚踩墙面，随性的旅行抓拍感。",
+    "verbal_steps": [
+        "侧身靠向墙壁",
+        "左脚踩墙、膝盖弯曲",
+        "双手自然放松交叉胸前",
+        "目光看向远方"
+    ],
+    "avatar_image": "avatars/travel/lean_wall_v1.png",
+    "annotations": [
+        {
+            "label": "脚踩墙面增加层次",
+            "anchor": {
+                "x": 0.42,
+                "y": 0.82
+            }
+        },
+        {
+            "label": "目光看远方",
+            "anchor": {
+                "x": 0.52,
+                "y": 0.16
+            }
+        },
+        {
+            "label": "双手交叉胸前",
+            "anchor": {
+                "x": 0.48,
+                "y": 0.45
+            }
+        }
+    ],
+    "skeleton": {
+        "tolerance": 0.09,
+        "keypoints": [
+            {
+                "name": "nose",
+                "x": 0.52,
+                "y": 0.12
+            },
+            {
+                "name": "left_shoulder",
+                "x": 0.44,
+                "y": 0.28
+            },
+            {
+                "name": "right_shoulder",
+                "x": 0.60,
+                "y": 0.28
+            },
+            {
+                "name": "left_elbow",
+                "x": 0.40,
+                "y": 0.42
+            },
+            {
+                "name": "right_elbow",
+                "x": 0.58,
+                "y": 0.42
+            },
+            {
+                "name": "left_wrist",
+                "x": 0.50,
+                "y": 0.45
+            },
+            {
+                "name": "right_wrist",
+                "x": 0.46,
+                "y": 0.45
+            },
+            {
+                "name": "left_hip",
+                "x": 0.46,
+                "y": 0.56
+            },
+            {
+                "name": "right_hip",
+                "x": 0.56,
+                "y": 0.56
+            },
+            {
+                "name": "left_knee",
+                "x": 0.42,
+                "y": 0.72
+            },
+            {
+                "name": "right_knee",
+                "x": 0.56,
+                "y": 0.74
+            },
+            {
+                "name": "left_ankle",
+                "x": 0.42,
+                "y": 0.82
+            },
+            {
+                "name": "right_ankle",
+                "x": 0.56,
+                "y": 0.92
+            }
+        ]
+    }
+}

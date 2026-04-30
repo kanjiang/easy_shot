@@ -77,10 +77,10 @@ export struct TemplateDetail {
             .fontSize(18)
             .fontWeight(FontWeight.Medium)
 
-          Text('镜头方向：' + cameraFacingLabel(this.template.cameraFacing))
+          Text($r('app.string.camera_direction_prefix') + cameraFacingLabel(this.template.cameraFacing))
             .fontSize(14)
 
-          Text('适合场景：' + this.template.sceneTags.join(' / '))
+          Text($r('app.string.scene_tags_prefix') + this.template.sceneTags.join(' / '))
             .fontSize(14)
         }
         .padding(16)
@@ -125,10 +125,10 @@ export struct TemplateDetail {
             .fontSize(18)
             .fontWeight(FontWeight.Medium)
 
-          Text('容差：' + this.template.skeleton.tolerance.toFixed(2))
+          Text($r('app.string.tolerance_prefix') + this.template.skeleton.tolerance.toFixed(2))
             .fontSize(14)
 
-          Text('关键点数：' + this.template.skeleton.keypoints.length.toString())
+          Text($r('app.string.keypoint_count_prefix') + this.template.skeleton.keypoints.length.toString())
             .fontSize(14)
         }
         .padding(16)

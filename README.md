@@ -28,8 +28,57 @@ docs/         所有文档
 
 ## 当前状态
 
-- spec v2：HarmonyOS 优先 + 单屏拍摄 + 双机互联（伴侣屏）
-- M1 plan：6 个 TDD 任务，覆盖 DevEco 工程脚手架到模板列表/详情
-- M2 plan：单屏导拍 + 同系统双机导拍 Beta，含会话状态机与协议最小集
-- Windows / macOS 环境配置文档已就绪
-- 代码尚未开始落盘；下一步在 macOS 或 Windows 装好 DevEco 后按 M1 Task 1 创建工程
+HarmonyOS NEXT V1 代码已落盘，覆盖 M1 + M2 所有核心函数。
+
+### 模块概览
+
+| 模块 | 文件数 | 说明 |
+|------|--------|------|
+| pages | 7 | Index / TemplateDetail / CameraGuide / PhotoReview / DevicePairing / CompanionSession / Settings |
+| components | 1 | KeypointHeatmap |
+| core/session | 4 | SessionState / SessionMessage / SessionSerializer / SessionFallbackPolicy |
+| core/style | 1 | StyleTags |
+| features/camera | 1 | CameraController（Camera Kit + 预览缩略图） |
+| features/companion | 5 | DeviceDiscoveryService / CompanionSessionService / CompanionCommandHandler / DistributedTransport / PreviewSyncService |
+| features/poseDetection | 4 | PoseDetector 接口 / MockPoseDetector / MindSporePoseDetector / KeypointMatcher |
+| features/poseTemplate | 3 | 模型 / Repository / Store |
+| features/realtimeGuide | 3 | GuideOverlayRenderer / GuidePromptSelector / PoseAlignmentService |
+| features/settings | 2 | SettingsModel / SettingsStore |
+| features/styleAdvice | 5 | 模型 / 接口 / Mock / Cloud / Service |
+| entryability | 1 | EntryAbility |
+
+### 资源
+
+- i18n：112 条字符串（zh-CN + en-US）
+- 颜色主题：18 色 × 2（light / dark）
+- 姿势模板：5 套（standing / sitting / campus_wave / travel_lean_wall / selfie_heart_hands）
+- 图标：3 个 PNG（app / camera / template）
+
+### 测试
+
+10 个测试套件，43 个用例：
+
+| 测试套件 | 用例数 |
+|----------|--------|
+| CameraControllerTest | 4 |
+| CompanionSessionServiceTest | 4 |
+| RemoteShutterTest | 4 |
+| DistributedTransportTest | 4 |
+| NavigationFlowTest | 3 |
+| KeypointMatcherTest | 6 |
+| PoseDetectionTest | 8 |
+| PoseTemplateTest | 3 |
+| SettingsTest | 3 |
+| StyleAdviceTest | 4 |
+
+### 权限
+
+- `ohos.permission.CAMERA`
+- `ohos.permission.DISTRIBUTED_DATASYNC`
+- `ohos.permission.INTERNET`
+
+### 统计
+
+- 源文件：38 个 .ets（main）+ 11 个 .ets（test）
+- 总文件：62 个（含 JSON / JSON5 资源配置）
+- 代码行数：~8500+

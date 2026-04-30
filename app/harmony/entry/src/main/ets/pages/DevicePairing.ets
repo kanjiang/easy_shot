@@ -1,4 +1,5 @@
 import { router } from '@ohos.router';
+import { common } from '@kit.AbilityKit';
 import { SessionRole, SessionPhase } from '../core/session/SessionState';
 import { CompanionDevice } from '../features/companion/DeviceDiscoveryService';
 import { SessionSnapshot, companionSessionService } from '../features/companion/CompanionSessionService';
@@ -8,6 +9,17 @@ import { SessionSnapshot, companionSessionService } from '../features/companion/
 export struct DevicePairing {
   @State private devices: CompanionDevice[] = [];
   @State private snapshot: SessionSnapshot = companionSessionService.getSnapshot();
+  @State private distributedReady: boolean = false;
+
+  aboutToAppear(): void {
+    void this.initDistributed();
+  }
+
+  private async initDistributed(): Promise<void> {
+    const context: common.UIAbilityContext = getContext(this) as common.UIAbilityContext;
+    this.distributedReady = await companionSessionService.initializeDistributed(context);
+    this.refreshView();
+  }
 
   private isHostRole(): boolean {
     return this.snapshot.sessionState.role === SessionRole.HOST;
@@ -28,41 +40,37 @@ export struct DevicePairing {
         .fontSize(24)
         .fontWeight(FontWeight.Bold)
 
-      Text('Discover nearby HarmonyOS phones and start a companion session.')
+      Text($r('app.string.discover_description'))
         .fontSize(14)
         .opacity(0.8)
 
-      Text('This page will host invite, accept, and reconnect flows.')
-        .fontSize(14)
-        .opacity(0.7)
-
-      Text('Current role: ' + this.snapshot.sessionState.role)
+      Text($r('app.string.current_role_prefix') + this.snapshot.sessionState.role)
         .fontSize(14)
 
-      Text('Current phase: ' + this.snapshot.sessionState.phase)
+      Text($r('app.string.current_phase_prefix') + this.snapshot.sessionState.phase)
         .fontSize(14)
         .opacity(0.8)
 
       if (this.isHostRole()) {
-        Text('Host view: discover devices, send invites, confirm pairing, then start guiding.')
+        Text($r('app.string.host_hint'))
           .fontSize(13)
           .opacity(0.7)
       }
 
       if (this.isCompanionRole()) {
-        Text('Companion view: discover a host phone, join the session, then wait for host guidance.')
+        Text($r('app.string.companion_hint'))
           .fontSize(13)
           .opacity(0.7)
       }
 
       Row({ space: 8 }) {
-        Button('Scan as Host')
+        Button($r('app.string.scan_as_host'))
           .onClick(() => {
             this.devices = companionSessionService.startDiscovery(SessionRole.HOST);
             this.refreshView();
           })
 
-        Button('Scan as Companion')
+        Button($r('app.string.scan_as_companion'))
           .onClick(() => {
             this.devices = companionSessionService.startDiscovery(SessionRole.COMPANION);
             this.refreshView();
@@ -70,7 +78,7 @@ export struct DevicePairing {
       }
 
       if (this.devices.length > 0) {
-        Text('Nearby devices')
+        Text($r('app.string.nearby_devices'))
           .fontSize(16)
           .fontWeight(FontWeight.Medium)
 
@@ -80,13 +88,13 @@ export struct DevicePairing {
               .fontSize(14)
               .fontWeight(FontWeight.Medium)
 
-            Text('Device type: ' + device.deviceType)
+            Text($r('app.string.device_type_prefix') + device.deviceType)
               .fontSize(12)
               .opacity(0.6)
 
             if (this.isHostRole()) {
               Row({ space: 8 }) {
-                Button('Invite This Device')
+                Button($r('app.string.invite_device'))
                   .onClick(() => {
                     companionSessionService.inviteDevice(device);
                     this.refreshView();
@@ -96,7 +104,7 @@ export struct DevicePairing {
 
             if (this.isCompanionRole()) {
               Row({ space: 8 }) {
-                Button('Join Host Session')
+                Button($r('app.string.join_host'))
                   .onClick(() => {
                     companionSessionService.joinHost(device);
                     this.refreshView();
@@ -113,13 +121,13 @@ export struct DevicePairing {
 
       if (this.isHostRole()) {
         Row({ space: 8 }) {
-          Button('Confirm Pairing')
+          Button($r('app.string.confirm_pairing'))
             .onClick(() => {
               companionSessionService.confirmPairing();
               this.refreshView();
             })
 
-          Button('Start Guiding')
+          Button($r('app.string.start_guiding'))
             .onClick(() => {
               companionSessionService.startGuiding();
               companionSessionService.sendGuideStateUpdate();
@@ -129,13 +137,13 @@ export struct DevicePairing {
       }
 
       if (this.isCompanionRole()) {
-        Text('Companion-side actions are limited to joining and observing until the host starts guiding.')
+        Text($r('app.string.companion_observe_hint'))
           .fontSize(13)
           .opacity(0.7)
       }
 
       if (this.snapshot.recentEvents.length > 0) {
-        Text('Latest event: ' + this.snapshot.recentEvents[0])
+        Text($r('app.string.latest_event_prefix') + this.snapshot.recentEvents[0])
           .fontSize(13)
           .opacity(0.7)
       }
@@ -147,7 +155,7 @@ export struct DevicePairing {
             router.pushUrl({ url: 'pages/CompanionSession' });
           })
           .width('100%')
-          .backgroundColor('#4CAF50')
+          .backgroundColor($r('app.color.easy_shot_save_success'))
       }
 
       Button($r('app.string.back_to_home'))

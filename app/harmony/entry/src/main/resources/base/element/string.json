@@ -307,6 +307,146 @@
         {
             "name": "stop_preview_sync",
             "value": "停止画面同步"
+        },
+        {
+            "name": "camera_guide_subtitle",
+            "value": "Camera Kit 预览已通过 XComponent 接入，引导叠加层已就绪。"
+        },
+        {
+            "name": "preview_status_prefix",
+            "value": "预览状态："
+        },
+        {
+            "name": "preview_message_prefix",
+            "value": "预览消息："
+        },
+        {
+            "name": "active_template_prefix",
+            "value": "当前模板："
+        },
+        {
+            "name": "current_prompt_prefix",
+            "value": "当前提示："
+        },
+        {
+            "name": "pose_steps_prefix",
+            "value": "动作步骤："
+        },
+        {
+            "name": "discover_description",
+            "value": "发现附近的鸿蒙设备并开始伴拍会话。"
+        },
+        {
+            "name": "current_role_prefix",
+            "value": "当前角色："
+        },
+        {
+            "name": "current_phase_prefix",
+            "value": "当前阶段："
+        },
+        {
+            "name": "host_hint",
+            "value": "主机视角：发现设备、发送邀请、确认配对后开始引导。"
+        },
+        {
+            "name": "companion_hint",
+            "value": "伴拍视角：发现主机、加入会话、等待引导。"
+        },
+        {
+            "name": "scan_as_host",
+            "value": "扫描为主机"
+        },
+        {
+            "name": "scan_as_companion",
+            "value": "扫描为伴拍"
+        },
+        {
+            "name": "nearby_devices",
+            "value": "附近的设备"
+        },
+        {
+            "name": "device_type_prefix",
+            "value": "设备类型："
+        },
+        {
+            "name": "invite_device",
+            "value": "邀请此设备"
+        },
+        {
+            "name": "join_host",
+            "value": "加入主机会话"
+        },
+        {
+            "name": "confirm_pairing",
+            "value": "确认配对"
+        },
+        {
+            "name": "start_guiding",
+            "value": "开始引导"
+        },
+        {
+            "name": "companion_observe_hint",
+            "value": "伴拍方仅限加入和观察，等待主机开始引导。"
+        },
+        {
+            "name": "latest_event_prefix",
+            "value": "最新事件："
+        },
+        {
+            "name": "peer_prefix",
+            "value": "对端："
+        },
+        {
+            "name": "phase_prefix",
+            "value": "阶段："
+        },
+        {
+            "name": "sync_guide_state",
+            "value": "同步引导状态"
+        },
+        {
+            "name": "switch_template",
+            "value": "切换模板"
+        },
+        {
+            "name": "countdown_3s",
+            "value": "倒计时 3s"
+        },
+        {
+            "name": "template_owned_by_host",
+            "value": "模板切换由主机方控制。"
+        },
+        {
+            "name": "session_diagnostics",
+            "value": "会话诊断"
+        },
+        {
+            "name": "sync_active_prefix",
+            "value": "同步状态："
+        },
+        {
+            "name": "guide_score_prefix",
+            "value": "引导评分："
+        },
+        {
+            "name": "style_prefix",
+            "value": "风格："
+        },
+        {
+            "name": "tolerance_prefix",
+            "value": "容差："
+        },
+        {
+            "name": "keypoint_count_prefix",
+            "value": "关键点数："
+        },
+        {
+            "name": "yes",
+            "value": "是"
+        },
+        {
+            "name": "no",
+            "value": "否"
         }
     ]
 }

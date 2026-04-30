@@ -48,10 +48,10 @@ export struct CompanionSession {
           .fontSize(24)
           .fontWeight(FontWeight.Bold)
 
-        Text('Peer: ' + this.snapshot.sessionState.peerDeviceName)
+        Text($r('app.string.peer_prefix') + this.snapshot.sessionState.peerDeviceName)
           .fontSize(14)
 
-        Text('Phase: ' + this.snapshot.sessionState.phase)
+        Text($r('app.string.phase_prefix') + this.snapshot.sessionState.phase)
           .fontSize(14)
           .opacity(0.8)
 
@@ -99,14 +99,14 @@ export struct CompanionSession {
 
         if (this.isHostRole()) {
           Row({ space: 8 }) {
-            Button('Sync Guide State')
+            Button($r('app.string.sync_guide_state'))
               .onClick(() => {
                 companionSessionService.startGuiding();
                 companionSessionService.sendGuideStateUpdate();
                 this.refreshView();
               })
 
-            Button('Switch Active Template')
+            Button($r('app.string.switch_template'))
               .onClick(() => {
                 this.selectedTemplateIndex = (this.selectedTemplateIndex + 1) % this.templateIds.length;
                 companionSessionService.sendTemplateSwitch(
@@ -135,40 +135,40 @@ export struct CompanionSession {
 
         if (this.isCompanionRole()) {
           Row({ space: 8 }) {
-            Button('Countdown 3s')
+            Button($r('app.string.countdown_3s'))
               .onClick(() => {
                 companionSessionService.sendRemoteCountdown(3);
                 this.refreshView();
               })
 
-            Button('Remote Shutter')
+            Button($r('app.string.remote_shutter'))
               .onClick(() => {
                 companionSessionService.sendRemoteShutter();
                 this.refreshView();
               })
           }
 
-          Text('Template changes are currently owned by the host device.')
+          Text($r('app.string.template_owned_by_host'))
             .fontSize(13)
             .opacity(0.6)
         }
 
         Column({ space: 8 }) {
-          Text('Session diagnostics')
+          Text($r('app.string.session_diagnostics'))
             .fontSize(18)
             .fontWeight(FontWeight.Medium)
 
-          Text('Preview mode: ' + this.previewMode)
+          Text($r('app.string.preview_status_prefix') + this.previewMode)
             .fontSize(14)
 
-          Text('Sync active: ' + (this.isSyncing ? 'Yes' : 'No'))
+          Text($r('app.string.sync_active_prefix') + (this.isSyncing ? $r('app.string.yes') : $r('app.string.no')))
             .fontSize(14)
 
-          Text('Guide score: ' + this.snapshot.guideState.guideScore.toFixed(2))
+          Text($r('app.string.guide_score_prefix') + this.snapshot.guideState.guideScore.toFixed(2))
             .fontSize(14)
 
           if (this.snapshot.recentEvents.length > 0) {
-            Text('Latest event: ' + this.snapshot.recentEvents[0])
+            Text($r('app.string.latest_event_prefix') + this.snapshot.recentEvents[0])
               .fontSize(13)
               .opacity(0.7)
           }

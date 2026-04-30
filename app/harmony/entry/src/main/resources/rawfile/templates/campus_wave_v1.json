@@ -1,0 +1,80 @@
+{
+    "id": "pose_campus_wave_v1",
+    "title": "元气挥手",
+    "style_tags": [
+        "campus_vibes",
+        "sweet_daily"
+    ],
+    "scene_tags": [
+        "校园",
+        "操场",
+        "草坪"
+    ],
+    "shot_type": "half_body",
+    "camera_facing": "rear",
+    "difficulty": "easy",
+    "description": "自然挥手打招呼，展现阳光活力感。",
+    "verbal_steps": [
+        "面朝镜头微微侧身",
+        "右手抬起至耳朵高度",
+        "手掌自然张开做挥手状",
+        "露出自然微笑"
+    ],
+    "avatar_image": "avatars/campus/wave_v1.png",
+    "annotations": [
+        {
+            "label": "挥手高度与耳齐平",
+            "anchor": {
+                "x": 0.75,
+                "y": 0.18
+            }
+        },
+        {
+            "label": "微笑看镜头",
+            "anchor": {
+                "x": 0.50,
+                "y": 0.22
+            }
+        }
+    ],
+    "skeleton": {
+        "tolerance": 0.10,
+        "keypoints": [
+            {
+                "name": "nose",
+                "x": 0.50,
+                "y": 0.18
+            },
+            {
+                "name": "right_wrist",
+                "x": 0.76,
+                "y": 0.16
+            },
+            {
+                "name": "right_elbow",
+                "x": 0.72,
+                "y": 0.32
+            },
+            {
+                "name": "left_shoulder",
+                "x": 0.38,
+                "y": 0.34
+            },
+            {
+                "name": "right_shoulder",
+                "x": 0.62,
+                "y": 0.34
+            },
+            {
+                "name": "left_hip",
+                "x": 0.42,
+                "y": 0.62
+            },
+            {
+                "name": "right_hip",
+                "x": 0.58,
+                "y": 0.62
+            }
+        ]
+    }
+}

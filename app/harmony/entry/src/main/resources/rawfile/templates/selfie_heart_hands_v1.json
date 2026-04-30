@@ -1,0 +1,79 @@
+{
+    "id": "pose_selfie_heart_hands_v1",
+    "title": "比心自拍",
+    "style_tags": [
+        "sweet_daily"
+    ],
+    "scene_tags": [
+        "室内",
+        "自拍",
+        "镜子"
+    ],
+    "shot_type": "selfie",
+    "camera_facing": "front",
+    "difficulty": "easy",
+    "description": "双手在胸前比心，适合自拍或镜像拍摄。",
+    "verbal_steps": [
+        "面朝镜头正对",
+        "双手在胸前交叉成心形",
+        "手指尖朝下",
+        "微微歪头"
+    ],
+    "avatar_image": "avatars/sweet/heart_hands_v1.png",
+    "annotations": [
+        {
+            "label": "手指尖朝下形成爱心",
+            "anchor": {
+                "x": 0.50,
+                "y": 0.42
+            }
+        },
+        {
+            "label": "微歪头增加俏皮感",
+            "anchor": {
+                "x": 0.48,
+                "y": 0.18
+            }
+        }
+    ],
+    "skeleton": {
+        "tolerance": 0.08,
+        "keypoints": [
+            {
+                "name": "nose",
+                "x": 0.50,
+                "y": 0.18
+            },
+            {
+                "name": "left_shoulder",
+                "x": 0.38,
+                "y": 0.34
+            },
+            {
+                "name": "right_shoulder",
+                "x": 0.62,
+                "y": 0.34
+            },
+            {
+                "name": "left_elbow",
+                "x": 0.40,
+                "y": 0.44
+            },
+            {
+                "name": "right_elbow",
+                "x": 0.60,
+                "y": 0.44
+            },
+            {
+                "name": "left_wrist",
+                "x": 0.48,
+                "y": 0.42
+            },
+            {
+                "name": "right_wrist",
+                "x": 0.52,
+                "y": 0.42
+            }
+        ]
+    }
+}

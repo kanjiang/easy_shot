@@ -111,7 +111,7 @@ struct PhotoReview {
           .width('100%')
           .height(400)
           .justifyContent(FlexAlign.Center)
-          .backgroundColor('#F5F5F5')
+          .backgroundColor($r('app.color.easy_shot_card_background'))
           .borderRadius(12)
         }
 
@@ -128,7 +128,7 @@ struct PhotoReview {
         }
         .width('100%')
         .padding(16)
-        .backgroundColor('#F0F4FF')
+        .backgroundColor($r('app.color.easy_shot_background_secondary'))
         .borderRadius(8)
 
         Column({ space: 8 }) {
@@ -147,7 +147,7 @@ struct PhotoReview {
           } else if (this.adviceStatus === StyleAdviceStatus.ERROR) {
             Text($r('app.string.advice_error'))
               .fontSize(14)
-              .fontColor('#CC3333')
+              .fontColor($r('app.color.easy_shot_error'))
           } else if (this.advice !== null) {
             Row({ space: 12 }) {
               Column({ space: 4 }) {
@@ -170,7 +170,7 @@ struct PhotoReview {
                 Text(`${this.advice.styleMatch}`)
                   .fontSize(28)
                   .fontWeight(FontWeight.Bold)
-                  .fontColor('#5566CC')
+                  .fontColor($r('app.color.easy_shot_secondary'))
               }
               .alignItems(HorizontalAlign.Center)
             }
@@ -213,7 +213,7 @@ struct PhotoReview {
         }
         .width('100%')
         .padding(16)
-        .backgroundColor('#F8F8FF')
+        .backgroundColor($r('app.color.easy_shot_background_secondary'))
         .borderRadius(8)
 
         Row({ space: 12 }) {
@@ -226,7 +226,7 @@ struct PhotoReview {
           if (this.isSaved) {
             Button($r('app.string.photo_saved'))
               .layoutWeight(1)
-              .backgroundColor('#888888')
+              .backgroundColor($r('app.color.easy_shot_shutter_disabled'))
               .enabled(false)
           } else {
             SaveButton({

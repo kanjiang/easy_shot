@@ -307,6 +307,146 @@
         {
             "name": "stop_preview_sync",
             "value": "Stop Preview Sync"
+        },
+        {
+            "name": "camera_guide_subtitle",
+            "value": "Camera Kit preview wired through XComponent surface with guide overlay."
+        },
+        {
+            "name": "preview_status_prefix",
+            "value": "Preview status: "
+        },
+        {
+            "name": "preview_message_prefix",
+            "value": "Preview message: "
+        },
+        {
+            "name": "active_template_prefix",
+            "value": "Active template: "
+        },
+        {
+            "name": "current_prompt_prefix",
+            "value": "Current prompt: "
+        },
+        {
+            "name": "pose_steps_prefix",
+            "value": "Pose steps: "
+        },
+        {
+            "name": "discover_description",
+            "value": "Discover nearby HarmonyOS phones and start a companion session."
+        },
+        {
+            "name": "current_role_prefix",
+            "value": "Current role: "
+        },
+        {
+            "name": "current_phase_prefix",
+            "value": "Current phase: "
+        },
+        {
+            "name": "host_hint",
+            "value": "Host: discover devices, invite, confirm pairing, then start guiding."
+        },
+        {
+            "name": "companion_hint",
+            "value": "Companion: discover host, join session, wait for guidance."
+        },
+        {
+            "name": "scan_as_host",
+            "value": "Scan as Host"
+        },
+        {
+            "name": "scan_as_companion",
+            "value": "Scan as Companion"
+        },
+        {
+            "name": "nearby_devices",
+            "value": "Nearby devices"
+        },
+        {
+            "name": "device_type_prefix",
+            "value": "Device type: "
+        },
+        {
+            "name": "invite_device",
+            "value": "Invite This Device"
+        },
+        {
+            "name": "join_host",
+            "value": "Join Host Session"
+        },
+        {
+            "name": "confirm_pairing",
+            "value": "Confirm Pairing"
+        },
+        {
+            "name": "start_guiding",
+            "value": "Start Guiding"
+        },
+        {
+            "name": "companion_observe_hint",
+            "value": "Companion-side actions are limited to joining and observing until host starts guiding."
+        },
+        {
+            "name": "latest_event_prefix",
+            "value": "Latest event: "
+        },
+        {
+            "name": "peer_prefix",
+            "value": "Peer: "
+        },
+        {
+            "name": "phase_prefix",
+            "value": "Phase: "
+        },
+        {
+            "name": "sync_guide_state",
+            "value": "Sync Guide State"
+        },
+        {
+            "name": "switch_template",
+            "value": "Switch Template"
+        },
+        {
+            "name": "countdown_3s",
+            "value": "Countdown 3s"
+        },
+        {
+            "name": "template_owned_by_host",
+            "value": "Template changes are owned by the host device."
+        },
+        {
+            "name": "session_diagnostics",
+            "value": "Session diagnostics"
+        },
+        {
+            "name": "sync_active_prefix",
+            "value": "Sync active: "
+        },
+        {
+            "name": "guide_score_prefix",
+            "value": "Guide score: "
+        },
+        {
+            "name": "style_prefix",
+            "value": "Style: "
+        },
+        {
+            "name": "tolerance_prefix",
+            "value": "Tolerance: "
+        },
+        {
+            "name": "keypoint_count_prefix",
+            "value": "Keypoint count: "
+        },
+        {
+            "name": "yes",
+            "value": "Yes"
+        },
+        {
+            "name": "no",
+            "value": "No"
         }
     ]
 }

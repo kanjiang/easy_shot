@@ -200,7 +200,7 @@ export struct CameraGuide {
           .fontSize(24)
           .fontWeight(FontWeight.Bold)
 
-        Text('Camera Kit preview is now wired through an XComponent surface and guide overlay shell.')
+        Text($r('app.string.camera_guide_subtitle'))
           .fontSize(14)
           .opacity(0.7)
 
@@ -227,8 +227,8 @@ export struct CameraGuide {
           .height(72)
           .borderRadius(36)
           .fontSize(18)
-          .fontColor('#FFFFFF')
-          .backgroundColor(this.previewState.isPreviewing ? '#FF4444' : '#CCCCCC')
+          .fontColor($r('app.color.easy_shot_text_primary'))
+          .backgroundColor(this.previewState.isPreviewing ? $r('app.color.easy_shot_shutter_active') : $r('app.color.easy_shot_shutter_disabled'))
           .enabled(this.previewState.isPreviewing)
           .onClick(() => {
             void this.capturePhoto();
@@ -261,22 +261,22 @@ export struct CameraGuide {
             })
         }
 
-        Text('Preview status: ' + this.previewState.status)
+        Text($r('app.string.preview_status_prefix') + this.previewState.status)
           .fontSize(14)
 
-        Text('Preview message: ' + this.previewState.message)
+        Text($r('app.string.preview_message_prefix') + this.previewState.message)
           .fontSize(13)
           .opacity(0.72)
 
-        Text('Active template: ' + this.guideState.templateTitle)
+        Text($r('app.string.active_template_prefix') + this.guideState.templateTitle)
           .fontSize(14)
 
-        Text('Current prompt: ' + this.guideState.primaryPrompt)
+        Text($r('app.string.current_prompt_prefix') + this.guideState.primaryPrompt)
           .fontSize(14)
           .opacity(0.75)
 
         if (this.templateState.featuredTemplate) {
-          Text('Pose steps: ' + this.templateState.featuredTemplate.verbalSteps.join(' / '))
+          Text($r('app.string.pose_steps_prefix') + this.templateState.featuredTemplate.verbalSteps.join(' / '))
             .fontSize(13)
             .opacity(0.68)
         }
