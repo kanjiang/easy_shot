@@ -98,6 +98,10 @@ struct Index {
     router.pushUrl({ url: 'pages/StyleGuide' });
   }
 
+  private navigateToPhotoMap(): void {
+    router.pushUrl({ url: 'pages/PhotoMap' });
+  }
+
   build() {
     Scroll() {
       Column({ space: 16 }) {
@@ -390,6 +394,27 @@ struct Index {
           Button($r('app.string.style_guide_enter'))
             .onClick(() => {
               this.navigateToStyleGuide();
+            })
+            .width('100%')
+        }
+        .padding(16)
+        .borderRadius(16)
+        .backgroundColor('#0D000000')
+        .width('100%')
+
+        // Photo Map Entry
+        Column({ space: 8 }) {
+          Text($r('app.string.photo_map_title'))
+            .fontSize(18)
+            .fontWeight(FontWeight.Medium)
+
+          Text($r('app.string.photo_map_description'))
+            .fontSize(14)
+            .opacity(0.72)
+
+          Button('🗺️ ' + '打开地图')
+            .onClick(() => {
+              this.navigateToPhotoMap();
             })
             .width('100%')
         }

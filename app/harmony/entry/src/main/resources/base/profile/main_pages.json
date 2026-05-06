@@ -6,6 +6,7 @@
         "pages/DevicePairing",
         "pages/CompanionSession",
         "pages/Settings",
-        "pages/StyleGuide"
+        "pages/StyleGuide",
+        "pages/PhotoMap"
     ]
 }

@@ -599,6 +599,15 @@ export class CompanionSessionService {
     this.sessionSequence += 1;
     return 'session-' + this.sessionSequence.toString();
   }
+
+  connectToDevice(deviceId: string, deviceName: string): void {
+    this.sessionState.peerDeviceId = deviceId;
+    this.sessionState.peerDeviceName = deviceName;
+    this.sessionState.isConnected = true;
+    this.sessionState.phase = SessionPhase.CONNECTED;
+    this.sessionState.sessionId = this.nextSessionId();
+    this.logEvent(`Reconnected to ${deviceName}`);
+  }
 }
 
 export const companionSessionService: CompanionSessionService = new CompanionSessionService();

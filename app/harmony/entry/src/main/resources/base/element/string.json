@@ -775,6 +775,82 @@
         {
             "name": "capture_time_label",
             "value": "拍摄时间"
+        },
+        {
+            "name": "reconnecting",
+            "value": "正在重新连接..."
+        },
+        {
+            "name": "battery_low",
+            "value": "低电量，已降低帧率"
+        },
+        {
+            "name": "battery_critical",
+            "value": "电量极低，建议充电"
+        },
+        {
+            "name": "start_recording",
+            "value": "开始录制"
+        },
+        {
+            "name": "stop_recording",
+            "value": "停止录制"
+        },
+        {
+            "name": "pause_recording",
+            "value": "暂停"
+        },
+        {
+            "name": "resume_recording",
+            "value": "继续"
+        },
+        {
+            "name": "accessibility_title",
+            "value": "无障碍"
+        },
+        {
+            "name": "font_scale_label",
+            "value": "字体大小"
+        },
+        {
+            "name": "orientation_title",
+            "value": "屏幕方向"
+        },
+        {
+            "name": "storage_title",
+            "value": "存储管理"
+        },
+        {
+            "name": "clean_old_files",
+            "value": "清理30天前的文件"
+        },
+        {
+            "name": "photo_map_title",
+            "value": "摄影地图"
+        },
+        {
+            "name": "photo_map_description",
+            "value": "查看你的拍照足迹和推荐地点"
+        },
+        {
+            "name": "photo_pins_count",
+            "value": "拍照点"
+        },
+        {
+            "name": "poi_count",
+            "value": "推荐地点"
+        },
+        {
+            "name": "recent_photos",
+            "value": "最近拍摄"
+        },
+        {
+            "name": "no_photo_pins",
+            "value": "还没有拍照记录，开始拍摄吧！"
+        },
+        {
+            "name": "poi_recommendations",
+            "value": "热门推荐"
         }
     ]
 }

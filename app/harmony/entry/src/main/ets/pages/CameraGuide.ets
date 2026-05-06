@@ -3,6 +3,10 @@ import { router } from '@ohos.router';
 
 import { audioCueService } from '../features/audio/AudioCueService';
 import { capturePhotoMetadata, PhotoMetadata } from '../features/camera/PhotoMetadataService';
+import { videoRecordingService, RecordingState } from '../features/video/VideoRecordingService';
+import { powerManagementService, PowerLevel } from '../features/power/PowerManagementService';
+import { foldableLayoutService, DevicePosture } from '../features/device/FoldableLayoutService';
+import { sessionReconnectService, ReconnectStatus } from '../features/companion/SessionReconnectService';
 import {
   GuideStateSnapshot,
   createDefaultGuideState,
@@ -43,6 +47,12 @@ export struct CameraGuide {
   @State private peerReady: boolean = false;
   @State private scoreHistory: number[] = [];
   private static readonly MAX_SCORE_HISTORY: number = 30;
+  @State private isVideoMode: boolean = false;
+  @State private recordingDuration: string = '00:00';
+  @State private recordingState: RecordingState = RecordingState.IDLE;
+  @State private powerLevel: PowerLevel = PowerLevel.NORMAL;
+  @State private isHalfFolded: boolean = false;
+  @State private reconnectStatus: ReconnectStatus = ReconnectStatus.IDLE;
   private detectionIntervalId: number = -1;
   private ruleAdviceTimerId: number = -1;
   private static readonly RULE_ADVICE_TIMEOUT_MS: number = 5000;
@@ -75,6 +85,21 @@ export struct CameraGuide {
     this.startPreviewSyncIfNeeded();
     void this.tryLoadMindSporeModel();
     void audioCueService.initialize(getContext(this) as common.UIAbilityContext);
+
+    powerManagementService.startMonitoring();
+    powerManagementService.setOnChange((state) => {
+      this.powerLevel = state.powerLevel;
+    });
+
+    foldableLayoutService.initialize();
+    foldableLayoutService.setOnChange((state) => {
+      this.isHalfFolded = state.isTabletop;
+    });
+    this.isHalfFolded = foldableLayoutService.getState().isTabletop;
+
+    sessionReconnectService.setOnStatusChange((state) => {
+      this.reconnectStatus = state.status;
+    });
   }
 
   private async tryLoadMindSporeModel(): Promise<void> {
@@ -290,6 +315,29 @@ export struct CameraGuide {
     }
   }
 
+  private async startVideoRecording(): Promise<void> {
+    const context = getContext(this) as common.UIAbilityContext;
+    const prepared = await videoRecordingService.prepare(context);
+    if (!prepared) return;
+    videoRecordingService.setOnDurationUpdate((ms: number) => {
+      this.recordingDuration = videoRecordingService.formatDuration(ms);
+    });
+    await videoRecordingService.start();
+    this.recordingState = RecordingState.RECORDING;
+  }
+
+  private async stopVideoRecording(): Promise<void> {
+    const filePath = await videoRecordingService.stop();
+    this.recordingState = RecordingState.IDLE;
+    this.recordingDuration = '00:00';
+    if (filePath.length > 0) {
+      router.pushUrl({
+        url: 'pages/PhotoReview',
+        params: { photoFilePath: filePath, templateTitle: '视频录制', isVideo: 'true' } as Record<string, string>,
+      });
+    }
+  }
+
   build() {
     Scroll() {
       Column({ space: 14 }) {
@@ -391,7 +439,81 @@ export struct CameraGuide {
             .backgroundColor($r('app.color.easy_shot_surface'))
           }
 
-          Button($r('app.string.capture_button'))
+          if (this.reconnectStatus === ReconnectStatus.ATTEMPTING) {
+            Row({ space: 8 }) {
+              LoadingProgress().width(14).height(14)
+              Text($r('app.string.reconnecting'))
+                .fontSize(13)
+                .fontColor(Color.Orange)
+            }
+            .width('100%')
+            .padding(6)
+            .borderRadius(8)
+            .backgroundColor('#15FF8800')
+          }
+
+          if (this.powerLevel !== PowerLevel.NORMAL) {
+            Row({ space: 6 }) {
+              Text('🔋')
+                .fontSize(13)
+              Text(this.powerLevel === PowerLevel.CRITICAL ? $r('app.string.battery_critical') : $r('app.string.battery_low'))
+                .fontSize(12)
+                .fontColor(this.powerLevel === PowerLevel.CRITICAL ? Color.Red : Color.Orange)
+            }
+            .width('100%')
+          }
+
+          // Photo/Video mode toggle
+          Row({ space: 12 }) {
+            Button(this.isVideoMode ? '📷 照片' : '📷 照片模式')
+              .fontSize(13)
+              .backgroundColor(!this.isVideoMode ? $r('app.color.easy_shot_primary') : $r('app.color.easy_shot_divider'))
+              .onClick(() => { this.isVideoMode = false; })
+            Button(this.isVideoMode ? '🎬 录制中' : '🎬 视频')
+              .fontSize(13)
+              .backgroundColor(this.isVideoMode ? $r('app.color.easy_shot_primary') : $r('app.color.easy_shot_divider'))
+              .onClick(() => { this.isVideoMode = true; })
+          }
+
+          if (this.isVideoMode) {
+            // Video Recording Controls
+            Column({ space: 8 }) {
+              Text(this.recordingDuration)
+                .fontSize(24)
+                .fontWeight(FontWeight.Bold)
+                .fontColor(this.recordingState === RecordingState.RECORDING ? Color.Red : Color.Black)
+
+              Row({ space: 12 }) {
+                if (this.recordingState === RecordingState.IDLE) {
+                  Button($r('app.string.start_recording'))
+                    .backgroundColor(Color.Red)
+                    .fontColor(Color.White)
+                    .onClick(() => { void this.startVideoRecording(); })
+                }
+                if (this.recordingState === RecordingState.RECORDING) {
+                  Button($r('app.string.pause_recording'))
+                    .onClick(() => { void videoRecordingService.pause(); this.recordingState = RecordingState.PAUSED; })
+                  Button($r('app.string.stop_recording'))
+                    .backgroundColor(Color.Red)
+                    .fontColor(Color.White)
+                    .onClick(() => { void this.stopVideoRecording(); })
+                }
+                if (this.recordingState === RecordingState.PAUSED) {
+                  Button($r('app.string.resume_recording'))
+                    .onClick(() => { void videoRecordingService.resume(); this.recordingState = RecordingState.RECORDING; })
+                  Button($r('app.string.stop_recording'))
+                    .backgroundColor(Color.Red)
+                    .fontColor(Color.White)
+                    .onClick(() => { void this.stopVideoRecording(); })
+                }
+              }
+            }
+            .width('100%')
+            .alignItems(HorizontalAlign.Center)
+          }
+
+          if (!this.isVideoMode) {
+            Button($r('app.string.capture_button'))
             .width(72)
             .height(72)
             .borderRadius(36)
@@ -404,6 +526,7 @@ export struct CameraGuide {
             .onClick(() => {
               void this.capturePhoto();
             })
+          }
 
           Row({ space: 8 }) {
             Button(this.previewState.status === CameraPreviewStatus.RUNNING ? $r('app.string.restart_preview') : $r('app.string.enable_preview'))
@@ -477,6 +600,24 @@ export struct CameraGuide {
     }
     .width('100%')
     .height('100%')
+    .onKeyEvent((event: KeyEvent) => {
+      if (event.type !== KeyType.Down) return;
+      if (event.keyCode === 2054) { // Space - capture/record
+        if (this.isVideoMode) {
+          if (this.recordingState === RecordingState.IDLE) {
+            void this.startVideoRecording();
+          } else {
+            void this.stopVideoRecording();
+          }
+        } else {
+          void this.capturePhoto();
+        }
+      } else if (event.keyCode === 2049) { // 'N' - next template
+        this.cycleTemplate();
+      } else if (event.keyCode === 2068) { // 'V' - toggle video
+        this.isVideoMode = !this.isVideoMode;
+      }
+    })
   }
 
   pageTransition() {

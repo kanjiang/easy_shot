@@ -9,6 +9,7 @@ import { StyleAdvice, StyleAdviceStatus } from '../features/styleAdvice/StyleAdv
 import { getStyleAdvice } from '../features/styleAdvice/StyleAdviceService';
 import { settingsStore } from '../features/settings/SettingsStore';
 import { KeypointHeatmap } from '../components/KeypointHeatmap';
+import { photoMapService } from '../features/map/PhotoMapService';
 
 interface PhotoReviewParams {
   photoFilePath: string;
@@ -61,6 +62,21 @@ struct PhotoReview {
       this.captureTimestamp = Number.parseInt(params.captureTimestamp ?? '0', 10);
     }
     void this.loadAdvice();
+    this.savePhotoPin();
+  }
+
+  private savePhotoPin(): void {
+    if (this.latitude !== 0 || this.longitude !== 0) {
+      photoMapService.initialize(getContext(this));
+      photoMapService.addPin({
+        id: `pin_${this.captureTimestamp}_${Math.random().toString(36).substring(2, 7)}`,
+        latitude: this.latitude,
+        longitude: this.longitude,
+        photoPath: this.photoFilePath,
+        timestamp: this.captureTimestamp || Date.now(),
+        templateId: this.templateId,
+      });
+    }
   }
 
   private async loadAdvice(): Promise<void> {

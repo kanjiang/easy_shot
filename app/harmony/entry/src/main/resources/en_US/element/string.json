@@ -775,6 +775,82 @@
         {
             "name": "capture_time_label",
             "value": "Captured"
+        },
+        {
+            "name": "reconnecting",
+            "value": "Reconnecting..."
+        },
+        {
+            "name": "battery_low",
+            "value": "Low battery, reducing frame rate"
+        },
+        {
+            "name": "battery_critical",
+            "value": "Critical battery, please charge"
+        },
+        {
+            "name": "start_recording",
+            "value": "Start Recording"
+        },
+        {
+            "name": "stop_recording",
+            "value": "Stop"
+        },
+        {
+            "name": "pause_recording",
+            "value": "Pause"
+        },
+        {
+            "name": "resume_recording",
+            "value": "Resume"
+        },
+        {
+            "name": "accessibility_title",
+            "value": "Accessibility"
+        },
+        {
+            "name": "font_scale_label",
+            "value": "Font Size"
+        },
+        {
+            "name": "orientation_title",
+            "value": "Screen Orientation"
+        },
+        {
+            "name": "storage_title",
+            "value": "Storage"
+        },
+        {
+            "name": "clean_old_files",
+            "value": "Clean files older than 30 days"
+        },
+        {
+            "name": "photo_map_title",
+            "value": "Photo Map"
+        },
+        {
+            "name": "photo_map_description",
+            "value": "View your photography footprint and recommended spots"
+        },
+        {
+            "name": "photo_pins_count",
+            "value": "Photo Pins"
+        },
+        {
+            "name": "poi_count",
+            "value": "Recommended Spots"
+        },
+        {
+            "name": "recent_photos",
+            "value": "Recent Photos"
+        },
+        {
+            "name": "no_photo_pins",
+            "value": "No photo records yet. Start shooting!"
+        },
+        {
+            "name": "poi_recommendations",
+            "value": "Popular Spots"
         }
     ]
 }
