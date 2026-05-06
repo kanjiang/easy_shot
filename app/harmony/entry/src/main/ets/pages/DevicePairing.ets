@@ -81,6 +81,19 @@ export struct DevicePairing {
         Text($r('app.string.nearby_devices'))
           .fontSize(16)
           .fontWeight(FontWeight.Medium)
+      } else if (this.snapshot.sessionState.phase !== SessionPhase.IDLE) {
+        Column({ space: 6 }) {
+          LoadingProgress()
+            .width(32)
+            .height(32)
+          Text($r('app.string.scanning_devices'))
+            .fontSize(14)
+            .opacity(0.6)
+        }
+        .width('100%')
+        .alignItems(HorizontalAlign.Center)
+        .padding(16)
+      }
 
         ForEach(this.devices, (device: CompanionDevice) => {
           Column({ space: 6 }) {

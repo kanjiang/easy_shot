@@ -74,7 +74,20 @@ export class CameraController {
     }
   }
 
-  async startPreview(context: common.UIAbilityContext, surfaceId: string): Promise<CameraPreviewState> {
+  private selectCamera(cameras: Array<camera.CameraDevice>, preferredFacing?: string): camera.CameraDevice {
+    if (preferredFacing !== undefined) {
+      const targetPosition: camera.CameraPosition = preferredFacing === 'front'
+        ? camera.CameraPosition.CAMERA_POSITION_FRONT
+        : camera.CameraPosition.CAMERA_POSITION_BACK;
+      const match = cameras.find((c: camera.CameraDevice) => c.cameraPosition === targetPosition);
+      if (match !== undefined) {
+        return match;
+      }
+    }
+    return cameras[0];
+  }
+
+  async startPreview(context: common.UIAbilityContext, surfaceId: string, preferredFacing?: string): Promise<CameraPreviewState> {
     if (surfaceId.length === 0) {
       this.previewState = {
         status: CameraPreviewStatus.ERROR,
@@ -112,7 +125,7 @@ export class CameraController {
         return this.getPreviewState();
       }
 
-      const selectedCamera: camera.CameraDevice = supportedCameras[0];
+      const selectedCamera: camera.CameraDevice = this.selectCamera(supportedCameras, preferredFacing);
       const sceneModes: Array<camera.SceneMode> = cameraManager.getSupportedSceneModes(selectedCamera);
       if (sceneModes.indexOf(camera.SceneMode.NORMAL_PHOTO) < 0) {
         this.previewState = {

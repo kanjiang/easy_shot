@@ -25,6 +25,11 @@ struct Index {
     this.templateState = poseTemplateStore.loadTemplatesFromRawfile(getContext().resourceManager as RawfileResourceManagerLike);
     this.allTemplates = this.templateState.templates;
     this.buildFilterOptions();
+
+    const params = router.getParams() as Record<string, string> | undefined;
+    if (params && params.openTemplateId) {
+      this.openTemplateDetail(params.openTemplateId);
+    }
   }
 
   private buildFilterOptions(): void {
@@ -137,6 +142,15 @@ struct Index {
               .fontSize(18)
               .fontWeight(FontWeight.Medium)
 
+            if (this.templateState.featuredTemplate!.avatarImage.length > 0) {
+              Image($rawfile(this.templateState.featuredTemplate!.avatarImage))
+                .width('100%')
+                .height(200)
+                .objectFit(ImageFit.Cover)
+                .borderRadius(12)
+                .backgroundColor($r('app.color.easy_shot_card_background'))
+            }
+
             Text(this.templateState.featuredTemplate.title)
               .fontSize(22)
               .fontWeight(FontWeight.Bold)
@@ -246,6 +260,15 @@ struct Index {
 
           ForEach(this.getFilteredTemplates(), (template: PoseTemplate) => {
             Column({ space: 6 }) {
+              if (template.avatarImage.length > 0) {
+                Image($rawfile(template.avatarImage))
+                  .width('100%')
+                  .height(160)
+                  .objectFit(ImageFit.Cover)
+                  .borderRadius(8)
+                  .backgroundColor($r('app.color.easy_shot_card_background'))
+              }
+
               Text(template.title)
                 .fontSize(18)
                 .fontWeight(FontWeight.Medium)
@@ -275,6 +298,21 @@ struct Index {
             .backgroundColor('#0D000000')
             .width('100%')
           }, (template: PoseTemplate) => template.id)
+
+          if (this.getFilteredTemplates().length === 0) {
+            Column({ space: 8 }) {
+              Text($r('app.string.empty_filter_title'))
+                .fontSize(16)
+                .fontWeight(FontWeight.Medium)
+                .opacity(0.6)
+              Text($r('app.string.empty_filter_hint'))
+                .fontSize(14)
+                .opacity(0.5)
+            }
+            .width('100%')
+            .padding(24)
+            .alignItems(HorizontalAlign.Center)
+          }
 
           Column({ space: 8 }) {
             Text($r('app.string.companion_mode_title'))

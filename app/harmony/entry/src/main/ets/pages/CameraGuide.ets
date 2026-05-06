@@ -1,6 +1,7 @@
 import { common } from '@kit.AbilityKit';
 import { router } from '@ohos.router';
 
+import { audioCueService } from '../features/audio/AudioCueService';
 import {
   GuideStateSnapshot,
   createDefaultGuideState,
@@ -15,6 +16,7 @@ import { GuideOverlayRenderer } from '../features/realtimeGuide/GuideOverlayRend
 import { selectPrimaryPrompt } from '../features/realtimeGuide/GuidePromptSelector';
 import { estimatePoseAlignment, detectAndAlign, PoseAlignmentResult, initializeMindSporeDetector } from '../features/realtimeGuide/PoseAlignmentService';
 import { previewSyncService } from '../features/companion/PreviewSyncService';
+import { settingsStore } from '../features/settings/SettingsStore';
 import { SessionPhase } from '../core/session/SessionState';
 import { analyzeFrame, FrameAnalysisInput, RuleEvent } from '../core/rules/LightingCompositionRules';
 
@@ -37,7 +39,10 @@ export struct CameraGuide {
   @State private adviceHint: string = '';
   @State private isTripodMode: boolean = false;
   @State private ruleAdvice: string = '';
+  @State private peerReady: boolean = false;
   private detectionIntervalId: number = -1;
+  private ruleAdviceTimerId: number = -1;
+  private static readonly RULE_ADVICE_TIMEOUT_MS: number = 5000;
   private static readonly DETECTION_INTERVAL_MS: number = 100;
 
   aboutToAppear(): void {
@@ -56,8 +61,13 @@ export struct CameraGuide {
       void this.capturePhoto();
     });
 
+    companionSessionService.onPeerReady(() => {
+      this.peerReady = true;
+    });
+
     this.startPreviewSyncIfNeeded();
     void this.tryLoadMindSporeModel();
+    void audioCueService.initialize(getContext(this) as common.UIAbilityContext);
   }
 
   private async tryLoadMindSporeModel(): Promise<void> {
@@ -67,6 +77,7 @@ export struct CameraGuide {
   aboutToDisappear(): void {
     this.stopDetectionLoop();
     companionSessionService.onRemoteCapture(null);
+    companionSessionService.onPeerReady(null);
     previewSyncService.stopSync();
     void this.stopPreview();
   }
@@ -84,6 +95,10 @@ export struct CameraGuide {
     if (this.detectionIntervalId >= 0) {
       clearInterval(this.detectionIntervalId);
       this.detectionIntervalId = -1;
+    }
+    if (this.ruleAdviceTimerId >= 0) {
+      clearTimeout(this.ruleAdviceTimerId);
+      this.ruleAdviceTimerId = -1;
     }
   }
 
@@ -106,7 +121,8 @@ export struct CameraGuide {
 
   private async startPreview(): Promise<void> {
     const context: common.UIAbilityContext = getContext(this) as common.UIAbilityContext;
-    this.previewState = await this.cameraController.startPreview(context, this.previewSurfaceId);
+    const facing: string = settingsStore.getSettings().defaultCameraFacing;
+    this.previewState = await this.cameraController.startPreview(context, this.previewSurfaceId, facing);
     if (this.previewState.isPreviewing) {
       this.startDetectionLoop();
     }
@@ -208,7 +224,19 @@ export struct CameraGuide {
       hasSubject: result.matchedPoints > 0,
     };
     const ruleEvent: RuleEvent | null = analyzeFrame(frameInput);
-    this.ruleAdvice = ruleEvent !== null ? ruleEvent.advice : '';
+    const newAdvice: string = ruleEvent !== null ? ruleEvent.advice : '';
+    if (newAdvice.length > 0 && newAdvice !== this.ruleAdvice) {
+      this.ruleAdvice = newAdvice;
+      if (this.ruleAdviceTimerId >= 0) {
+        clearTimeout(this.ruleAdviceTimerId);
+      }
+      this.ruleAdviceTimerId = setTimeout(() => {
+        this.ruleAdvice = '';
+        this.ruleAdviceTimerId = -1;
+      }, CameraGuide.RULE_ADVICE_TIMEOUT_MS);
+    } else if (newAdvice.length === 0 && this.ruleAdvice.length > 0) {
+      // Keep showing until timer expires
+    }
   }
 
   private async capturePhoto(): Promise<void> {
@@ -217,6 +245,7 @@ export struct CameraGuide {
     }
     this.isCapturing = true;
     try {
+      void audioCueService.playShutter();
       const filePath: string = await this.cameraController.capture();
       if (filePath.length > 0) {
         const selectedTemplate: PoseTemplate | null = this.templateState.featuredTemplate;
@@ -251,6 +280,17 @@ export struct CameraGuide {
           Text($r('app.string.camera_guide_title'))
             .fontSize(24)
             .fontWeight(FontWeight.Bold)
+
+          if (this.peerReady) {
+            Row({ space: 6 }) {
+              Text('✓')
+                .fontSize(14)
+                .fontColor($r('app.color.easy_shot_score_good'))
+              Text($r('app.string.peer_ready_hint'))
+                .fontSize(13)
+                .fontColor($r('app.color.easy_shot_score_good'))
+            }
+          }
 
           Text($r('app.string.camera_guide_subtitle'))
             .fontSize(14)

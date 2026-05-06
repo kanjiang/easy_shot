@@ -727,6 +727,42 @@
         {
             "name": "exit_tripod_mode",
             "value": "解除支架模式"
+        },
+        {
+            "name": "peer_ready_hint",
+            "value": "对方已就位"
+        },
+        {
+            "name": "send_ready_signal",
+            "value": "我已就位"
+        },
+        {
+            "name": "ready_confirmed",
+            "value": "✓ 已发送"
+        },
+        {
+            "name": "pause_preview",
+            "value": "暂停预览"
+        },
+        {
+            "name": "resume_preview",
+            "value": "恢复预览"
+        },
+        {
+            "name": "empty_filter_title",
+            "value": "无匹配模板"
+        },
+        {
+            "name": "empty_filter_hint",
+            "value": "请尝试调整筛选条件"
+        },
+        {
+            "name": "scanning_devices",
+            "value": "正在搜索附近设备..."
+        },
+        {
+            "name": "view_template_detail",
+            "value": "查看当前模板详情"
         }
     ]
 }

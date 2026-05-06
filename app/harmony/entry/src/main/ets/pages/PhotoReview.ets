@@ -259,6 +259,19 @@ struct PhotoReview {
           }
         }
         .width('100%')
+
+        if (this.templateId.length > 0) {
+          Button($r('app.string.view_template_detail'))
+            .fontSize(13)
+            .backgroundColor(Color.Transparent)
+            .fontColor($r('app.color.easy_shot_primary'))
+            .onClick(() => {
+              router.pushUrl({
+                url: 'pages/Index',
+                params: { openTemplateId: this.templateId } as Record<string, string>,
+              });
+            })
+        }
       }
       .padding(24)
       .width('100%')

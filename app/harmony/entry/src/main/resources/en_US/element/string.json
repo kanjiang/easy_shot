@@ -727,6 +727,42 @@
         {
             "name": "exit_tripod_mode",
             "value": "Exit Tripod Mode"
+        },
+        {
+            "name": "peer_ready_hint",
+            "value": "Partner is ready"
+        },
+        {
+            "name": "send_ready_signal",
+            "value": "I'm Ready"
+        },
+        {
+            "name": "ready_confirmed",
+            "value": "✓ Sent"
+        },
+        {
+            "name": "pause_preview",
+            "value": "Pause Preview"
+        },
+        {
+            "name": "resume_preview",
+            "value": "Resume Preview"
+        },
+        {
+            "name": "empty_filter_title",
+            "value": "No Matching Templates"
+        },
+        {
+            "name": "empty_filter_hint",
+            "value": "Try adjusting your filter criteria"
+        },
+        {
+            "name": "scanning_devices",
+            "value": "Scanning nearby devices..."
+        },
+        {
+            "name": "view_template_detail",
+            "value": "View Template Details"
         }
     ]
 }

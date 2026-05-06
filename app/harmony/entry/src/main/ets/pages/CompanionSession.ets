@@ -1,4 +1,5 @@
 import { router } from '@ohos.router';
+import { common } from '@kit.AbilityKit';
 import { ConnectionLevel, PreviewMode, SessionRole } from '../core/session/SessionState';
 import { PreviewFramePayload } from '../core/session/SessionMessage';
 import { SessionSnapshot, companionSessionService } from '../features/companion/CompanionSessionService';
@@ -7,6 +8,7 @@ import { GuideOverlayRenderer } from '../features/realtimeGuide/GuideOverlayRend
 import { RawfileResourceManagerLike } from '../features/poseTemplate/data/PoseTemplateRepository';
 import { PoseTemplate } from '../features/poseTemplate/model/PoseTemplate';
 import { poseTemplateStore } from '../features/poseTemplate/state/PoseTemplateStore';
+import { audioCueService } from '../features/audio/AudioCueService';
 
 const COUNTDOWN_OPTIONS: number[] = [0, 3, 5, 10];
 
@@ -20,6 +22,7 @@ export struct CompanionSession {
   @State private isSyncing: boolean = false;
   @State private countdownSeconds: number = 3;
   @State private countdownRemaining: number = -1;
+  @State private peerReady: boolean = false;
   private countdownTimerId: number = -1;
   private templates: PoseTemplate[] = [];
 
@@ -31,6 +34,8 @@ export struct CompanionSession {
     previewSyncService.setOnRemoteFrame((frame: PreviewFramePayload) => {
       this.remoteFrameBase64 = frame.thumbnailBase64;
     });
+
+    void audioCueService.initialize(getContext(this) as common.UIAbilityContext);
   }
 
   aboutToDisappear(): void {
@@ -54,6 +59,7 @@ export struct CompanionSession {
   private startCountdown(): void {
     if (this.countdownSeconds === 0) {
       companionSessionService.sendRemoteShutter();
+      void audioCueService.playCountdownEnd();
       this.refreshView();
       return;
     }
@@ -63,8 +69,11 @@ export struct CompanionSession {
       this.countdownRemaining--;
       if (this.countdownRemaining <= 0) {
         this.cancelCountdown();
+        void audioCueService.playCountdownEnd();
         companionSessionService.sendRemoteShutter();
         this.refreshView();
+      } else {
+        void audioCueService.playCountdownTick();
       }
     }, 1000);
   }
@@ -166,10 +175,35 @@ export struct CompanionSession {
                 }
                 this.isSyncing = previewSyncService.isActive();
               })
+
+            Button($r('app.string.pause_preview'))
+              .onClick(() => {
+                companionSessionService.sendPausePreview();
+                this.refreshView();
+              })
+
+            Button($r('app.string.resume_preview'))
+              .onClick(() => {
+                companionSessionService.sendResumePreview();
+                this.refreshView();
+              })
           }
         }
 
         if (this.isCompanionRole()) {
+          Row({ space: 8 }) {
+            Button(this.peerReady ? $r('app.string.ready_confirmed') : $r('app.string.send_ready_signal'))
+              .backgroundColor(this.peerReady ? $r('app.color.easy_shot_score_good') : $r('app.color.easy_shot_accent'))
+              .fontColor($r('app.color.easy_shot_text_on_accent'))
+              .enabled(!this.peerReady)
+              .onClick(() => {
+                companionSessionService.sendReadySignal();
+                this.peerReady = true;
+                this.refreshView();
+              })
+          }
+          .width('100%')
+
           Column({ space: 10 }) {
             Text($r('app.string.countdown_delay_label'))
               .fontSize(14)

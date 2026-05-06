@@ -46,6 +46,7 @@ export class CompanionSessionService {
   private recentEvents: string[] = [];
   private sessionSequence: number = 0;
   private remoteCaptureCallback: (() => void) | null = null;
+  private peerReadyCallback: (() => void) | null = null;
   private distributedReady: boolean = false;
 
   async initializeDistributed(context: Context): Promise<boolean> {
@@ -70,6 +71,10 @@ export class CompanionSessionService {
 
   onRemoteCapture(callback: (() => void) | null): void {
     this.remoteCaptureCallback = callback;
+  }
+
+  onPeerReady(callback: (() => void) | null): void {
+    this.peerReadyCallback = callback;
   }
 
   startDiscovery(role: SessionRole): CompanionDevice[] {
@@ -256,6 +261,39 @@ export class CompanionSessionService {
       this.sessionState.sessionId,
       this.sessionState.role,
       { reason },
+    );
+    void this.broadcastMessage(message);
+    return this.dispatchMessage(message);
+  }
+
+  sendReadySignal(): boolean {
+    const message = createSessionEnvelope(
+      SessionMessageType.REMOTE_READY_SIGNAL,
+      this.sessionState.sessionId,
+      this.sessionState.role,
+      { deviceId: this.sessionState.peerDeviceId, deviceName: 'companion' },
+    );
+    void this.broadcastMessage(message);
+    return this.dispatchMessage(message);
+  }
+
+  sendPausePreview(): boolean {
+    const message = createSessionEnvelope(
+      SessionMessageType.REMOTE_PAUSE_PREVIEW,
+      this.sessionState.sessionId,
+      this.sessionState.role,
+      {},
+    );
+    void this.broadcastMessage(message);
+    return this.dispatchMessage(message);
+  }
+
+  sendResumePreview(): boolean {
+    const message = createSessionEnvelope(
+      SessionMessageType.REMOTE_RESUME_PREVIEW,
+      this.sessionState.sessionId,
+      this.sessionState.role,
+      {},
     );
     void this.broadcastMessage(message);
     return this.dispatchMessage(message);
@@ -472,6 +510,9 @@ export class CompanionSessionService {
 
   private handleRemoteReadySignal(message: SessionMessageEnvelope<RemoteReadySignalPayload>): boolean {
     this.appendEvent('Ready signal from ' + message.payload.deviceName + '.');
+    if (this.peerReadyCallback !== null) {
+      this.peerReadyCallback();
+    }
     return true;
   }
 
