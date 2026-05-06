@@ -4,6 +4,7 @@ import { localeHelper } from '../core/locale/LocaleHelper';
 import { Difficulty, PoseTemplate } from '../features/poseTemplate/model/PoseTemplate';
 import { RawfileResourceManagerLike } from '../features/poseTemplate/data/PoseTemplateRepository';
 import { PoseTemplateState, poseTemplateStore } from '../features/poseTemplate/state/PoseTemplateStore';
+import { favoritesStore } from '../features/favorites/FavoritesStore';
 import { TemplateDetail } from './TemplateDetail';
 
 const ALL_FILTER: string = 'all';
@@ -19,9 +20,11 @@ struct Index {
   private allTemplates: PoseTemplate[] = [];
   private availableStyles: string[] = [];
   private availableScenes: string[] = [];
+  @State private favoriteVersion: number = 0;
 
   aboutToAppear(): void {
     localeHelper.setResourceManager(getContext().resourceManager);
+    favoritesStore.initialize(getContext());
     this.templateState = poseTemplateStore.loadTemplatesFromRawfile(getContext().resourceManager as RawfileResourceManagerLike);
     this.allTemplates = this.templateState.templates;
     this.buildFilterOptions();
@@ -254,6 +257,37 @@ struct Index {
           .backgroundColor('#08000000')
           .width('100%')
 
+          if (this.favoriteVersion >= 0 && favoritesStore.getFavoriteIds().length > 0) {
+            Text($r('app.string.favorites_title'))
+              .fontSize(18)
+              .fontWeight(FontWeight.Medium)
+
+            ForEach(this.allTemplates.filter((t: PoseTemplate) => favoritesStore.isFavorite(t.id)), (template: PoseTemplate) => {
+              Row({ space: 10 }) {
+                Column({ space: 2 }) {
+                  Text(template.title)
+                    .fontSize(15)
+                    .fontWeight(FontWeight.Medium)
+                  Text(template.styleTags.join(' · '))
+                    .fontSize(12)
+                    .opacity(0.6)
+                }
+                .layoutWeight(1)
+
+                Button($r('app.string.start_shooting'))
+                  .fontSize(12)
+                  .height(28)
+                  .onClick(() => {
+                    this.navigateToCameraGuide(template.id);
+                  })
+              }
+              .width('100%')
+              .padding(10)
+              .borderRadius(8)
+              .backgroundColor($r('app.color.easy_shot_background_secondary'))
+            }, (template: PoseTemplate) => template.id + '_fav')
+          }
+
           Text($r('app.string.template_list_title'))
             .fontSize(18)
             .fontWeight(FontWeight.Medium)
@@ -290,6 +324,15 @@ struct Index {
                 Button($r('app.string.start_shooting'))
                   .onClick(() => {
                     this.navigateToCameraGuide(template.id);
+                  })
+
+                Button(favoritesStore.isFavorite(template.id) ? '★' : '☆')
+                  .fontSize(18)
+                  .backgroundColor(Color.Transparent)
+                  .fontColor($r('app.color.easy_shot_warning'))
+                  .onClick(() => {
+                    favoritesStore.toggleFavorite(template.id);
+                    this.favoriteVersion++;
                   })
               }
             }

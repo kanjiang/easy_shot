@@ -7,6 +7,7 @@ import { BusinessError } from '@kit.BasicServicesKit';
 
 import { StyleAdvice, StyleAdviceStatus } from '../features/styleAdvice/StyleAdviceModel';
 import { getStyleAdvice } from '../features/styleAdvice/StyleAdviceService';
+import { settingsStore } from '../features/settings/SettingsStore';
 import { KeypointHeatmap } from '../components/KeypointHeatmap';
 
 interface PhotoReviewParams {
@@ -19,6 +20,9 @@ interface PhotoReviewParams {
   totalPoints: string;
   keypointDistances: string;
   tolerance: string;
+  latitude: string;
+  longitude: string;
+  captureTimestamp: string;
 }
 
 @Entry
@@ -36,6 +40,9 @@ struct PhotoReview {
   @State private advice: StyleAdvice | null = null;
   @State private keypointDistances: string = '[]';
   @State private tolerance: number = 0.1;
+  @State private latitude: number = 0;
+  @State private longitude: number = 0;
+  @State private captureTimestamp: number = 0;
 
   aboutToAppear(): void {
     const params = router.getParams() as PhotoReviewParams | undefined;
@@ -49,11 +56,18 @@ struct PhotoReview {
       this.totalPoints = Number.parseInt(params.totalPoints ?? '0', 10);
       this.keypointDistances = params.keypointDistances ?? '[]';
       this.tolerance = Number.parseFloat(params.tolerance ?? '0.1');
+      this.latitude = Number.parseFloat(params.latitude ?? '0');
+      this.longitude = Number.parseFloat(params.longitude ?? '0');
+      this.captureTimestamp = Number.parseInt(params.captureTimestamp ?? '0', 10);
     }
     void this.loadAdvice();
   }
 
   private async loadAdvice(): Promise<void> {
+    if (!settingsStore.getSettings().enableCloudAdvice) {
+      this.adviceStatus = StyleAdviceStatus.IDLE;
+      return;
+    }
     this.adviceStatus = StyleAdviceStatus.LOADING;
     try {
       this.advice = await getStyleAdvice({
@@ -102,6 +116,7 @@ struct PhotoReview {
             .height(400)
             .objectFit(ImageFit.Contain)
             .borderRadius(12)
+            .accessibilityText('拍摄的照片，模板: ' + this.templateTitle)
         } else {
           Column() {
             Text($r('app.string.no_photo'))
@@ -216,6 +231,23 @@ struct PhotoReview {
         .backgroundColor($r('app.color.easy_shot_background_secondary'))
         .borderRadius(8)
 
+        if (this.captureTimestamp > 0) {
+          Row({ space: 12 }) {
+            Text($r('app.string.capture_time_label'))
+              .fontSize(12)
+              .opacity(0.5)
+            Text(new Date(this.captureTimestamp).toLocaleString())
+              .fontSize(12)
+              .opacity(0.7)
+            if (this.latitude !== 0 || this.longitude !== 0) {
+              Text(`📍 ${this.latitude.toFixed(4)}, ${this.longitude.toFixed(4)}`)
+                .fontSize(12)
+                .opacity(0.5)
+            }
+          }
+          .width('100%')
+        }
+
         Row({ space: 12 }) {
           Button($r('app.string.retake_photo'))
             .onClick(() => {
@@ -279,5 +311,12 @@ struct PhotoReview {
     }
     .width('100%')
     .height('100%')
+  }
+
+  pageTransition() {
+    PageTransitionEnter({ type: RouteType.Push, duration: 300 })
+      .slide(SlideEffect.Bottom)
+    PageTransitionExit({ type: RouteType.Pop, duration: 300 })
+      .slide(SlideEffect.Bottom)
   }
 }

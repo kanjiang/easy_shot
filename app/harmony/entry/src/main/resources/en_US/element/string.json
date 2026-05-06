@@ -763,6 +763,18 @@
         {
             "name": "view_template_detail",
             "value": "View Template Details"
+        },
+        {
+            "name": "enable_tripod_mode",
+            "value": "Enable Tripod Mode"
+        },
+        {
+            "name": "favorites_title",
+            "value": "Favorites"
+        },
+        {
+            "name": "capture_time_label",
+            "value": "Captured"
         }
     ]
 }

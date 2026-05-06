@@ -2,6 +2,7 @@ import { common } from '@kit.AbilityKit';
 import { router } from '@ohos.router';
 
 import { audioCueService } from '../features/audio/AudioCueService';
+import { capturePhotoMetadata, PhotoMetadata } from '../features/camera/PhotoMetadataService';
 import {
   GuideStateSnapshot,
   createDefaultGuideState,
@@ -40,6 +41,8 @@ export struct CameraGuide {
   @State private isTripodMode: boolean = false;
   @State private ruleAdvice: string = '';
   @State private peerReady: boolean = false;
+  @State private scoreHistory: number[] = [];
+  private static readonly MAX_SCORE_HISTORY: number = 30;
   private detectionIntervalId: number = -1;
   private ruleAdviceTimerId: number = -1;
   private static readonly RULE_ADVICE_TIMEOUT_MS: number = 5000;
@@ -65,6 +68,10 @@ export struct CameraGuide {
       this.peerReady = true;
     });
 
+    companionSessionService.onHostModeChanged((mode: HostMode) => {
+      this.isTripodMode = mode === HostMode.TRIPOD;
+    });
+
     this.startPreviewSyncIfNeeded();
     void this.tryLoadMindSporeModel();
     void audioCueService.initialize(getContext(this) as common.UIAbilityContext);
@@ -78,6 +85,7 @@ export struct CameraGuide {
     this.stopDetectionLoop();
     companionSessionService.onRemoteCapture(null);
     companionSessionService.onPeerReady(null);
+    companionSessionService.onHostModeChanged(null);
     previewSyncService.stopSync();
     void this.stopPreview();
   }
@@ -177,6 +185,9 @@ export struct CameraGuide {
       countdownStatus: this.guideState.countdownStatus,
       templateRevision: this.templateIndex + 1,
     };
+
+    this.scoreHistory = [...this.scoreHistory, alignmentResult.score]
+      .slice(-CameraGuide.MAX_SCORE_HISTORY);
   }
 
   private cycleTemplate(): void {
@@ -246,7 +257,10 @@ export struct CameraGuide {
     this.isCapturing = true;
     try {
       void audioCueService.playShutter();
-      const filePath: string = await this.cameraController.capture();
+      const [filePath, metadata]: [string, PhotoMetadata] = await Promise.all([
+        this.cameraController.capture(),
+        capturePhotoMetadata(),
+      ]);
       if (filePath.length > 0) {
         const selectedTemplate: PoseTemplate | null = this.templateState.featuredTemplate;
         const totalPts: number = selectedTemplate ? selectedTemplate.skeleton.keypoints.length : 0;
@@ -265,6 +279,9 @@ export struct CameraGuide {
             keypointDistances: this.lastAlignmentResult
               ? JSON.stringify(this.lastAlignmentResult.keypointDistances) : '[]',
             tolerance: selectedTemplate ? String(selectedTemplate.skeleton.tolerance) : '0.1',
+            latitude: String(metadata.latitude),
+            longitude: String(metadata.longitude),
+            captureTimestamp: String(metadata.captureTimestamp),
           } as Record<string, string>,
         });
       }
@@ -306,6 +323,7 @@ export struct CameraGuide {
             .width('100%')
             .height(this.isTripodMode ? '100%' : 420)
             .backgroundColor($r('app.color.easy_shot_surface'))
+            .accessibilityText('相机预览')
             .onLoad(() => {
               this.previewSurfaceId = this.previewSurfaceController.getXComponentSurfaceId();
             })
@@ -381,6 +399,8 @@ export struct CameraGuide {
             .fontColor($r('app.color.easy_shot_text_primary'))
             .backgroundColor(this.previewState.isPreviewing ? $r('app.color.easy_shot_shutter_active') : $r('app.color.easy_shot_shutter_disabled'))
             .enabled(this.previewState.isPreviewing)
+            .accessibilityText('拍照按钮')
+            .accessibilityDescription('点击拍摄照片')
             .onClick(() => {
               void this.capturePhoto();
             })
@@ -426,6 +446,24 @@ export struct CameraGuide {
             .fontSize(14)
             .opacity(0.75)
 
+          if (this.scoreHistory.length > 1) {
+            Row() {
+              ForEach(this.scoreHistory, (score: number, index: number) => {
+                Column()
+                  .width(4)
+                  .height(Math.max(2, score * 32))
+                  .borderRadius(2)
+                  .backgroundColor(score >= 0.8 ? $r('app.color.easy_shot_score_good')
+                    : score >= 0.5 ? $r('app.color.easy_shot_score_medium')
+                      : $r('app.color.easy_shot_score_low'))
+              }, (_score: number, index: number) => `score_${index}`)
+            }
+            .width('100%')
+            .height(36)
+            .alignItems(VerticalAlign.Bottom)
+            .justifyContent(FlexAlign.Start)
+          }
+
           if (this.templateState.featuredTemplate) {
             Text($r('app.string.pose_steps_prefix', this.templateState.featuredTemplate.verbalSteps.join(' / ')))
               .fontSize(13)
@@ -439,5 +477,12 @@ export struct CameraGuide {
     }
     .width('100%')
     .height('100%')
+  }
+
+  pageTransition() {
+    PageTransitionEnter({ type: RouteType.Push, duration: 300 })
+      .slide(SlideEffect.Right)
+    PageTransitionExit({ type: RouteType.Pop, duration: 300 })
+      .slide(SlideEffect.Right)
   }
 }

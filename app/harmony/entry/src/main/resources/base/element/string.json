@@ -763,6 +763,18 @@
         {
             "name": "view_template_detail",
             "value": "查看当前模板详情"
+        },
+        {
+            "name": "enable_tripod_mode",
+            "value": "启用支架模式"
+        },
+        {
+            "name": "favorites_title",
+            "value": "我的收藏"
+        },
+        {
+            "name": "capture_time_label",
+            "value": "拍摄时间"
         }
     ]
 }

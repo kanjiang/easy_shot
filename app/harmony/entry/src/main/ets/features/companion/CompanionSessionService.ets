@@ -1,6 +1,7 @@
 import {
   CountdownStatus,
   GuideStateSnapshot,
+  HostMode,
   PreviewMode,
   SessionPhase,
   SessionRole,
@@ -13,6 +14,7 @@ import {
   PreviewFramePayload,
   RemoteCountdownPayload,
   RemoteReadySignalPayload,
+  RemoteSetHostModePayload,
   RemoteShutterCancelPayload,
   RemoteShutterPayload,
   RemoteSwitchTemplatePayload,
@@ -47,6 +49,7 @@ export class CompanionSessionService {
   private sessionSequence: number = 0;
   private remoteCaptureCallback: (() => void) | null = null;
   private peerReadyCallback: (() => void) | null = null;
+  private hostModeCallback: ((mode: HostMode) => void) | null = null;
   private distributedReady: boolean = false;
 
   async initializeDistributed(context: Context): Promise<boolean> {
@@ -75,6 +78,10 @@ export class CompanionSessionService {
 
   onPeerReady(callback: (() => void) | null): void {
     this.peerReadyCallback = callback;
+  }
+
+  onHostModeChanged(callback: ((mode: HostMode) => void) | null): void {
+    this.hostModeCallback = callback;
   }
 
   startDiscovery(role: SessionRole): CompanionDevice[] {
@@ -210,6 +217,8 @@ export class CompanionSessionService {
         return this.handleRemoteResumePreview();
       case SessionMessageType.REMOTE_READY_SIGNAL:
         return this.handleRemoteReadySignal(message as SessionMessageEnvelope<RemoteReadySignalPayload>);
+      case SessionMessageType.REMOTE_SET_HOST_MODE:
+        return this.handleRemoteSetHostMode(message as SessionMessageEnvelope<RemoteSetHostModePayload>);
       case SessionMessageType.PREVIEW_FRAME:
         return this.handlePreviewFrame(message as SessionMessageEnvelope<PreviewFramePayload>);
       case SessionMessageType.SESSION_WARNING:
@@ -294,6 +303,17 @@ export class CompanionSessionService {
       this.sessionState.sessionId,
       this.sessionState.role,
       {},
+    );
+    void this.broadcastMessage(message);
+    return this.dispatchMessage(message);
+  }
+
+  sendSetHostMode(hostMode: string): boolean {
+    const message = createSessionEnvelope(
+      SessionMessageType.REMOTE_SET_HOST_MODE,
+      this.sessionState.sessionId,
+      this.sessionState.role,
+      { hostMode } as RemoteSetHostModePayload,
     );
     void this.broadcastMessage(message);
     return this.dispatchMessage(message);
@@ -512,6 +532,18 @@ export class CompanionSessionService {
     this.appendEvent('Ready signal from ' + message.payload.deviceName + '.');
     if (this.peerReadyCallback !== null) {
       this.peerReadyCallback();
+    }
+    return true;
+  }
+
+  private handleRemoteSetHostMode(message: SessionMessageEnvelope<RemoteSetHostModePayload>): boolean {
+    this.sessionState = {
+      ...this.sessionState,
+      hostMode: message.payload.hostMode === 'tripod' ? HostMode.TRIPOD : HostMode.INTERACTIVE,
+    };
+    this.appendEvent('Host mode set to ' + message.payload.hostMode + '.');
+    if (this.hostModeCallback !== null) {
+      this.hostModeCallback(this.sessionState.hostMode);
     }
     return true;
   }

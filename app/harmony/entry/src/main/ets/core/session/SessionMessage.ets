@@ -12,6 +12,7 @@ export enum SessionMessageType {
   REMOTE_PAUSE_PREVIEW = 'remote_pause_preview',
   REMOTE_RESUME_PREVIEW = 'remote_resume_preview',
   REMOTE_READY_SIGNAL = 'remote_ready_signal',
+  REMOTE_SET_HOST_MODE = 'remote_set_host_mode',
   SESSION_WARNING = 'session_warning',
   SESSION_DISCONNECT = 'session_disconnect',
   PREVIEW_FRAME = 'preview_frame',
@@ -78,6 +79,10 @@ export interface RemoteShutterCancelPayload {
 export interface RemoteReadySignalPayload {
   deviceId: string;
   deviceName: string;
+}
+
+export interface RemoteSetHostModePayload {
+  hostMode: string;
 }
 
 export function createSessionEnvelope<T>(

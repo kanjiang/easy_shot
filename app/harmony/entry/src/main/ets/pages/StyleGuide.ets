@@ -170,4 +170,11 @@ export struct StyleGuide {
     .width('100%')
     .height('100%')
   }
+
+  pageTransition() {
+    PageTransitionEnter({ type: RouteType.Push, duration: 300 })
+      .slide(SlideEffect.Right)
+    PageTransitionExit({ type: RouteType.Pop, duration: 300 })
+      .slide(SlideEffect.Right)
+  }
 }

@@ -1,5 +1,6 @@
 import { router } from '@ohos.router';
 import { common } from '@kit.AbilityKit';
+import { promptAction } from '@kit.ArkUI';
 import { ConnectionLevel, PreviewMode, SessionRole } from '../core/session/SessionState';
 import { PreviewFramePayload } from '../core/session/SessionMessage';
 import { SessionSnapshot, companionSessionService } from '../features/companion/CompanionSessionService';
@@ -30,6 +31,12 @@ export struct CompanionSession {
     const templateState = poseTemplateStore.loadTemplatesFromRawfile(getContext().resourceManager as RawfileResourceManagerLike);
     this.templates = templateState.templates;
     this.previewMode = previewSyncService.resolveMode(ConnectionLevel.GOOD, true);
+
+    if (this.previewMode === PreviewMode.THUMBNAIL) {
+      promptAction.showToast({ message: '网络较慢，已切换为缩略图预览', duration: 2500 });
+    } else if (this.previewMode === PreviewMode.STATE_ONLY) {
+      promptAction.showToast({ message: '网络不佳，仅同步状态信息', duration: 2500 });
+    }
 
     previewSyncService.setOnRemoteFrame((frame: PreviewFramePayload) => {
       this.remoteFrameBase64 = frame.thumbnailBase64;
@@ -244,6 +251,13 @@ export struct CompanionSession {
           Text($r('app.string.template_owned_by_host'))
             .fontSize(13)
             .opacity(0.6)
+
+          Button($r('app.string.enable_tripod_mode'))
+            .onClick(() => {
+              companionSessionService.sendSetHostMode('tripod');
+              this.refreshView();
+            })
+            .width('100%')
         }
 
         Column({ space: 8 }) {
@@ -283,5 +297,12 @@ export struct CompanionSession {
     }
     .width('100%')
     .height('100%')
+  }
+
+  pageTransition() {
+    PageTransitionEnter({ type: RouteType.Push, duration: 300 })
+      .slide(SlideEffect.Right)
+    PageTransitionExit({ type: RouteType.Pop, duration: 300 })
+      .slide(SlideEffect.Right)
   }
 }

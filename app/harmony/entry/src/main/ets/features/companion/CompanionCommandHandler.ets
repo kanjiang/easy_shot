@@ -33,6 +33,10 @@ export function canHandleRemoteCommand(phase: SessionPhase, messageType: Session
     return phase === SessionPhase.GUIDING || phase === SessionPhase.CONNECTED;
   }
 
+  if (messageType === SessionMessageType.REMOTE_SET_HOST_MODE) {
+    return phase === SessionPhase.GUIDING || phase === SessionPhase.CONNECTED;
+  }
+
   return false;
 }
 
@@ -87,6 +91,14 @@ export function decideRemoteCommand(phase: SessionPhase, messageType: SessionMes
   }
 
   if (messageType === SessionMessageType.REMOTE_READY_SIGNAL) {
+    return {
+      accepted: true,
+      nextPhase: phase,
+      warningMessage: '',
+    };
+  }
+
+  if (messageType === SessionMessageType.REMOTE_SET_HOST_MODE) {
     return {
       accepted: true,
       nextPhase: phase,
