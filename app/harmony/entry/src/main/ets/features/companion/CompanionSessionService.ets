@@ -250,6 +250,17 @@ export class CompanionSessionService {
     return this.dispatchMessage(message);
   }
 
+  sendRemoteShutterCancel(reason: string): boolean {
+    const message = createSessionEnvelope(
+      SessionMessageType.REMOTE_SHUTTER_CANCEL,
+      this.sessionState.sessionId,
+      this.sessionState.role,
+      { reason },
+    );
+    void this.broadcastMessage(message);
+    return this.dispatchMessage(message);
+  }
+
   sendTemplateSwitch(templateId: string, templateTitle: string): boolean {
     const message = createSessionEnvelope(
       SessionMessageType.REMOTE_SWITCH_TEMPLATE,

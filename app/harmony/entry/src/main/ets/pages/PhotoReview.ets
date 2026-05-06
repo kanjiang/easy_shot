@@ -223,6 +223,20 @@ struct PhotoReview {
             })
             .layoutWeight(1)
 
+          if (this.advice !== null && this.advice.suggestions.length > 0) {
+            Button($r('app.string.retake_with_advice'))
+              .onClick(() => {
+                router.pushUrl({
+                  url: 'pages/CameraGuide',
+                  params: {
+                    templateId: this.templateId,
+                    adviceHint: this.advice!.suggestions[0],
+                  } as Record<string, string>,
+                });
+              })
+              .layoutWeight(1)
+          }
+
           if (this.isSaved) {
             Button($r('app.string.photo_saved'))
               .layoutWeight(1)

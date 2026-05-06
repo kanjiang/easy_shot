@@ -5,6 +5,7 @@
         "pages/PhotoReview",
         "pages/DevicePairing",
         "pages/CompanionSession",
-        "pages/Settings"
+        "pages/Settings",
+        "pages/StyleGuide"
     ]
 }

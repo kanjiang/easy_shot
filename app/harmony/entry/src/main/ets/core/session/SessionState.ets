@@ -33,6 +33,11 @@ export enum ConnectionLevel {
   POOR = 'poor',
 }
 
+export enum HostMode {
+  INTERACTIVE = 'interactive',
+  TRIPOD = 'tripod',
+}
+
 export interface GuideRect {
   x: number;
   y: number;
@@ -60,6 +65,7 @@ export interface SessionState {
   peerDeviceId: string;
   peerDeviceName: string;
   isConnected: boolean;
+  hostMode: HostMode;
 }
 
 export function createDefaultGuideState(): GuideStateSnapshot {
@@ -85,5 +91,6 @@ export function createIdleSessionState(): SessionState {
     peerDeviceId: '',
     peerDeviceName: '',
     isConnected: false,
+    hostMode: HostMode.INTERACTIVE,
   };
 }

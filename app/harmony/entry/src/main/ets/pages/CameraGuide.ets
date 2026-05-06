@@ -4,6 +4,7 @@ import { router } from '@ohos.router';
 import {
   GuideStateSnapshot,
   createDefaultGuideState,
+  HostMode,
 } from '../core/session/SessionState';
 import { CameraController, CameraPreviewState, CameraPreviewStatus } from '../features/camera/CameraController';
 import { companionSessionService } from '../features/companion/CompanionSessionService';
@@ -15,6 +16,7 @@ import { selectPrimaryPrompt } from '../features/realtimeGuide/GuidePromptSelect
 import { estimatePoseAlignment, detectAndAlign, PoseAlignmentResult, initializeMindSporeDetector } from '../features/realtimeGuide/PoseAlignmentService';
 import { previewSyncService } from '../features/companion/PreviewSyncService';
 import { SessionPhase } from '../core/session/SessionState';
+import { analyzeFrame, FrameAnalysisInput, RuleEvent } from '../core/rules/LightingCompositionRules';
 
 const PREVIEW_XCOMPONENT_ID: string = 'easy_shot_camera_preview';
 
@@ -32,6 +34,9 @@ export struct CameraGuide {
   private lastAlignmentResult: PoseAlignmentResult | null = null;
   private latestThumbnail: string = '';
   @State private isCapturing: boolean = false;
+  @State private adviceHint: string = '';
+  @State private isTripodMode: boolean = false;
+  @State private ruleAdvice: string = '';
   private detectionIntervalId: number = -1;
   private static readonly DETECTION_INTERVAL_MS: number = 100;
 
@@ -41,7 +46,11 @@ export struct CameraGuide {
     if (params && params.templateId) {
       this.templateState = poseTemplateStore.selectTemplate(params.templateId);
     }
+    if (params && params.adviceHint) {
+      this.adviceHint = params.adviceHint;
+    }
     this.syncGuideState();
+    this.isTripodMode = companionSessionService.getSessionState().hostMode === HostMode.TRIPOD;
 
     companionSessionService.onRemoteCapture(() => {
       void this.capturePhoto();
@@ -189,6 +198,17 @@ export struct CameraGuide {
     this.lastAlignmentResult = result;
     this.matchedPoints = result.matchedPoints;
     this.syncGuideState();
+
+    const frameInput: FrameAnalysisInput = {
+      frameBrightness: 128,
+      subjectBrightness: 128,
+      backgroundBrightness: 128,
+      subjectCenterX: this.guideState.subjectBox.x + this.guideState.subjectBox.width / 2,
+      subjectCenterY: this.guideState.subjectBox.y + this.guideState.subjectBox.height / 2,
+      hasSubject: result.matchedPoints > 0,
+    };
+    const ruleEvent: RuleEvent | null = analyzeFrame(frameInput);
+    this.ruleAdvice = ruleEvent !== null ? ruleEvent.advice : '';
   }
 
   private async capturePhoto(): Promise<void> {
@@ -227,13 +247,15 @@ export struct CameraGuide {
   build() {
     Scroll() {
       Column({ space: 14 }) {
-        Text($r('app.string.camera_guide_title'))
-          .fontSize(24)
-          .fontWeight(FontWeight.Bold)
+        if (!this.isTripodMode) {
+          Text($r('app.string.camera_guide_title'))
+            .fontSize(24)
+            .fontWeight(FontWeight.Bold)
 
-        Text($r('app.string.camera_guide_subtitle'))
-          .fontSize(14)
-          .opacity(0.7)
+          Text($r('app.string.camera_guide_subtitle'))
+            .fontSize(14)
+            .opacity(0.7)
+        }
 
         Stack({ alignContent: Alignment.TopStart }) {
           XComponent({
@@ -242,7 +264,7 @@ export struct CameraGuide {
           })
             .id(PREVIEW_XCOMPONENT_ID)
             .width('100%')
-            .height(420)
+            .height(this.isTripodMode ? '100%' : 420)
             .backgroundColor($r('app.color.easy_shot_surface'))
             .onLoad(() => {
               this.previewSurfaceId = this.previewSurfaceController.getXComponentSurfaceId();
@@ -251,68 +273,127 @@ export struct CameraGuide {
           GuideOverlayRenderer({ guideState: this.guideState, showBackdrop: false })
         }
         .width('100%')
-        .height(420)
+        .height(this.isTripodMode ? '70%' : 420)
 
-        Button($r('app.string.capture_button'))
-          .width(72)
-          .height(72)
-          .borderRadius(36)
-          .fontSize(18)
-          .fontColor($r('app.color.easy_shot_text_primary'))
-          .backgroundColor(this.previewState.isPreviewing ? $r('app.color.easy_shot_shutter_active') : $r('app.color.easy_shot_shutter_disabled'))
-          .enabled(this.previewState.isPreviewing)
-          .onClick(() => {
-            void this.capturePhoto();
-          })
+        if (this.isTripodMode) {
+          Column({ space: 10 }) {
+            Text(this.guideState.templateTitle)
+              .fontSize(16)
+              .fontWeight(FontWeight.Medium)
 
-        Row({ space: 8 }) {
-          Button(this.previewState.status === CameraPreviewStatus.RUNNING ? $r('app.string.restart_preview') : $r('app.string.enable_preview'))
-            .onClick(() => {
-              void this.startPreview();
-            })
+            Text(`${(this.guideState.guideScore * 100).toFixed(0)}%`)
+              .fontSize(36)
+              .fontWeight(FontWeight.Bold)
+              .fontColor($r('app.color.easy_shot_accent'))
 
-          Button($r('app.string.stop_preview'))
-            .onClick(() => {
-              void this.stopPreview();
-            })
-
-          Button($r('app.string.next_template'))
-            .onClick(() => {
-              this.cycleTemplate();
-            })
-
-          Button($r('app.string.improve_alignment'))
-            .onClick(() => {
-              this.runDetection();
-            })
-
-          Button($r('app.string.remote_shutter'))
-            .onClick(() => {
-              companionSessionService.sendRemoteShutter();
-            })
+            Button($r('app.string.exit_tripod_mode'))
+              .onClick(() => {
+                this.isTripodMode = false;
+                companionSessionService.getSessionState().hostMode = HostMode.INTERACTIVE;
+              })
+              .height(36)
+          }
+          .width('100%')
+          .alignItems(HorizontalAlign.Center)
         }
 
-        Text($r('app.string.preview_status_prefix', this.previewState.status))
-          .fontSize(14)
+        if (!this.isTripodMode) {
+          if (this.adviceHint.length > 0) {
+            Row({ space: 8 }) {
+              Text($r('app.string.advice_hint_prefix'))
+                .fontSize(13)
+                .fontWeight(FontWeight.Medium)
+              Text(this.adviceHint)
+                .fontSize(13)
+                .fontColor($r('app.color.easy_shot_accent'))
+                .maxLines(2)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+                .layoutWeight(1)
+            }
+            .width('100%')
+            .padding({ left: 8, right: 8, top: 4, bottom: 4 })
+            .borderRadius(8)
+            .backgroundColor($r('app.color.easy_shot_surface'))
+          }
 
-        Text($r('app.string.preview_message_prefix', this.previewState.message))
-          .fontSize(13)
-          .opacity(0.72)
+          if (this.ruleAdvice.length > 0) {
+            Row({ space: 8 }) {
+              Text('💡')
+                .fontSize(14)
+              Text(this.ruleAdvice)
+                .fontSize(13)
+                .fontColor($r('app.color.easy_shot_warning'))
+                .maxLines(2)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+                .layoutWeight(1)
+            }
+            .width('100%')
+            .padding({ left: 8, right: 8, top: 4, bottom: 4 })
+            .borderRadius(8)
+            .backgroundColor($r('app.color.easy_shot_surface'))
+          }
 
-        Text($r('app.string.active_template_prefix', this.guideState.templateTitle))
-          .fontSize(14)
+          Button($r('app.string.capture_button'))
+            .width(72)
+            .height(72)
+            .borderRadius(36)
+            .fontSize(18)
+            .fontColor($r('app.color.easy_shot_text_primary'))
+            .backgroundColor(this.previewState.isPreviewing ? $r('app.color.easy_shot_shutter_active') : $r('app.color.easy_shot_shutter_disabled'))
+            .enabled(this.previewState.isPreviewing)
+            .onClick(() => {
+              void this.capturePhoto();
+            })
 
-        Text($r('app.string.current_prompt_prefix', this.guideState.primaryPrompt))
-          .fontSize(14)
-          .opacity(0.75)
+          Row({ space: 8 }) {
+            Button(this.previewState.status === CameraPreviewStatus.RUNNING ? $r('app.string.restart_preview') : $r('app.string.enable_preview'))
+              .onClick(() => {
+                void this.startPreview();
+              })
 
-        if (this.templateState.featuredTemplate) {
-          Text($r('app.string.pose_steps_prefix', this.templateState.featuredTemplate.verbalSteps.join(' / ')))
+            Button($r('app.string.stop_preview'))
+              .onClick(() => {
+                void this.stopPreview();
+              })
+
+            Button($r('app.string.next_template'))
+              .onClick(() => {
+                this.cycleTemplate();
+              })
+
+            Button($r('app.string.improve_alignment'))
+              .onClick(() => {
+                this.runDetection();
+              })
+
+            Button($r('app.string.remote_shutter'))
+              .onClick(() => {
+                companionSessionService.sendRemoteShutter();
+              })
+          }
+
+          Text($r('app.string.preview_status_prefix', this.previewState.status))
+            .fontSize(14)
+
+          Text($r('app.string.preview_message_prefix', this.previewState.message))
             .fontSize(13)
-            .opacity(0.68)
+            .opacity(0.72)
+
+          Text($r('app.string.active_template_prefix', this.guideState.templateTitle))
+            .fontSize(14)
+
+          Text($r('app.string.current_prompt_prefix', this.guideState.primaryPrompt))
+            .fontSize(14)
+            .opacity(0.75)
+
+          if (this.templateState.featuredTemplate) {
+            Text($r('app.string.pose_steps_prefix', this.templateState.featuredTemplate.verbalSteps.join(' / ')))
+              .fontSize(13)
+              .opacity(0.68)
+          }
         }
       }
-      .padding(24)
+      .padding(this.isTripodMode ? 8 : 24)
       .width('100%')
       .alignItems(HorizontalAlign.Start)
     }

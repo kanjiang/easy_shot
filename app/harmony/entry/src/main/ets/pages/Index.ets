@@ -86,6 +86,10 @@ struct Index {
     router.pushUrl({ url: 'pages/Settings' });
   }
 
+  private navigateToStyleGuide(): void {
+    router.pushUrl({ url: 'pages/StyleGuide' });
+  }
+
   build() {
     Scroll() {
       Column({ space: 16 }) {
@@ -292,6 +296,26 @@ struct Index {
           .backgroundColor('#0D000000')
           .width('100%')
         }
+
+        Column({ space: 8 }) {
+          Text($r('app.string.style_guide_title'))
+            .fontSize(18)
+            .fontWeight(FontWeight.Medium)
+
+          Text($r('app.string.style_guide_subtitle'))
+            .fontSize(14)
+            .opacity(0.72)
+
+          Button($r('app.string.style_guide_enter'))
+            .onClick(() => {
+              this.navigateToStyleGuide();
+            })
+            .width('100%')
+        }
+        .padding(16)
+        .borderRadius(16)
+        .backgroundColor('#0D000000')
+        .width('100%')
       }
       .padding(24)
       .width('100%')

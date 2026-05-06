@@ -8,6 +8,8 @@ import { RawfileResourceManagerLike } from '../features/poseTemplate/data/PoseTe
 import { PoseTemplate } from '../features/poseTemplate/model/PoseTemplate';
 import { poseTemplateStore } from '../features/poseTemplate/state/PoseTemplateStore';
 
+const COUNTDOWN_OPTIONS: number[] = [0, 3, 5, 10];
+
 @Entry
 @Component
 export struct CompanionSession {
@@ -16,6 +18,9 @@ export struct CompanionSession {
   @State private remoteFrameBase64: string = '';
   @State private previewMode: PreviewMode = PreviewMode.STATE_ONLY;
   @State private isSyncing: boolean = false;
+  @State private countdownSeconds: number = 3;
+  @State private countdownRemaining: number = -1;
+  private countdownTimerId: number = -1;
   private templates: PoseTemplate[] = [];
 
   aboutToAppear(): void {
@@ -29,6 +34,7 @@ export struct CompanionSession {
   }
 
   aboutToDisappear(): void {
+    this.cancelCountdown();
     previewSyncService.stopSync();
     previewSyncService.setOnRemoteFrame(null);
   }
@@ -43,6 +49,32 @@ export struct CompanionSession {
 
   private isCompanionRole(): boolean {
     return this.snapshot.sessionState.role === SessionRole.COMPANION;
+  }
+
+  private startCountdown(): void {
+    if (this.countdownSeconds === 0) {
+      companionSessionService.sendRemoteShutter();
+      this.refreshView();
+      return;
+    }
+    this.countdownRemaining = this.countdownSeconds;
+    companionSessionService.sendRemoteCountdown(this.countdownSeconds);
+    this.countdownTimerId = setInterval(() => {
+      this.countdownRemaining--;
+      if (this.countdownRemaining <= 0) {
+        this.cancelCountdown();
+        companionSessionService.sendRemoteShutter();
+        this.refreshView();
+      }
+    }, 1000);
+  }
+
+  private cancelCountdown(): void {
+    if (this.countdownTimerId >= 0) {
+      clearInterval(this.countdownTimerId);
+      this.countdownTimerId = -1;
+    }
+    this.countdownRemaining = -1;
   }
 
   build() {
@@ -138,19 +170,42 @@ export struct CompanionSession {
         }
 
         if (this.isCompanionRole()) {
-          Row({ space: 8 }) {
-            Button($r('app.string.countdown_3s'))
-              .onClick(() => {
-                companionSessionService.sendRemoteCountdown(3);
-                this.refreshView();
-              })
+          Column({ space: 10 }) {
+            Text($r('app.string.countdown_delay_label'))
+              .fontSize(14)
+              .fontWeight(FontWeight.Medium)
 
-            Button($r('app.string.remote_shutter'))
-              .onClick(() => {
-                companionSessionService.sendRemoteShutter();
-                this.refreshView();
+            Row({ space: 8 }) {
+              ForEach(COUNTDOWN_OPTIONS, (sec: number) => {
+                Button(sec === 0 ? $r('app.string.immediate_shutter') : `${sec}s`)
+                  .backgroundColor(this.countdownSeconds === sec ? $r('app.color.easy_shot_accent') : $r('app.color.easy_shot_surface'))
+                  .fontColor(this.countdownSeconds === sec ? $r('app.color.easy_shot_text_on_accent') : $r('app.color.easy_shot_text_primary'))
+                  .onClick(() => {
+                    this.countdownSeconds = sec;
+                  })
               })
+            }
+
+            if (this.countdownRemaining > 0) {
+              Text(`${this.countdownRemaining}`)
+                .fontSize(48)
+                .fontWeight(FontWeight.Bold)
+                .fontColor($r('app.color.easy_shot_accent'))
+
+              Button($r('app.string.cancel_countdown'))
+                .onClick(() => {
+                  this.cancelCountdown();
+                  companionSessionService.sendRemoteShutterCancel('user_cancelled');
+                  this.refreshView();
+                })
+            } else {
+              Button($r('app.string.start_countdown_shutter'))
+                .onClick(() => {
+                  this.startCountdown();
+                })
+            }
           }
+          .width('100%')
 
           Text($r('app.string.template_owned_by_host'))
             .fontSize(13)

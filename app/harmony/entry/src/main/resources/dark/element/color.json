@@ -99,6 +99,14 @@
         {
             "name": "easy_shot_button_text_inactive",
             "value": "#FFE2E8F0"
+        },
+        {
+            "name": "easy_shot_accent",
+            "value": "#FF818CF8"
+        },
+        {
+            "name": "easy_shot_text_on_accent",
+            "value": "#FFFFFFFF"
         }
     ]
 }

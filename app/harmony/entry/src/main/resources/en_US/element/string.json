@@ -671,6 +671,62 @@
         {
             "name": "guide_live_prompt",
             "value": "Live Prompt"
+        },
+        {
+            "name": "retake_with_advice",
+            "value": "Retake with Advice"
+        },
+        {
+            "name": "advice_hint_prefix",
+            "value": "Advice: "
+        },
+        {
+            "name": "countdown_delay_label",
+            "value": "Countdown Delay"
+        },
+        {
+            "name": "immediate_shutter",
+            "value": "Now"
+        },
+        {
+            "name": "cancel_countdown",
+            "value": "Cancel Countdown"
+        },
+        {
+            "name": "start_countdown_shutter",
+            "value": "Start Shutter"
+        },
+        {
+            "name": "style_guide_title",
+            "value": "Style Guide"
+        },
+        {
+            "name": "style_guide_subtitle",
+            "value": "Describe your desired photo style, we'll match templates for you."
+        },
+        {
+            "name": "recommended_styles",
+            "value": "Recommended Styles"
+        },
+        {
+            "name": "style_analysis_title",
+            "value": "Style Analysis"
+        },
+        {
+            "name": "matched_templates_title",
+            "value": "Matched Templates"
+        },
+        {
+            "name": "use_template",
+            "value": "Use"
+        },
+        {
+            "name": "style_guide_enter",
+            "value": "Open Style Guide"
+        },
+        {
+            "name": "exit_tripod_mode",
+            "value": "Exit Tripod Mode"
         }
     ]
 }

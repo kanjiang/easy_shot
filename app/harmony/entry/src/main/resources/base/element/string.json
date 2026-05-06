@@ -671,6 +671,62 @@
         {
             "name": "guide_live_prompt",
             "value": "实时提示"
+        },
+        {
+            "name": "retake_with_advice",
+            "value": "按建议再拍"
+        },
+        {
+            "name": "advice_hint_prefix",
+            "value": "建议："
+        },
+        {
+            "name": "countdown_delay_label",
+            "value": "倒计时延迟"
+        },
+        {
+            "name": "immediate_shutter",
+            "value": "立即"
+        },
+        {
+            "name": "cancel_countdown",
+            "value": "取消倒计时"
+        },
+        {
+            "name": "start_countdown_shutter",
+            "value": "开始拍摄"
+        },
+        {
+            "name": "style_guide_title",
+            "value": "风格指南"
+        },
+        {
+            "name": "style_guide_subtitle",
+            "value": "输入你想要的拍照风格，我们帮你匹配模板。"
+        },
+        {
+            "name": "recommended_styles",
+            "value": "推荐风格"
+        },
+        {
+            "name": "style_analysis_title",
+            "value": "风格分析"
+        },
+        {
+            "name": "matched_templates_title",
+            "value": "匹配模板"
+        },
+        {
+            "name": "use_template",
+            "value": "使用"
+        },
+        {
+            "name": "style_guide_enter",
+            "value": "进入风格指南"
+        },
+        {
+            "name": "exit_tripod_mode",
+            "value": "解除支架模式"
         }
     ]
 }
