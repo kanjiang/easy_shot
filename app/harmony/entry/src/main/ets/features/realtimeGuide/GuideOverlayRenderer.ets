@@ -1,4 +1,5 @@
 import { ConnectionLevel, CountdownStatus, GuideRect, GuideStateSnapshot, PreviewMode } from '../../core/session/SessionState';
+import { localeHelper } from '../../core/locale/LocaleHelper';
 
 function percent(value: number): string {
   return (value * 100).toFixed(0) + '%';
@@ -11,36 +12,36 @@ function scoreLabel(score: number): string {
 function connectionLabel(level: ConnectionLevel): string {
   switch (level) {
     case ConnectionLevel.GOOD:
-      return 'Connection: Good';
+      return localeHelper.getString('connection_good');
     case ConnectionLevel.DEGRADED:
-      return 'Connection: Degraded';
+      return localeHelper.getString('connection_degraded');
     case ConnectionLevel.POOR:
     default:
-      return 'Connection: Poor';
+      return localeHelper.getString('connection_poor');
   }
 }
 
 function previewLabel(mode: PreviewMode): string {
   switch (mode) {
     case PreviewMode.LIVE:
-      return 'Preview: Live';
+      return localeHelper.getString('preview_live');
     case PreviewMode.THUMBNAIL:
-      return 'Preview: Thumbnail';
+      return localeHelper.getString('preview_thumbnail');
     case PreviewMode.STATE_ONLY:
     default:
-      return 'Preview: State only';
+      return localeHelper.getString('preview_state_only');
   }
 }
 
 function countdownLabel(status: CountdownStatus): string {
   switch (status) {
     case CountdownStatus.RUNNING:
-      return 'Countdown running';
+      return localeHelper.getString('countdown_running');
     case CountdownStatus.CAPTURING:
-      return 'Capturing';
+      return localeHelper.getString('countdown_capturing');
     case CountdownStatus.IDLE:
     default:
-      return 'Ready';
+      return localeHelper.getString('countdown_ready');
   }
 }
 
@@ -125,11 +126,11 @@ export struct GuideOverlayRenderer {
         .backgroundColor('#18000000')
       }
 
-      GuideBox(this.guideState.compositionBox, '#D9FFD166', 'Composition')
-      GuideBox(this.guideState.subjectBox, '#FF68D391', 'Subject')
+      GuideBox(this.guideState.compositionBox, '#D9FFD166', localeHelper.getString('guide_composition'))
+      GuideBox(this.guideState.subjectBox, '#FF68D391', localeHelper.getString('guide_subject'))
 
       Column({ space: 8 }) {
-        Text('Live Prompt')
+        Text(localeHelper.getString('guide_live_prompt'))
           .fontSize(12)
           .fontColor('#FFEFEFEF')
           .opacity(0.78)

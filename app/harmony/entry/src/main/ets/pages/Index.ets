@@ -1,20 +1,60 @@
 import { router } from '@ohos.router';
 import { getStyleLabel } from '../core/style/StyleTags';
 import { localeHelper } from '../core/locale/LocaleHelper';
-import { PoseTemplate } from '../features/poseTemplate/model/PoseTemplate';
+import { Difficulty, PoseTemplate } from '../features/poseTemplate/model/PoseTemplate';
 import { RawfileResourceManagerLike } from '../features/poseTemplate/data/PoseTemplateRepository';
 import { PoseTemplateState, poseTemplateStore } from '../features/poseTemplate/state/PoseTemplateStore';
 import { TemplateDetail } from './TemplateDetail';
+
+const ALL_FILTER: string = 'all';
 
 @Entry
 @Component
 struct Index {
   @State private templateState: PoseTemplateState = { templates: [], featuredTemplate: null };
   @State private isShowingTemplateDetail: boolean = false;
+  @State private filterStyle: string = ALL_FILTER;
+  @State private filterScene: string = ALL_FILTER;
+  @State private filterDifficulty: string = ALL_FILTER;
+  private allTemplates: PoseTemplate[] = [];
+  private availableStyles: string[] = [];
+  private availableScenes: string[] = [];
 
   aboutToAppear(): void {
     localeHelper.setResourceManager(getContext().resourceManager);
     this.templateState = poseTemplateStore.loadTemplatesFromRawfile(getContext().resourceManager as RawfileResourceManagerLike);
+    this.allTemplates = this.templateState.templates;
+    this.buildFilterOptions();
+  }
+
+  private buildFilterOptions(): void {
+    const styles: Set<string> = new Set<string>();
+    const scenes: Set<string> = new Set<string>();
+    for (const t of this.allTemplates) {
+      for (const s of t.styleTags) {
+        styles.add(s);
+      }
+      for (const sc of t.sceneTags) {
+        scenes.add(sc);
+      }
+    }
+    this.availableStyles = Array.from(styles);
+    this.availableScenes = Array.from(scenes);
+  }
+
+  private getFilteredTemplates(): PoseTemplate[] {
+    return this.allTemplates.filter((t: PoseTemplate): boolean => {
+      if (this.filterStyle !== ALL_FILTER && !t.styleTags.includes(this.filterStyle)) {
+        return false;
+      }
+      if (this.filterScene !== ALL_FILTER && !t.sceneTags.includes(this.filterScene)) {
+        return false;
+      }
+      if (this.filterDifficulty !== ALL_FILTER && t.difficulty !== this.filterDifficulty) {
+        return false;
+      }
+      return true;
+    });
   }
 
   private selectTemplate(templateId: string): void {
@@ -130,11 +170,77 @@ struct Index {
         }
 
         if (!this.isShowingTemplateDetail) {
+          Column({ space: 8 }) {
+            Text($r('app.string.filter_title'))
+              .fontSize(15)
+              .fontWeight(FontWeight.Medium)
+
+            Row({ space: 6 }) {
+              Text($r('app.string.filter_style'))
+                .fontSize(13)
+              ForEach([ALL_FILTER, ...this.availableStyles], (style: string) => {
+                Button(style === ALL_FILTER ? $r('app.string.filter_all') : getStyleLabel(style))
+                  .fontSize(12)
+                  .backgroundColor(this.filterStyle === style ? $r('app.color.easy_shot_primary') : '#0D000000')
+                  .fontColor(this.filterStyle === style ? '#FFFFFFFF' : '#FF333333')
+                  .onClick(() => {
+                    this.filterStyle = style;
+                  })
+              }, (style: string) => style)
+            }
+            .width('100%')
+
+            Row({ space: 6 }) {
+              Text($r('app.string.filter_scene'))
+                .fontSize(13)
+              ForEach([ALL_FILTER, ...this.availableScenes], (scene: string) => {
+                Button(scene === ALL_FILTER ? $r('app.string.filter_all') : scene)
+                  .fontSize(12)
+                  .backgroundColor(this.filterScene === scene ? $r('app.color.easy_shot_primary') : '#0D000000')
+                  .fontColor(this.filterScene === scene ? '#FFFFFFFF' : '#FF333333')
+                  .onClick(() => {
+                    this.filterScene = scene;
+                  })
+              }, (scene: string) => scene)
+            }
+            .width('100%')
+
+            Row({ space: 6 }) {
+              Text($r('app.string.filter_difficulty'))
+                .fontSize(13)
+              Button($r('app.string.filter_all'))
+                .fontSize(12)
+                .backgroundColor(this.filterDifficulty === ALL_FILTER ? $r('app.color.easy_shot_primary') : '#0D000000')
+                .fontColor(this.filterDifficulty === ALL_FILTER ? '#FFFFFFFF' : '#FF333333')
+                .onClick(() => { this.filterDifficulty = ALL_FILTER; })
+              Button($r('app.string.difficulty_easy'))
+                .fontSize(12)
+                .backgroundColor(this.filterDifficulty === Difficulty.EASY ? $r('app.color.easy_shot_primary') : '#0D000000')
+                .fontColor(this.filterDifficulty === Difficulty.EASY ? '#FFFFFFFF' : '#FF333333')
+                .onClick(() => { this.filterDifficulty = Difficulty.EASY; })
+              Button($r('app.string.difficulty_medium'))
+                .fontSize(12)
+                .backgroundColor(this.filterDifficulty === Difficulty.MEDIUM ? $r('app.color.easy_shot_primary') : '#0D000000')
+                .fontColor(this.filterDifficulty === Difficulty.MEDIUM ? '#FFFFFFFF' : '#FF333333')
+                .onClick(() => { this.filterDifficulty = Difficulty.MEDIUM; })
+              Button($r('app.string.difficulty_hard'))
+                .fontSize(12)
+                .backgroundColor(this.filterDifficulty === Difficulty.HARD ? $r('app.color.easy_shot_primary') : '#0D000000')
+                .fontColor(this.filterDifficulty === Difficulty.HARD ? '#FFFFFFFF' : '#FF333333')
+                .onClick(() => { this.filterDifficulty = Difficulty.HARD; })
+            }
+            .width('100%')
+          }
+          .padding(12)
+          .borderRadius(12)
+          .backgroundColor('#08000000')
+          .width('100%')
+
           Text($r('app.string.template_list_title'))
             .fontSize(18)
             .fontWeight(FontWeight.Medium)
 
-          ForEach(this.templateState.templates, (template: PoseTemplate) => {
+          ForEach(this.getFilteredTemplates(), (template: PoseTemplate) => {
             Column({ space: 6 }) {
               Text(template.title)
                 .fontSize(18)

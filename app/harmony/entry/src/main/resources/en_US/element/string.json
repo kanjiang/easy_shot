@@ -591,6 +591,86 @@
         {
             "name": "mock_tip_experiment",
             "value": "Try different angles to find your best look"
+        },
+        {
+            "name": "filter_title",
+            "value": "Filter"
+        },
+        {
+            "name": "filter_style",
+            "value": "Style:"
+        },
+        {
+            "name": "filter_scene",
+            "value": "Scene:"
+        },
+        {
+            "name": "filter_difficulty",
+            "value": "Difficulty:"
+        },
+        {
+            "name": "filter_all",
+            "value": "All"
+        },
+        {
+            "name": "difficulty_easy",
+            "value": "Easy"
+        },
+        {
+            "name": "difficulty_medium",
+            "value": "Medium"
+        },
+        {
+            "name": "difficulty_hard",
+            "value": "Hard"
+        },
+        {
+            "name": "connection_good",
+            "value": "Connection: Good"
+        },
+        {
+            "name": "connection_degraded",
+            "value": "Connection: Degraded"
+        },
+        {
+            "name": "connection_poor",
+            "value": "Connection: Poor"
+        },
+        {
+            "name": "preview_live",
+            "value": "Preview: Live"
+        },
+        {
+            "name": "preview_thumbnail",
+            "value": "Preview: Thumbnail"
+        },
+        {
+            "name": "preview_state_only",
+            "value": "Preview: State only"
+        },
+        {
+            "name": "countdown_running",
+            "value": "Countdown running"
+        },
+        {
+            "name": "countdown_capturing",
+            "value": "Capturing"
+        },
+        {
+            "name": "countdown_ready",
+            "value": "Ready"
+        },
+        {
+            "name": "guide_composition",
+            "value": "Composition"
+        },
+        {
+            "name": "guide_subject",
+            "value": "Subject"
+        },
+        {
+            "name": "guide_live_prompt",
+            "value": "Live Prompt"
         }
     ]
 }

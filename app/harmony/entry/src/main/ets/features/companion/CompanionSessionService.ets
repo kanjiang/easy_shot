@@ -1,6 +1,7 @@
 import {
   CountdownStatus,
   GuideStateSnapshot,
+  PreviewMode,
   SessionPhase,
   SessionRole,
   SessionState,
@@ -11,6 +12,8 @@ import {
   GuideStateMessage,
   PreviewFramePayload,
   RemoteCountdownPayload,
+  RemoteReadySignalPayload,
+  RemoteShutterCancelPayload,
   RemoteShutterPayload,
   RemoteSwitchTemplatePayload,
   SessionAcceptPayload,
@@ -192,8 +195,16 @@ export class CompanionSessionService {
         return this.handleRemoteCountdown(message as SessionMessageEnvelope<RemoteCountdownPayload>);
       case SessionMessageType.REMOTE_SHUTTER:
         return this.handleRemoteShutter(message as SessionMessageEnvelope<RemoteShutterPayload>);
+      case SessionMessageType.REMOTE_SHUTTER_CANCEL:
+        return this.handleRemoteShutterCancel(message as SessionMessageEnvelope<RemoteShutterCancelPayload>);
       case SessionMessageType.REMOTE_SWITCH_TEMPLATE:
         return this.handleRemoteSwitchTemplate(message as SessionMessageEnvelope<RemoteSwitchTemplatePayload>);
+      case SessionMessageType.REMOTE_PAUSE_PREVIEW:
+        return this.handleRemotePausePreview();
+      case SessionMessageType.REMOTE_RESUME_PREVIEW:
+        return this.handleRemoteResumePreview();
+      case SessionMessageType.REMOTE_READY_SIGNAL:
+        return this.handleRemoteReadySignal(message as SessionMessageEnvelope<RemoteReadySignalPayload>);
       case SessionMessageType.PREVIEW_FRAME:
         return this.handlePreviewFrame(message as SessionMessageEnvelope<PreviewFramePayload>);
       case SessionMessageType.SESSION_WARNING:
@@ -398,6 +409,58 @@ export class CompanionSessionService {
       this.remoteCaptureCallback();
     }
 
+    return true;
+  }
+
+  private handleRemoteShutterCancel(message: SessionMessageEnvelope<RemoteShutterCancelPayload>): boolean {
+    const decision = decideRemoteCommand(this.sessionState.phase, message.type);
+    if (!decision.accepted) {
+      this.appendEvent(decision.warningMessage);
+      return false;
+    }
+
+    this.sessionState = {
+      ...this.sessionState,
+      phase: decision.nextPhase,
+    };
+    this.guideState = {
+      ...this.guideState,
+      countdownStatus: CountdownStatus.IDLE,
+      primaryPrompt: 'Countdown cancelled.',
+    };
+    this.appendEvent('Remote shutter cancelled: ' + message.payload.reason + '.');
+    return true;
+  }
+
+  private handleRemotePausePreview(): boolean {
+    const decision = decideRemoteCommand(this.sessionState.phase, SessionMessageType.REMOTE_PAUSE_PREVIEW);
+    if (!decision.accepted) {
+      return false;
+    }
+    this.guideState = {
+      ...this.guideState,
+      previewMode: PreviewMode.STATE_ONLY,
+    };
+    previewSyncService.stopSync();
+    this.appendEvent('Preview paused by companion.');
+    return true;
+  }
+
+  private handleRemoteResumePreview(): boolean {
+    const decision = decideRemoteCommand(this.sessionState.phase, SessionMessageType.REMOTE_RESUME_PREVIEW);
+    if (!decision.accepted) {
+      return false;
+    }
+    this.guideState = {
+      ...this.guideState,
+      previewMode: PreviewMode.LIVE,
+    };
+    this.appendEvent('Preview resumed by companion.');
+    return true;
+  }
+
+  private handleRemoteReadySignal(message: SessionMessageEnvelope<RemoteReadySignalPayload>): boolean {
+    this.appendEvent('Ready signal from ' + message.payload.deviceName + '.');
     return true;
   }
 

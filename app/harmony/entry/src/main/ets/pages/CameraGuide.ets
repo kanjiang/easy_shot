@@ -2,10 +2,7 @@ import { common } from '@kit.AbilityKit';
 import { router } from '@ohos.router';
 
 import {
-  ConnectionLevel,
-  CountdownStatus,
   GuideStateSnapshot,
-  PreviewMode,
   createDefaultGuideState,
 } from '../core/session/SessionState';
 import { CameraController, CameraPreviewState, CameraPreviewStatus } from '../features/camera/CameraController';
@@ -35,6 +32,8 @@ export struct CameraGuide {
   private lastAlignmentResult: PoseAlignmentResult | null = null;
   private latestThumbnail: string = '';
   @State private isCapturing: boolean = false;
+  private detectionIntervalId: number = -1;
+  private static readonly DETECTION_INTERVAL_MS: number = 100;
 
   aboutToAppear(): void {
     this.templateState = poseTemplateStore.loadTemplatesFromRawfile(getContext().resourceManager as RawfileResourceManagerLike);
@@ -57,9 +56,26 @@ export struct CameraGuide {
   }
 
   aboutToDisappear(): void {
+    this.stopDetectionLoop();
     companionSessionService.onRemoteCapture(null);
     previewSyncService.stopSync();
     void this.stopPreview();
+  }
+
+  private startDetectionLoop(): void {
+    if (this.detectionIntervalId >= 0) {
+      return;
+    }
+    this.detectionIntervalId = setInterval(() => {
+      this.runDetection();
+    }, CameraGuide.DETECTION_INTERVAL_MS);
+  }
+
+  private stopDetectionLoop(): void {
+    if (this.detectionIntervalId >= 0) {
+      clearInterval(this.detectionIntervalId);
+      this.detectionIntervalId = -1;
+    }
   }
 
   private startPreviewSyncIfNeeded(): void {
@@ -82,9 +98,13 @@ export struct CameraGuide {
   private async startPreview(): Promise<void> {
     const context: common.UIAbilityContext = getContext(this) as common.UIAbilityContext;
     this.previewState = await this.cameraController.startPreview(context, this.previewSurfaceId);
+    if (this.previewState.isPreviewing) {
+      this.startDetectionLoop();
+    }
   }
 
   private async stopPreview(): Promise<void> {
+    this.stopDetectionLoop();
     this.previewState = await this.cameraController.stopPreview();
   }
 
@@ -127,9 +147,9 @@ export struct CameraGuide {
         width: 0.80,
         height: 0.78,
       },
-      connectionLevel: alignmentResult.score > 0.65 ? ConnectionLevel.GOOD : ConnectionLevel.DEGRADED,
-      previewMode: PreviewMode.LIVE,
-      countdownStatus: alignmentResult.score > 0.85 ? CountdownStatus.CAPTURING : CountdownStatus.IDLE,
+      connectionLevel: this.guideState.connectionLevel,
+      previewMode: this.guideState.previewMode,
+      countdownStatus: this.guideState.countdownStatus,
       templateRevision: this.templateIndex + 1,
     };
   }

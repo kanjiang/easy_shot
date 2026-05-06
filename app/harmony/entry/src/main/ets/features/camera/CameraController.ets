@@ -4,6 +4,7 @@ import { camera } from '@kit.CameraKit';
 import { image } from '@kit.ImageKit';
 import { fileIo as fs } from '@kit.CoreFileKit';
 import { componentSnapshot } from '@kit.ArkUI';
+import { buffer } from '@kit.ArkTS';
 
 const THUMBNAIL_QUALITY: number = 30;
 
@@ -258,29 +259,31 @@ export class CameraController {
     }
     this.isCapturing = true;
     return new Promise<string>((resolve: (filePath: string) => void) => {
-      this.captureResolve = resolve;
-      const timeoutId: number = setTimeout(() => {
-        if (this.captureResolve !== null) {
-          this.captureResolve = null;
-          this.isCapturing = false;
-          resolve('');
+      let settled: boolean = false;
+      const settle = (filePath: string): void => {
+        if (settled) {
+          return;
         }
-      }, 10000);
-      const originalResolve = this.captureResolve;
-      this.captureResolve = (filePath: string) => {
+        settled = true;
         clearTimeout(timeoutId);
+        this.captureResolve = null;
         this.isCapturing = false;
-        originalResolve(filePath);
+        resolve(filePath);
       };
+
+      this.captureResolve = settle;
+
+      const timeoutId: number = setTimeout(() => {
+        settle('');
+      }, 10000);
+
       const settings: camera.PhotoCaptureSetting = {
         quality: camera.QualityLevel.QUALITY_LEVEL_HIGH,
         rotation: camera.ImageRotation.ROTATION_0,
       };
       this.photoOutput!.capture(settings, (err: BusinessError) => {
         if (err) {
-          clearTimeout(timeoutId);
-          this.captureResolve = null;
-          resolve('');
+          settle('');
         }
       });
     });
@@ -298,16 +301,11 @@ export class CameraController {
         format: 'image/jpeg',
         quality: THUMBNAIL_QUALITY,
       };
-      const buffer: ArrayBuffer = await packer.packing(pixelMap, packOptions);
+      const packedBuffer: ArrayBuffer = await packer.packing(pixelMap, packOptions);
       packer.release();
       pixelMap.release();
 
-      const bytes: Uint8Array = new Uint8Array(buffer);
-      let binary: string = '';
-      for (let i: number = 0; i < bytes.length; i++) {
-        binary += String.fromCharCode(bytes[i]);
-      }
-      return btoa(binary);
+      return buffer.from(packedBuffer).toString('base64');
     } catch (_error) {
       return '';
     }

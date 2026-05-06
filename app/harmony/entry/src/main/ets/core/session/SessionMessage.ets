@@ -6,8 +6,12 @@ export enum SessionMessageType {
   SESSION_REJECT = 'session_reject',
   GUIDE_STATE_UPDATE = 'guide_state_update',
   REMOTE_SHUTTER = 'remote_shutter',
+  REMOTE_SHUTTER_CANCEL = 'remote_shutter_cancel',
   REMOTE_COUNTDOWN = 'remote_countdown',
   REMOTE_SWITCH_TEMPLATE = 'remote_switch_template',
+  REMOTE_PAUSE_PREVIEW = 'remote_pause_preview',
+  REMOTE_RESUME_PREVIEW = 'remote_resume_preview',
+  REMOTE_READY_SIGNAL = 'remote_ready_signal',
   SESSION_WARNING = 'session_warning',
   SESSION_DISCONNECT = 'session_disconnect',
   PREVIEW_FRAME = 'preview_frame',
@@ -65,6 +69,15 @@ export interface PreviewFramePayload {
   width: number;
   height: number;
   timestamp: number;
+}
+
+export interface RemoteShutterCancelPayload {
+  reason: string;
+}
+
+export interface RemoteReadySignalPayload {
+  deviceId: string;
+  deviceName: string;
 }
 
 export function createSessionEnvelope<T>(

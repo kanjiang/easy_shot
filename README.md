@@ -34,10 +34,12 @@ HarmonyOS NEXT V1 代码已落盘，覆盖 M1 + M2 所有核心函数。
 
 | 模块 | 文件数 | 说明 |
 |------|--------|------|
-| pages | 7 | Index / TemplateDetail / CameraGuide / PhotoReview / DevicePairing / CompanionSession / Settings |
+| pages | 7 | Index（含筛选） / TemplateDetail / CameraGuide / PhotoReview / DevicePairing / CompanionSession / Settings |
 | components | 1 | KeypointHeatmap |
-| core/session | 4 | SessionState / SessionMessage / SessionSerializer / SessionFallbackPolicy |
+| core/session | 4 | SessionState / SessionMessage（15 种消息） / SessionSerializer / SessionFallbackPolicy |
 | core/style | 1 | StyleTags |
+| core/locale | 1 | LocaleHelper |
+| core/rules | 1 | LightingCompositionRules（逆光/曝光/构图规则引擎） |
 | features/camera | 1 | CameraController（Camera Kit + 预览缩略图） |
 | features/companion | 5 | DeviceDiscoveryService / CompanionSessionService / CompanionCommandHandler / DistributedTransport / PreviewSyncService |
 | features/poseDetection | 4 | PoseDetector 接口 / MockPoseDetector / MindSporePoseDetector / KeypointMatcher |
@@ -49,14 +51,14 @@ HarmonyOS NEXT V1 代码已落盘，覆盖 M1 + M2 所有核心函数。
 
 ### 资源
 
-- i18n：112 条字符串（zh-CN + en-US）
-- 颜色主题：18 色 × 2（light / dark）
+- i18n：168+ 条字符串（zh-CN + en-US）
+- 颜色主题：25 色 × 2（light / dark）
 - 姿势模板：5 套（standing / sitting / campus_wave / travel_lean_wall / selfie_heart_hands）
 - 图标：3 个 PNG（app / camera / template）
 
 ### 测试
 
-10 个测试套件，43 个用例：
+13 个测试套件，55+ 个用例：
 
 | 测试套件 | 用例数 |
 |----------|--------|
@@ -64,9 +66,12 @@ HarmonyOS NEXT V1 代码已落盘，覆盖 M1 + M2 所有核心函数。
 | CompanionSessionServiceTest | 4 |
 | RemoteShutterTest | 4 |
 | DistributedTransportTest | 4 |
+| DeviceDiscoveryServiceTest | 4 |
+| PreviewSyncServiceTest | 4 |
 | NavigationFlowTest | 3 |
 | KeypointMatcherTest | 6 |
 | PoseDetectionTest | 8 |
+| PoseAlignmentServiceTest | 4 |
 | PoseTemplateTest | 3 |
 | SettingsTest | 3 |
 | StyleAdviceTest | 4 |
@@ -79,6 +84,6 @@ HarmonyOS NEXT V1 代码已落盘，覆盖 M1 + M2 所有核心函数。
 
 ### 统计
 
-- 源文件：38 个 .ets（main）+ 11 个 .ets（test）
-- 总文件：62 个（含 JSON / JSON5 资源配置）
-- 代码行数：~8500+
+- 源文件：40 个 .ets（main）+ 14 个 .ets（test）
+- 总文件：68+ 个（含 JSON / JSON5 资源配置）
+- 代码行数：~9500+

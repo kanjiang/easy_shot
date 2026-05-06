@@ -1,11 +1,13 @@
 import { distributedKVStore } from '@kit.ArkData';
 import { Context } from '@kit.AbilityKit';
+import { buffer } from '@kit.ArkTS';
 
 import { SessionMessageEnvelope } from '../../core/session/SessionMessage';
 import { serializeSessionMessage, deserializeSessionMessage } from '../../core/session/SessionSerializer';
 
 const KV_STORE_ID: string = 'easy_shot_session';
 const MESSAGE_KEY_PREFIX: string = 'msg_';
+const MAX_STORED_MESSAGES: number = 50;
 
 export type OnRemoteMessageCallback = (message: SessionMessageEnvelope<object>) => void;
 
@@ -15,6 +17,7 @@ export class DistributedTransport {
   private onRemoteMessage: OnRemoteMessageCallback | null = null;
   private isInitialized: boolean = false;
   private localDeviceId: string = '';
+  private messageSeq: number = 0;
 
   async initialize(context: Context): Promise<boolean> {
     try {
@@ -58,12 +61,31 @@ export class DistributedTransport {
     }
 
     try {
-      const key: string = MESSAGE_KEY_PREFIX + this.localDeviceId + '_' + Date.now().toString();
+      this.messageSeq++;
+      const key: string = MESSAGE_KEY_PREFIX + this.localDeviceId + '_' + this.messageSeq.toString();
       const value: string = serializeSessionMessage(message);
       await this.kvStore.put(key, value);
+      await this.pruneOldMessages();
       return true;
     } catch (_error) {
       return false;
+    }
+  }
+
+  private async pruneOldMessages(): Promise<void> {
+    if (this.kvStore === null) {
+      return;
+    }
+    try {
+      const allEntries = await this.kvStore.getEntries(MESSAGE_KEY_PREFIX + this.localDeviceId);
+      if (allEntries.length > MAX_STORED_MESSAGES) {
+        const toDelete = allEntries.slice(0, allEntries.length - MAX_STORED_MESSAGES);
+        for (const entry of toDelete) {
+          await this.kvStore.delete(entry.key.toString());
+        }
+      }
+    } catch (_error) {
+      // ignore prune errors
     }
   }
 

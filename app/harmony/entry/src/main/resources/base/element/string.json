@@ -591,6 +591,86 @@
         {
             "name": "mock_tip_experiment",
             "value": "多尝试不同角度，找到最佳上镜感"
+        },
+        {
+            "name": "filter_title",
+            "value": "筛选"
+        },
+        {
+            "name": "filter_style",
+            "value": "风格："
+        },
+        {
+            "name": "filter_scene",
+            "value": "场景："
+        },
+        {
+            "name": "filter_difficulty",
+            "value": "难度："
+        },
+        {
+            "name": "filter_all",
+            "value": "全部"
+        },
+        {
+            "name": "difficulty_easy",
+            "value": "简单"
+        },
+        {
+            "name": "difficulty_medium",
+            "value": "中等"
+        },
+        {
+            "name": "difficulty_hard",
+            "value": "困难"
+        },
+        {
+            "name": "connection_good",
+            "value": "连接: 良好"
+        },
+        {
+            "name": "connection_degraded",
+            "value": "连接: 不稳定"
+        },
+        {
+            "name": "connection_poor",
+            "value": "连接: 较差"
+        },
+        {
+            "name": "preview_live",
+            "value": "预览: 实时"
+        },
+        {
+            "name": "preview_thumbnail",
+            "value": "预览: 缩略图"
+        },
+        {
+            "name": "preview_state_only",
+            "value": "预览: 仅状态"
+        },
+        {
+            "name": "countdown_running",
+            "value": "倒计时中"
+        },
+        {
+            "name": "countdown_capturing",
+            "value": "拍摄中"
+        },
+        {
+            "name": "countdown_ready",
+            "value": "就绪"
+        },
+        {
+            "name": "guide_composition",
+            "value": "构图"
+        },
+        {
+            "name": "guide_subject",
+            "value": "主体"
+        },
+        {
+            "name": "guide_live_prompt",
+            "value": "实时提示"
         }
     ]
 }
