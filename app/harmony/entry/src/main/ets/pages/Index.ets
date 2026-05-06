@@ -102,18 +102,6 @@ struct Index {
     router.pushUrl({ url: 'pages/PhotoMap' });
   }
 
-  private navigateToPhotoHistory(): void {
-    router.pushUrl({ url: 'pages/PhotoHistory' });
-  }
-
-  private navigateToTemplateEditor(): void {
-    router.pushUrl({ url: 'pages/TemplateEditor' });
-  }
-
-  private navigateToBluetoothPairing(): void {
-    router.pushUrl({ url: 'pages/BluetoothPairing' });
-  }
-
   build() {
     Scroll() {
       Column({ space: 16 }) {
@@ -429,54 +417,6 @@ struct Index {
               this.navigateToPhotoMap();
             })
             .width('100%')
-        }
-        .padding(16)
-        .borderRadius(16)
-        .backgroundColor('#0D000000')
-        .width('100%')
-
-        // History Entry
-        Column({ space: 8 }) {
-          Text('拍摄历史')
-            .fontSize(18)
-            .fontWeight(FontWeight.Medium)
-            .accessibilityText('拍摄历史记录')
-          Button('📸 查看历史')
-            .onClick(() => { this.navigateToPhotoHistory(); })
-            .width('100%')
-            .accessibilityText('打开拍摄历史记录页面')
-        }
-        .padding(16)
-        .borderRadius(16)
-        .backgroundColor('#0D000000')
-        .width('100%')
-
-        // Template Editor Entry
-        Column({ space: 8 }) {
-          Text('自定义模板')
-            .fontSize(18)
-            .fontWeight(FontWeight.Medium)
-            .accessibilityText('自定义姿势模板')
-          Button('✏️ 创建模板')
-            .onClick(() => { this.navigateToTemplateEditor(); })
-            .width('100%')
-            .accessibilityText('打开模板编辑器创建自定义模板')
-        }
-        .padding(16)
-        .borderRadius(16)
-        .backgroundColor('#0D000000')
-        .width('100%')
-
-        // Bluetooth Pairing Entry
-        Column({ space: 8 }) {
-          Text('蓝牙配对')
-            .fontSize(18)
-            .fontWeight(FontWeight.Medium)
-            .accessibilityText('蓝牙快速配对')
-          Button('📡 蓝牙连接')
-            .onClick(() => { this.navigateToBluetoothPairing(); })
-            .width('100%')
-            .accessibilityText('通过蓝牙连接伴侣设备')
         }
         .padding(16)
         .borderRadius(16)

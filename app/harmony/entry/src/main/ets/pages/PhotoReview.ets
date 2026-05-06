@@ -340,21 +340,6 @@ struct PhotoReview {
         }
         .width('100%')
 
-        // Share & Export
-        Row({ space: 12 }) {
-          Button('分享')
-            .fontSize(14)
-            .layoutWeight(1)
-            .accessibilityText('分享照片到其他应用')
-            .onClick(() => { void this.sharePhoto(); })
-          Button('导出到相册')
-            .fontSize(14)
-            .layoutWeight(1)
-            .accessibilityText('导出照片到系统相册')
-            .onClick(() => { void this.exportPhoto(); })
-        }
-        .width('100%')
-
         if (this.templateId.length > 0) {
           Button($r('app.string.view_template_detail'))
             .fontSize(13)

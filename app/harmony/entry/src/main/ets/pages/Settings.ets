@@ -5,7 +5,6 @@ import { settingsStore } from '../features/settings/SettingsStore';
 import { accessibilityService, FontScale } from '../features/accessibility/AccessibilityService';
 import { screenOrientationService, OrientationLock } from '../features/device/ScreenOrientationService';
 import { storageManagementService, StorageStatus } from '../features/storage/StorageManagementService';
-import { themeService, AppTheme, AppLocale } from '../features/theme/ThemeService';
 
 @Entry
 @Component
@@ -14,8 +13,6 @@ struct Settings {
   @State private fontScale: number = FontScale.NORMAL;
   @State private orientationLock: string = OrientationLock.AUTO;
   @State private storageStatus: StorageStatus | null = null;
-  @State private currentTheme: string = AppTheme.SYSTEM;
-  @State private currentLocale: string = AppLocale.SYSTEM;
 
   aboutToAppear(): void {
     this.settings = settingsStore.load(getContext(this));
@@ -24,9 +21,6 @@ struct Settings {
     storageManagementService.initialize(getContext(this));
     this.storageStatus = storageManagementService.getStatus();
     this.orientationLock = screenOrientationService.getCurrentLock();
-    themeService.initialize(getContext(this));
-    this.currentTheme = themeService.getConfig().theme;
-    this.currentLocale = themeService.getConfig().locale;
   }
 
   build() {
@@ -252,68 +246,7 @@ struct Settings {
         .backgroundColor('#0D000000')
         .width('100%')
 
-        // Theme
-        Column({ space: 16 }) {
-          Text('主题')
-            .fontSize(20)
-            .fontWeight(FontWeight.Medium)
-            .accessibilityText('选择应用主题')
-
-          Row({ space: 8 }) {
-            Button('跟随系统')
-              .fontSize(13)
-              .backgroundColor(this.currentTheme === AppTheme.SYSTEM ? $r('app.color.easy_shot_primary') : $r('app.color.easy_shot_divider'))
-              .accessibilityText('跟随系统主题')
-              .onClick(() => { this.currentTheme = AppTheme.SYSTEM; themeService.setTheme(AppTheme.SYSTEM); })
-            Button('浅色')
-              .fontSize(13)
-              .backgroundColor(this.currentTheme === AppTheme.LIGHT ? $r('app.color.easy_shot_primary') : $r('app.color.easy_shot_divider'))
-              .accessibilityText('浅色主题')
-              .onClick(() => { this.currentTheme = AppTheme.LIGHT; themeService.setTheme(AppTheme.LIGHT); })
-            Button('深色')
-              .fontSize(13)
-              .backgroundColor(this.currentTheme === AppTheme.DARK ? $r('app.color.easy_shot_primary') : $r('app.color.easy_shot_divider'))
-              .accessibilityText('深色主题')
-              .onClick(() => { this.currentTheme = AppTheme.DARK; themeService.setTheme(AppTheme.DARK); })
-          }
-        }
-        .padding(16)
-        .borderRadius(16)
-        .backgroundColor('#0D000000')
-        .width('100%')
-
-        // Locale
-        Column({ space: 16 }) {
-          Text('语言')
-            .fontSize(20)
-            .fontWeight(FontWeight.Medium)
-            .accessibilityText('选择应用语言')
-
-          Row({ space: 8 }) {
-            Button('系统')
-              .fontSize(13)
-              .backgroundColor(this.currentLocale === AppLocale.SYSTEM ? $r('app.color.easy_shot_primary') : $r('app.color.easy_shot_divider'))
-              .accessibilityText('跟随系统语言')
-              .onClick(() => { this.currentLocale = AppLocale.SYSTEM; themeService.setLocale(AppLocale.SYSTEM); })
-            Button('中文')
-              .fontSize(13)
-              .backgroundColor(this.currentLocale === AppLocale.ZH_CN ? $r('app.color.easy_shot_primary') : $r('app.color.easy_shot_divider'))
-              .accessibilityText('切换到中文')
-              .onClick(() => { this.currentLocale = AppLocale.ZH_CN; themeService.setLocale(AppLocale.ZH_CN); })
-            Button('English')
-              .fontSize(13)
-              .backgroundColor(this.currentLocale === AppLocale.EN_US ? $r('app.color.easy_shot_primary') : $r('app.color.easy_shot_divider'))
-              .accessibilityText('Switch to English')
-              .onClick(() => { this.currentLocale = AppLocale.EN_US; themeService.setLocale(AppLocale.EN_US); })
-          }
-        }
-        .padding(16)
-        .borderRadius(16)
-        .backgroundColor('#0D000000')
-        .width('100%')
-
         Column({ space: 8 }) {
-          Text($r('app.string.about_title'))
             .fontSize(20)
             .fontWeight(FontWeight.Medium)
 

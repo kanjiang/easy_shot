@@ -369,7 +369,7 @@ export struct CameraGuide {
           })
             .id(PREVIEW_XCOMPONENT_ID)
             .width('100%')
-            .height(this.isTripodMode ? '100%' : (this.isHalfFolded ? '100%' : 420))
+            .height(this.isTripodMode ? '100%' : 420)
             .backgroundColor($r('app.color.easy_shot_surface'))
             .accessibilityText('相机预览')
             .onLoad(() => {
@@ -379,7 +379,7 @@ export struct CameraGuide {
           GuideOverlayRenderer({ guideState: this.guideState, showBackdrop: false })
         }
         .width('100%')
-        .height(this.isTripodMode ? '70%' : (this.isHalfFolded ? '45%' : 420))
+        .height(this.isTripodMode ? '70%' : 420)
 
         if (this.isTripodMode) {
           Column({ space: 10 }) {
