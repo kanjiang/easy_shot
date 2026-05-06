@@ -10,6 +10,9 @@ import { getStyleAdvice } from '../features/styleAdvice/StyleAdviceService';
 import { settingsStore } from '../features/settings/SettingsStore';
 import { KeypointHeatmap } from '../components/KeypointHeatmap';
 import { photoMapService } from '../features/map/PhotoMapService';
+import { photoShareService } from '../features/share/PhotoShareService';
+import { photoHistoryService } from '../features/history/PhotoHistoryService';
+import { notificationService } from '../features/notification/NotificationService';
 
 interface PhotoReviewParams {
   photoFilePath: string;
@@ -76,6 +79,35 @@ struct PhotoReview {
         timestamp: this.captureTimestamp || Date.now(),
         templateId: this.templateId,
       });
+    }
+
+    // Save to history
+    photoHistoryService.initialize(getContext(this));
+    photoHistoryService.addEntry({
+      id: `hist_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      photoPath: this.photoFilePath,
+      templateId: this.templateId,
+      templateTitle: this.templateTitle,
+      alignmentScore: this.alignmentScore,
+      timestamp: this.captureTimestamp || Date.now(),
+      latitude: this.latitude,
+      longitude: this.longitude,
+    });
+
+    // Notify
+    void notificationService.notifyCaptureComplete(this.templateTitle, this.alignmentScore);
+  }
+
+  private async sharePhoto(): Promise<void> {
+    const context = getContext(this) as common.UIAbilityContext;
+    await photoShareService.sharePhoto(context, this.photoFilePath, this.templateTitle);
+  }
+
+  private async exportPhoto(): Promise<void> {
+    const context = getContext(this) as common.UIAbilityContext;
+    const success = await photoShareService.exportToGallery(context, this.photoFilePath);
+    if (success) {
+      this.isSaved = true;
     }
   }
 
@@ -305,6 +337,21 @@ struct PhotoReview {
               })
               .layoutWeight(1)
           }
+        }
+        .width('100%')
+
+        // Share & Export
+        Row({ space: 12 }) {
+          Button('分享')
+            .fontSize(14)
+            .layoutWeight(1)
+            .accessibilityText('分享照片到其他应用')
+            .onClick(() => { void this.sharePhoto(); })
+          Button('导出到相册')
+            .fontSize(14)
+            .layoutWeight(1)
+            .accessibilityText('导出照片到系统相册')
+            .onClick(() => { void this.exportPhoto(); })
         }
         .width('100%')
 

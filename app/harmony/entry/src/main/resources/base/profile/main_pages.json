@@ -7,6 +7,9 @@
         "pages/CompanionSession",
         "pages/Settings",
         "pages/StyleGuide",
-        "pages/PhotoMap"
+        "pages/PhotoMap",
+        "pages/BluetoothPairing",
+        "pages/PhotoHistory",
+        "pages/TemplateEditor"
     ]
 }
