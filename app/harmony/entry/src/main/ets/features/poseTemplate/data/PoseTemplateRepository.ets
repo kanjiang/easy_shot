@@ -8,6 +8,7 @@ export interface RawFileDescriptorLike {
 
 export interface RawfileResourceManagerLike {
   getRawFd(path: string): RawFileDescriptorLike;
+  getRawFileContentSync?(path: string): Uint8Array;
 }
 
 export interface PoseTemplateRepository {

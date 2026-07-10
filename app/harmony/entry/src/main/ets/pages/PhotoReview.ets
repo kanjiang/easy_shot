@@ -1,18 +1,29 @@
 import { router } from '@ohos.router';
-import { photoAccessHelper } from '@kit.MediaLibraryKit';
-import { fileUri } from '@kit.CoreFileKit';
 import { promptAction } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
-import { BusinessError } from '@kit.BasicServicesKit';
 
-import { StyleAdvice, StyleAdviceStatus } from '../features/styleAdvice/StyleAdviceModel';
-import { getStyleAdvice } from '../features/styleAdvice/StyleAdviceService';
+import {
+  StyleAdvice,
+  StyleAdviceDeliveryMode,
+  StyleAdviceResolution,
+  StyleAdviceStatus,
+} from '../features/styleAdvice/StyleAdviceModel';
+import { loadCloudStyleAdviceConfig } from '../features/styleAdvice/StyleAdviceConfig';
+import { resolveStyleAdvice } from '../features/styleAdvice/StyleAdviceService';
 import { settingsStore } from '../features/settings/SettingsStore';
+import {
+  notifyPhotoReviewCapture,
+  persistPhotoReviewMetadata,
+} from '../features/review/PhotoReviewSideEffects';
+import {
+  resolvePhotoReviewAdviceViewState,
+  buildPhotoReviewRetakeWithAdviceParams,
+  buildPhotoReviewTemplateDetailParams,
+  resolvePhotoReviewSaveOutcome,
+  shouldShowPhotoReviewRetakeWithAdvice,
+} from '../features/review/PhotoReviewViewActions';
 import { KeypointHeatmap } from '../components/KeypointHeatmap';
-import { photoMapService } from '../features/map/PhotoMapService';
 import { photoShareService } from '../features/share/PhotoShareService';
-import { photoHistoryService } from '../features/history/PhotoHistoryService';
-import { notificationService } from '../features/notification/NotificationService';
 
 interface PhotoReviewParams {
   photoFilePath: string;
@@ -27,6 +38,7 @@ interface PhotoReviewParams {
   latitude: string;
   longitude: string;
   captureTimestamp: string;
+  isVideo?: string;
 }
 
 @Entry
@@ -47,6 +59,9 @@ struct PhotoReview {
   @State private latitude: number = 0;
   @State private longitude: number = 0;
   @State private captureTimestamp: number = 0;
+  @State private isVideo: boolean = false;
+  @State private adviceDeliveryMode: StyleAdviceDeliveryMode = 'local_only';
+  private videoController: VideoController = new VideoController();
 
   aboutToAppear(): void {
     const params = router.getParams() as PhotoReviewParams | undefined;
@@ -63,68 +78,70 @@ struct PhotoReview {
       this.latitude = Number.parseFloat(params.latitude ?? '0');
       this.longitude = Number.parseFloat(params.longitude ?? '0');
       this.captureTimestamp = Number.parseInt(params.captureTimestamp ?? '0', 10);
+      this.isVideo = params.isVideo === 'true';
     }
-    void this.loadAdvice();
+    if (!this.isVideo) {
+      void this.loadAdvice();
+    }
     this.savePhotoPin();
   }
 
   private savePhotoPin(): void {
-    if (this.latitude !== 0 || this.longitude !== 0) {
-      photoMapService.initialize(getContext(this));
-      photoMapService.addPin({
-        id: `pin_${this.captureTimestamp}_${Math.random().toString(36).substring(2, 7)}`,
-        latitude: this.latitude,
-        longitude: this.longitude,
-        photoPath: this.photoFilePath,
-        timestamp: this.captureTimestamp || Date.now(),
-        templateId: this.templateId,
-      });
-    }
-
-    // Save to history
-    photoHistoryService.initialize(getContext(this));
-    photoHistoryService.addEntry({
-      id: `hist_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-      photoPath: this.photoFilePath,
-      templateId: this.templateId,
+    const metadataSaved = persistPhotoReviewMetadata(getContext(this), {
+      photoFilePath: this.photoFilePath,
       templateTitle: this.templateTitle,
+      templateId: this.templateId,
       alignmentScore: this.alignmentScore,
-      timestamp: this.captureTimestamp || Date.now(),
       latitude: this.latitude,
       longitude: this.longitude,
+      captureTimestamp: this.captureTimestamp,
+      isVideo: this.isVideo,
     });
 
+    if (!metadataSaved) {
+      promptAction.showToast({ message: $r('app.string.review_metadata_save_failed') });
+    }
+
     // Notify
-    void notificationService.notifyCaptureComplete(this.templateTitle, this.alignmentScore);
+    void this.notifyCaptureComplete();
+  }
+
+  private async notifyCaptureComplete(): Promise<void> {
+    const notified = await notifyPhotoReviewCapture(this.templateTitle, this.alignmentScore);
+    if (!notified) {
+      promptAction.showToast({ message: $r('app.string.capture_notification_unavailable') });
+    }
   }
 
   private async sharePhoto(): Promise<void> {
     const context = getContext(this) as common.UIAbilityContext;
-    await photoShareService.sharePhoto(context, this.photoFilePath, this.templateTitle);
-  }
-
-  private async exportPhoto(): Promise<void> {
-    const context = getContext(this) as common.UIAbilityContext;
-    const success = await photoShareService.exportToGallery(context, this.photoFilePath);
-    if (success) {
-      this.isSaved = true;
-    }
+    const success = await photoShareService.sharePhoto(context, this.photoFilePath, this.templateTitle, this.isVideo);
+    promptAction.showToast({
+      message: success ? $r('app.string.share_success') : $r('app.string.share_failed'),
+    });
   }
 
   private async loadAdvice(): Promise<void> {
-    if (!settingsStore.getSettings().enableCloudAdvice) {
+    if (this.isVideo) {
+      this.advice = null;
       this.adviceStatus = StyleAdviceStatus.IDLE;
       return;
     }
+
+    const context: common.UIAbilityContext = getContext(this) as common.UIAbilityContext;
+    const cloudConfig = loadCloudStyleAdviceConfig(context.resourceManager);
+
     this.adviceStatus = StyleAdviceStatus.LOADING;
     try {
-      this.advice = await getStyleAdvice({
+      const resolution: StyleAdviceResolution = await resolveStyleAdvice({
         templateId: this.templateId,
         styleTag: this.styleTag,
         alignmentScore: this.alignmentScore,
         matchedPoints: this.matchedPoints,
         totalPoints: this.totalPoints,
-      });
+      }, cloudConfig.apiBase);
+      this.advice = resolution.advice;
+      this.adviceDeliveryMode = resolution.deliveryMode;
       this.adviceStatus = StyleAdviceStatus.SUCCESS;
     } catch (_error) {
       this.adviceStatus = StyleAdviceStatus.ERROR;
@@ -132,22 +149,26 @@ struct PhotoReview {
   }
 
   private async saveToGallery(): Promise<void> {
-    try {
-      const context: common.UIAbilityContext = getContext(this) as common.UIAbilityContext;
-      const phAccessHelper: photoAccessHelper.PhotoAccessHelper = photoAccessHelper.getPhotoAccessHelper(context);
-      const photoFileUri: string = fileUri.getUriFromPath(this.photoFilePath);
-      const assetChangeRequest: photoAccessHelper.MediaAssetChangeRequest =
-        photoAccessHelper.MediaAssetChangeRequest.createImageAssetRequest(context, photoFileUri);
-      await phAccessHelper.applyChanges(assetChangeRequest);
-      this.isSaved = true;
-      promptAction.showToast({ message: $r('app.string.save_success') });
-    } catch (error) {
-      const err: BusinessError = error as BusinessError;
-      promptAction.showToast({ message: $r('app.string.save_failed_prefix') });
-    }
+    const context: common.UIAbilityContext = getContext(this) as common.UIAbilityContext;
+    const success = await photoShareService.exportToGallery(context, this.photoFilePath, this.isVideo);
+    const outcome = resolvePhotoReviewSaveOutcome(success, this.isSaved);
+    this.isSaved = outcome.isSaved;
+    promptAction.showToast({
+      message: outcome.toastKind === 'save_success'
+        ? $r('app.string.save_success')
+        : $r('app.string.save_failed_prefix'),
+    });
   }
 
   build() {
+    const retakeWithAdviceParams = buildPhotoReviewRetakeWithAdviceParams(this.templateId, this.advice);
+    const templateDetailParams = buildPhotoReviewTemplateDetailParams(this.templateId);
+    const adviceViewState = resolvePhotoReviewAdviceViewState(
+      this.adviceStatus,
+      this.advice,
+      this.adviceDeliveryMode,
+    );
+
     Scroll() {
       Column({ space: 16 }) {
         Text($r('app.string.photo_review_title'))
@@ -159,12 +180,26 @@ struct PhotoReview {
           .opacity(0.72)
 
         if (this.photoFilePath.length > 0) {
-          Image('file://' + this.photoFilePath)
-            .width('100%')
-            .height(400)
-            .objectFit(ImageFit.Contain)
-            .borderRadius(12)
-            .accessibilityText('拍摄的照片，模板: ' + this.templateTitle)
+          if (this.isVideo) {
+            Video({
+              src: 'file://' + this.photoFilePath,
+              controller: this.videoController,
+            })
+              .width('100%')
+              .height(400)
+              .controls(true)
+              .autoPlay(false)
+              .loop(false)
+              .borderRadius(12)
+              .accessibilityText($r('app.string.photo_review_video_accessibility', this.templateTitle))
+          } else {
+            Image('file://' + this.photoFilePath)
+              .width('100%')
+              .height(400)
+              .objectFit(ImageFit.Contain)
+              .borderRadius(12)
+              .accessibilityText($r('app.string.photo_review_photo_accessibility', this.templateTitle))
+          }
         } else {
           Column() {
             Text($r('app.string.no_photo'))
@@ -178,106 +213,140 @@ struct PhotoReview {
           .borderRadius(12)
         }
 
-        Column({ space: 8 }) {
-          Text($r('app.string.pose_analysis_title'))
-            .fontSize(18)
-            .fontWeight(FontWeight.Medium)
+        if (this.isVideo) {
+          Column({ space: 8 }) {
+            Text($r('app.string.ai_review_title'))
+              .fontSize(18)
+              .fontWeight(FontWeight.Medium)
 
-          KeypointHeatmap({
-            keypointDistances: this.keypointDistances,
-            tolerance: this.tolerance,
-            alignmentScore: this.alignmentScore,
-          })
-        }
-        .width('100%')
-        .padding(16)
-        .backgroundColor($r('app.color.easy_shot_background_secondary'))
-        .borderRadius(8)
-
-        Column({ space: 8 }) {
-          Text($r('app.string.ai_review_title'))
-            .fontSize(18)
-            .fontWeight(FontWeight.Medium)
-
-          if (this.adviceStatus === StyleAdviceStatus.LOADING) {
-            LoadingProgress()
-              .width(32)
-              .height(32)
-
-            Text($r('app.string.advice_loading'))
+            Text($r('app.string.video_review_note'))
               .fontSize(14)
-              .opacity(0.65)
-          } else if (this.adviceStatus === StyleAdviceStatus.ERROR) {
-            Text($r('app.string.advice_error'))
-              .fontSize(14)
-              .fontColor($r('app.color.easy_shot_error'))
-          } else if (this.advice !== null) {
-            Row({ space: 12 }) {
-              Column({ space: 4 }) {
-                Text($r('app.string.advice_overall_score'))
-                  .fontSize(12)
-                  .opacity(0.6)
+              .opacity(0.7)
+          }
+          .width('100%')
+          .padding(16)
+          .backgroundColor($r('app.color.easy_shot_background_secondary'))
+          .borderRadius(8)
+        } else {
+          Column({ space: 8 }) {
+            Text($r('app.string.pose_analysis_title'))
+              .fontSize(18)
+              .fontWeight(FontWeight.Medium)
 
-                Text(`${this.advice.overallScore}`)
-                  .fontSize(28)
-                  .fontWeight(FontWeight.Bold)
-                  .fontColor(this.advice.overallScore >= 80 ? $r('app.color.easy_shot_score_good') : this.advice.overallScore >= 50 ? $r('app.color.easy_shot_score_medium') : $r('app.color.easy_shot_score_low'))
-              }
-              .alignItems(HorizontalAlign.Center)
+            KeypointHeatmap({
+              keypointDistances: this.keypointDistances,
+              tolerance: this.tolerance,
+              alignmentScore: this.alignmentScore,
+            })
+          }
+          .width('100%')
+          .padding(16)
+          .backgroundColor($r('app.color.easy_shot_background_secondary'))
+          .borderRadius(8)
 
-              Column({ space: 4 }) {
-                Text($r('app.string.advice_style_match'))
-                  .fontSize(12)
-                  .opacity(0.6)
+          Column({ space: 8 }) {
+            Text($r('app.string.ai_review_title'))
+              .fontSize(18)
+              .fontWeight(FontWeight.Medium)
 
-                Text(`${this.advice.styleMatch}`)
-                  .fontSize(28)
-                  .fontWeight(FontWeight.Bold)
-                  .fontColor($r('app.color.easy_shot_secondary'))
-              }
-              .alignItems(HorizontalAlign.Center)
+            if (adviceViewState.modeKind !== null) {
+              Text(
+                adviceViewState.modeKind === 'cloud'
+                  ? $r('app.string.advice_mode_cloud')
+                  : adviceViewState.modeKind === 'cloud_disabled'
+                    ? $r('app.string.advice_mode_cloud_disabled')
+                    : adviceViewState.modeKind === 'api_unconfigured'
+                      ? $r('app.string.advice_mode_api_unconfigured')
+                      : adviceViewState.modeKind === 'cloud_failed'
+                        ? $r('app.string.advice_mode_cloud_failed')
+                        : $r('app.string.advice_mode_local_only')
+              )
+                .fontSize(13)
+                .fontColor(adviceViewState.useCloudAccent
+                  ? $r('app.color.easy_shot_score_good')
+                  : $r('app.color.easy_shot_text_secondary'))
             }
 
-            Text($r('app.string.advice_composition_label'))
-              .fontSize(14)
-              .fontWeight(FontWeight.Medium)
-              .margin({ top: 8 })
+            if (adviceViewState.sectionKind === 'loading') {
+              LoadingProgress()
+                .width(32)
+                .height(32)
 
-            Text(this.advice.compositionAdvice)
-              .fontSize(14)
-              .opacity(0.78)
+              Text($r('app.string.advice_loading'))
+                .fontSize(14)
+                .opacity(0.65)
+            } else if (adviceViewState.sectionKind === 'error') {
+              Text($r('app.string.advice_error'))
+                .fontSize(14)
+                .fontColor($r('app.color.easy_shot_error'))
+            } else if (adviceViewState.sectionKind === 'content' && this.advice !== null) {
+              Row({ space: 12 }) {
+                Column({ space: 4 }) {
+                  Text($r('app.string.advice_overall_score'))
+                    .fontSize(12)
+                    .opacity(0.6)
 
-            Text($r('app.string.advice_pose_label'))
-              .fontSize(14)
-              .fontWeight(FontWeight.Medium)
-              .margin({ top: 8 })
+                  Text(`${this.advice.overallScore}`)
+                    .fontSize(28)
+                    .fontWeight(FontWeight.Bold)
+                    .fontColor(this.advice.overallScore >= 80 ? $r('app.color.easy_shot_score_good') : this.advice.overallScore >= 50 ? $r('app.color.easy_shot_score_medium') : $r('app.color.easy_shot_score_low'))
+                }
+                .alignItems(HorizontalAlign.Center)
 
-            Text(this.advice.poseAdvice)
-              .fontSize(14)
-              .opacity(0.78)
+                Column({ space: 4 }) {
+                  Text($r('app.string.advice_style_match'))
+                    .fontSize(12)
+                    .opacity(0.6)
 
-            if (this.advice.suggestions.length > 0) {
-              Text($r('app.string.advice_suggestions_label'))
+                  Text(`${this.advice.styleMatch}`)
+                    .fontSize(28)
+                    .fontWeight(FontWeight.Bold)
+                    .fontColor($r('app.color.easy_shot_secondary'))
+                }
+                .alignItems(HorizontalAlign.Center)
+              }
+
+              Text($r('app.string.advice_composition_label'))
                 .fontSize(14)
                 .fontWeight(FontWeight.Medium)
                 .margin({ top: 8 })
 
-              ForEach(this.advice.suggestions, (tip: string) => {
-                Text(`• ${tip}`)
-                  .fontSize(13)
-                  .opacity(0.72)
-              })
+              Text(this.advice.compositionAdvice)
+                .fontSize(14)
+                .opacity(0.78)
+
+              Text($r('app.string.advice_pose_label'))
+                .fontSize(14)
+                .fontWeight(FontWeight.Medium)
+                .margin({ top: 8 })
+
+              Text(this.advice.poseAdvice)
+                .fontSize(14)
+                .opacity(0.78)
+
+              if (this.advice.suggestions.length > 0) {
+                Text($r('app.string.advice_suggestions_label'))
+                  .fontSize(14)
+                  .fontWeight(FontWeight.Medium)
+                  .margin({ top: 8 })
+
+                ForEach(this.advice.suggestions, (tip: string) => {
+                  Text(`• ${tip}`)
+                    .fontSize(13)
+                    .opacity(0.72)
+                })
+              }
+            } else {
+              Text($r('app.string.ai_review_placeholder'))
+                .fontSize(14)
+                .opacity(0.65)
             }
-          } else {
-            Text($r('app.string.ai_review_placeholder'))
-              .fontSize(14)
-              .opacity(0.65)
           }
+          .width('100%')
+          .padding(16)
+          .backgroundColor($r('app.color.easy_shot_background_secondary'))
+          .borderRadius(8)
         }
-        .width('100%')
-        .padding(16)
-        .backgroundColor($r('app.color.easy_shot_background_secondary'))
-        .borderRadius(8)
 
         if (this.captureTimestamp > 0) {
           Row({ space: 12 }) {
@@ -297,21 +366,18 @@ struct PhotoReview {
         }
 
         Row({ space: 12 }) {
-          Button($r('app.string.retake_photo'))
+          Button(this.isVideo ? $r('app.string.retake_video') : $r('app.string.retake_photo'))
             .onClick(() => {
               router.back();
             })
             .layoutWeight(1)
 
-          if (this.advice !== null && this.advice.suggestions.length > 0) {
+          if (shouldShowPhotoReviewRetakeWithAdvice(this.isVideo, this.advice) && retakeWithAdviceParams !== null) {
             Button($r('app.string.retake_with_advice'))
               .onClick(() => {
                 router.pushUrl({
                   url: 'pages/CameraGuide',
-                  params: {
-                    templateId: this.templateId,
-                    adviceHint: this.advice!.suggestions[0],
-                  } as Record<string, string>,
+                  params: retakeWithAdviceParams,
                 });
               })
               .layoutWeight(1)
@@ -323,24 +389,24 @@ struct PhotoReview {
               .backgroundColor($r('app.color.easy_shot_shutter_disabled'))
               .enabled(false)
           } else {
-            SaveButton({
-              icon: SaveIconStyle.FULL_FILLED,
-              text: SaveDescription.SAVE_IMAGE,
-              buttonType: ButtonType.Capsule,
-            })
-              .onClick(async (event: ClickEvent, result: SaveButtonOnClickResult) => {
-                if (result === SaveButtonOnClickResult.SUCCESS) {
-                  await this.saveToGallery();
-                } else {
-                  promptAction.showToast({ message: $r('app.string.authorization_failed') });
-                }
+            Button($r('app.string.save_to_gallery'))
+              .onClick(async () => {
+                await this.saveToGallery();
               })
               .layoutWeight(1)
           }
         }
         .width('100%')
 
-        if (this.templateId.length > 0) {
+        if (this.photoFilePath.length > 0) {
+          Button(this.isVideo ? $r('app.string.share_video') : $r('app.string.share_photo'))
+            .width('100%')
+            .onClick(() => {
+              void this.sharePhoto();
+            })
+        }
+
+        if (templateDetailParams !== null) {
           Button($r('app.string.view_template_detail'))
             .fontSize(13)
             .backgroundColor(Color.Transparent)
@@ -348,7 +414,7 @@ struct PhotoReview {
             .onClick(() => {
               router.pushUrl({
                 url: 'pages/Index',
-                params: { openTemplateId: this.templateId } as Record<string, string>,
+                params: templateDetailParams,
               });
             })
         }

@@ -15,10 +15,13 @@ export enum BleDiscoveryState {
   ERROR = 'error',
 }
 
+export type BleFailureContext = 'none' | 'scan' | 'connect';
+
 const EASY_SHOT_SERVICE_UUID: string = '0000fff0-0000-1000-8000-00805f9b34fb';
 
 export class BluetoothPairingService {
   private state: BleDiscoveryState = BleDiscoveryState.IDLE;
+  private lastFailureContext: BleFailureContext = 'none';
   private discoveredPeers: BluetoothPeer[] = [];
   private onPeersUpdate: ((peers: BluetoothPeer[]) => void) | null = null;
   private onStateChange: ((state: BleDiscoveryState) => void) | null = null;
@@ -31,6 +34,10 @@ export class BluetoothPairingService {
     return [...this.discoveredPeers];
   }
 
+  getLastFailureContext(): BleFailureContext {
+    return this.lastFailureContext;
+  }
+
   setOnPeersUpdate(cb: (peers: BluetoothPeer[]) => void): void {
     this.onPeersUpdate = cb;
   }
@@ -41,6 +48,7 @@ export class BluetoothPairingService {
 
   startScan(): void {
     try {
+      this.lastFailureContext = 'none';
       this.state = BleDiscoveryState.SCANNING;
       this.discoveredPeers = [];
       this.notifyState();
@@ -49,7 +57,7 @@ export class BluetoothPairingService {
         serviceUuid: EASY_SHOT_SERVICE_UUID,
       };
 
-      ble.on('BLEDeviceFind', (results: Array<ble.ScanResult>) => {
+      this.registerBleDeviceFind((results: Array<ble.ScanResult>) => {
         for (const result of results) {
           const existing = this.discoveredPeers.find(
             (p: BluetoothPeer) => p.deviceId === result.deviceId
@@ -69,13 +77,14 @@ export class BluetoothPairingService {
         }
       });
 
-      ble.startBLEScan([scanFilter], {
+      this.startBleScan([scanFilter], {
         interval: 2000,
         dutyMode: ble.ScanDuty.SCAN_MODE_LOW_LATENCY,
       });
     } catch (e) {
       const err = e as BusinessError;
       console.error('BluetoothPairingService: scan error ' + err.code);
+      this.lastFailureContext = 'scan';
       this.state = BleDiscoveryState.ERROR;
       this.notifyState();
     }
@@ -83,27 +92,36 @@ export class BluetoothPairingService {
 
   stopScan(): void {
     try {
-      ble.stopBLEScan();
-      ble.off('BLEDeviceFind');
+      this.stopBleScan();
+      this.unregisterBleDeviceFind();
     } catch (_e) {
       // Ignore
     }
+    this.lastFailureContext = 'none';
     this.state = BleDiscoveryState.IDLE;
     this.notifyState();
   }
 
   connectToPeer(deviceId: string): void {
+    this.lastFailureContext = 'none';
     this.state = BleDiscoveryState.CONNECTING;
     this.notifyState();
 
     try {
-      const gattClient: ble.GattClientDevice = ble.createGattClientDevice(deviceId);
+      const gattClient: ble.GattClientDevice = this.createGattClient(deviceId);
       gattClient.on('BLEConnectionStateChange', (state: ble.BLEConnectionChangeState) => {
         if (state.state === ble.ProfileConnectionState.STATE_CONNECTED) {
+          this.lastFailureContext = 'none';
           this.state = BleDiscoveryState.CONNECTED;
           this.notifyState();
         } else if (state.state === ble.ProfileConnectionState.STATE_DISCONNECTED) {
-          this.state = BleDiscoveryState.IDLE;
+          if (this.state === BleDiscoveryState.CONNECTING) {
+            this.lastFailureContext = 'connect';
+            this.state = BleDiscoveryState.ERROR;
+          } else {
+            this.lastFailureContext = 'none';
+            this.state = BleDiscoveryState.IDLE;
+          }
           this.notifyState();
         }
       });
@@ -111,6 +129,7 @@ export class BluetoothPairingService {
     } catch (e) {
       const err = e as BusinessError;
       console.error('BluetoothPairingService: connect error ' + err.code);
+      this.lastFailureContext = 'connect';
       this.state = BleDiscoveryState.ERROR;
       this.notifyState();
     }
@@ -120,6 +139,26 @@ export class BluetoothPairingService {
     if (this.onStateChange !== null) {
       this.onStateChange(this.state);
     }
+  }
+
+  protected registerBleDeviceFind(callback: (results: Array<ble.ScanResult>) => void): void {
+    ble.on('BLEDeviceFind', callback);
+  }
+
+  protected unregisterBleDeviceFind(): void {
+    ble.off('BLEDeviceFind');
+  }
+
+  protected startBleScan(filters: ble.ScanFilter[], options: ble.ScanOptions): void {
+    ble.startBLEScan(filters, options);
+  }
+
+  protected stopBleScan(): void {
+    ble.stopBLEScan();
+  }
+
+  protected createGattClient(deviceId: string): ble.GattClientDevice {
+    return ble.createGattClientDevice(deviceId);
   }
 }
 

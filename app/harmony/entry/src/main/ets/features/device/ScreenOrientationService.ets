@@ -18,9 +18,10 @@ export class ScreenOrientationService {
     return this.currentLock;
   }
 
-  async setOrientation(lock: OrientationLock): Promise<void> {
-    if (this.windowStage === null) return;
-    this.currentLock = lock;
+  async setOrientation(lock: OrientationLock): Promise<boolean> {
+    if (this.windowStage === null) {
+      return false;
+    }
 
     let orientation: window.Orientation;
     switch (lock) {
@@ -36,7 +37,13 @@ export class ScreenOrientationService {
         break;
     }
 
-    await this.windowStage.setPreferredOrientation(orientation);
+    try {
+      await this.windowStage.setPreferredOrientation(orientation);
+      this.currentLock = lock;
+      return true;
+    } catch (_e) {
+      return false;
+    }
   }
 
   async lockToPortrait(): Promise<void> {

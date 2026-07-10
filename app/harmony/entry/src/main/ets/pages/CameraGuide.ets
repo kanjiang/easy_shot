@@ -1,7 +1,17 @@
 import { common } from '@kit.AbilityKit';
+import { promptAction } from '@kit.ArkUI';
 import { router } from '@ohos.router';
 
 import { audioCueService } from '../features/audio/AudioCueService';
+import {
+  buildCameraGuideCaptureReviewParams,
+  pauseCameraGuideVideoRecording,
+  resumeCameraGuideVideoRecording,
+  resolveCameraGuideDetectorViewState,
+  shouldStartCameraGuidePreviewSync,
+  startCameraGuideVideoRecording,
+  syncCameraGuideReviewState,
+} from '../features/camera/CameraGuideActions';
 import { capturePhotoMetadata, PhotoMetadata } from '../features/camera/PhotoMetadataService';
 import { videoRecordingService, RecordingState } from '../features/video/VideoRecordingService';
 import { powerManagementService, PowerLevel } from '../features/power/PowerManagementService';
@@ -19,7 +29,13 @@ import { PoseTemplate } from '../features/poseTemplate/model/PoseTemplate';
 import { PoseTemplateState, poseTemplateStore } from '../features/poseTemplate/state/PoseTemplateStore';
 import { GuideOverlayRenderer } from '../features/realtimeGuide/GuideOverlayRenderer';
 import { selectPrimaryPrompt } from '../features/realtimeGuide/GuidePromptSelector';
-import { estimatePoseAlignment, detectAndAlign, PoseAlignmentResult, initializeMindSporeDetector } from '../features/realtimeGuide/PoseAlignmentService';
+import {
+  estimatePoseAlignment,
+  detectAndAlign,
+  getPoseDetectorStatus,
+  PoseAlignmentResult,
+  initializeMindSporeDetector,
+} from '../features/realtimeGuide/PoseAlignmentService';
 import { previewSyncService } from '../features/companion/PreviewSyncService';
 import { settingsStore } from '../features/settings/SettingsStore';
 import { SessionPhase } from '../core/session/SessionState';
@@ -53,13 +69,19 @@ export struct CameraGuide {
   @State private powerLevel: PowerLevel = PowerLevel.NORMAL;
   @State private isHalfFolded: boolean = false;
   @State private reconnectStatus: ReconnectStatus = ReconnectStatus.IDLE;
+  @State private detectorModelLoaded: boolean = false;
+  @State private detectorStatusSummary: Resource = $r('app.string.detector_status_loading');
+  @State private detectorStatusMessage: string = '';
   private detectionIntervalId: number = -1;
   private ruleAdviceTimerId: number = -1;
   private static readonly RULE_ADVICE_TIMEOUT_MS: number = 5000;
   private static readonly DETECTION_INTERVAL_MS: number = 100;
 
   aboutToAppear(): void {
-    this.templateState = poseTemplateStore.loadTemplatesFromRawfile(getContext().resourceManager as RawfileResourceManagerLike);
+    this.templateState = poseTemplateStore.loadTemplatesFromRawfile(
+      getContext().resourceManager as RawfileResourceManagerLike,
+      getContext(this) as common.UIAbilityContext,
+    );
     const params = router.getParams() as Record<string, string> | undefined;
     if (params && params.templateId) {
       this.templateState = poseTemplateStore.selectTemplate(params.templateId);
@@ -84,7 +106,7 @@ export struct CameraGuide {
 
     this.startPreviewSyncIfNeeded();
     void this.tryLoadMindSporeModel();
-    void audioCueService.initialize(getContext(this) as common.UIAbilityContext);
+    void this.initializeAudioCues();
 
     powerManagementService.startMonitoring();
     powerManagementService.setOnChange((state) => {
@@ -103,7 +125,14 @@ export struct CameraGuide {
   }
 
   private async tryLoadMindSporeModel(): Promise<void> {
-    await initializeMindSporeDetector(getContext().resourceManager);
+    const context: common.UIAbilityContext = getContext(this) as common.UIAbilityContext;
+    await initializeMindSporeDetector(context.resourceManager, context.filesDir);
+    const detectorViewState = resolveCameraGuideDetectorViewState(getPoseDetectorStatus());
+    this.detectorModelLoaded = detectorViewState.loaded;
+    this.detectorStatusSummary = detectorViewState.summaryKind === 'loaded'
+      ? $r('app.string.detector_status_loaded')
+      : $r('app.string.detector_status_mock');
+    this.detectorStatusMessage = detectorViewState.message;
   }
 
   aboutToDisappear(): void {
@@ -137,8 +166,7 @@ export struct CameraGuide {
 
   private startPreviewSyncIfNeeded(): void {
     const phase: SessionPhase = companionSessionService.getSessionState().phase;
-    const isInSession: boolean = phase === SessionPhase.CONNECTED || phase === SessionPhase.GUIDING;
-    if (isInSession && companionSessionService.isDistributedMode()) {
+    if (shouldStartCameraGuidePreviewSync(phase, companionSessionService.isDistributedMode())) {
       previewSyncService.startSync(
         companionSessionService.getSessionState().sessionId,
         async (): Promise<string> => {
@@ -291,38 +319,69 @@ export struct CameraGuide {
         const totalPts: number = selectedTemplate ? selectedTemplate.skeleton.keypoints.length : 0;
         const styleTag: string = selectedTemplate && selectedTemplate.styleTags.length > 0
           ? selectedTemplate.styleTags[0] : '';
+        const reviewThumbnail: string = this.latestThumbnail.length > 0
+          ? this.latestThumbnail
+          : await this.cameraController.capturePreviewThumbnail(PREVIEW_XCOMPONENT_ID);
+        this.latestThumbnail = reviewThumbnail.length > 0 ? reviewThumbnail : this.latestThumbnail;
+        this.syncReviewState(styleTag, totalPts, metadata.captureTimestamp, this.latestThumbnail);
+        const reviewParams = buildCameraGuideCaptureReviewParams(
+          filePath,
+          this.guideState,
+          this.matchedPoints,
+          this.lastAlignmentResult ? this.lastAlignmentResult.keypointDistances : null,
+          selectedTemplate,
+          metadata,
+        );
         router.pushUrl({
           url: 'pages/PhotoReview',
-          params: {
-            photoFilePath: filePath,
-            templateTitle: this.guideState.templateTitle,
-            templateId: this.guideState.templateId,
-            styleTag: styleTag,
-            alignmentScore: String(this.guideState.guideScore),
-            matchedPoints: String(this.matchedPoints),
-            totalPoints: String(totalPts),
-            keypointDistances: this.lastAlignmentResult
-              ? JSON.stringify(this.lastAlignmentResult.keypointDistances) : '[]',
-            tolerance: selectedTemplate ? String(selectedTemplate.skeleton.tolerance) : '0.1',
-            latitude: String(metadata.latitude),
-            longitude: String(metadata.longitude),
-            captureTimestamp: String(metadata.captureTimestamp),
-          } as Record<string, string>,
+          params: reviewParams as Record<string, string>,
         });
+      } else {
+        promptAction.showToast({ message: $r('app.string.capture_failed') });
       }
     } finally {
       this.isCapturing = false;
     }
   }
 
+  private syncReviewState(styleTag: string, totalPoints: number, captureTimestamp: number, thumbnailBase64: string): void {
+    const result = syncCameraGuideReviewState(
+      companionSessionService.getSessionState(),
+      this.guideState,
+      this.matchedPoints,
+      this.ruleAdvice,
+      styleTag,
+      totalPoints,
+      captureTimestamp,
+      thumbnailBase64,
+    );
+    if (result === 'remote_command_unavailable') {
+      promptAction.showToast({ message: $r('app.string.remote_command_unavailable') });
+    }
+  }
+
+  private async initializeAudioCues(): Promise<void> {
+    const initialized = await audioCueService.initialize(getContext(this) as common.UIAbilityContext);
+    if (!initialized) {
+      promptAction.showToast({ message: $r('app.string.audio_cues_unavailable') });
+    }
+  }
+
   private async startVideoRecording(): Promise<void> {
     const context = getContext(this) as common.UIAbilityContext;
-    const prepared = await videoRecordingService.prepare(context);
-    if (!prepared) return;
-    videoRecordingService.setOnDurationUpdate((ms: number) => {
-      this.recordingDuration = videoRecordingService.formatDuration(ms);
+    const result = await startCameraGuideVideoRecording(context, (formattedDuration: string) => {
+      this.recordingDuration = formattedDuration;
     });
-    await videoRecordingService.start();
+    if (result === 'prepare_failed') {
+      promptAction.showToast({ message: $r('app.string.video_recording_prepare_failed') });
+      return;
+    }
+    if (result === 'start_failed') {
+      promptAction.showToast({ message: $r('app.string.video_recording_start_failed') });
+      this.recordingState = RecordingState.IDLE;
+      this.recordingDuration = '00:00';
+      return;
+    }
     this.recordingState = RecordingState.RECORDING;
   }
 
@@ -333,9 +392,30 @@ export struct CameraGuide {
     if (filePath.length > 0) {
       router.pushUrl({
         url: 'pages/PhotoReview',
-        params: { photoFilePath: filePath, templateTitle: '视频录制', isVideo: 'true' } as Record<string, string>,
+        params: { photoFilePath: filePath, templateTitle: $r('app.string.video_recording_template_title'), isVideo: 'true' } as Record<string, string>,
       });
+      return;
     }
+
+    promptAction.showToast({ message: $r('app.string.video_recording_stop_failed') });
+  }
+
+  private async pauseVideoRecording(): Promise<void> {
+    const paused = await pauseCameraGuideVideoRecording();
+    if (!paused) {
+      promptAction.showToast({ message: $r('app.string.video_recording_pause_failed') });
+      return;
+    }
+    this.recordingState = RecordingState.PAUSED;
+  }
+
+  private async resumeVideoRecording(): Promise<void> {
+    const resumed = await resumeCameraGuideVideoRecording();
+    if (!resumed) {
+      promptAction.showToast({ message: $r('app.string.video_recording_resume_failed') });
+      return;
+    }
+    this.recordingState = RecordingState.RECORDING;
   }
 
   build() {
@@ -360,6 +440,20 @@ export struct CameraGuide {
           Text($r('app.string.camera_guide_subtitle'))
             .fontSize(14)
             .opacity(0.7)
+
+          Column({ space: 2 }) {
+            Text(this.detectorStatusSummary)
+              .fontSize(12)
+              .fontColor(this.detectorModelLoaded
+                ? $r('app.color.easy_shot_score_good')
+                : $r('app.color.easy_shot_score_medium'))
+
+            if (this.detectorStatusMessage.length > 0) {
+              Text(this.detectorStatusMessage)
+                .fontSize(12)
+                .opacity(0.6)
+            }
+          }
         }
 
         Stack({ alignContent: Alignment.TopStart }) {
@@ -371,7 +465,7 @@ export struct CameraGuide {
             .width('100%')
             .height(this.isTripodMode ? '100%' : 420)
             .backgroundColor($r('app.color.easy_shot_surface'))
-            .accessibilityText('相机预览')
+            .accessibilityText($r('app.string.camera_preview_accessibility'))
             .onLoad(() => {
               this.previewSurfaceId = this.previewSurfaceController.getXComponentSurfaceId();
             })
@@ -465,11 +559,11 @@ export struct CameraGuide {
 
           // Photo/Video mode toggle
           Row({ space: 12 }) {
-            Button(this.isVideoMode ? '📷 照片' : '📷 照片模式')
+            Button(this.isVideoMode ? $r('app.string.camera_mode_photo_short') : $r('app.string.camera_mode_photo'))
               .fontSize(13)
               .backgroundColor(!this.isVideoMode ? $r('app.color.easy_shot_primary') : $r('app.color.easy_shot_divider'))
               .onClick(() => { this.isVideoMode = false; })
-            Button(this.isVideoMode ? '🎬 录制中' : '🎬 视频')
+            Button(this.isVideoMode ? $r('app.string.camera_mode_recording') : $r('app.string.camera_mode_video'))
               .fontSize(13)
               .backgroundColor(this.isVideoMode ? $r('app.color.easy_shot_primary') : $r('app.color.easy_shot_divider'))
               .onClick(() => { this.isVideoMode = true; })
@@ -492,7 +586,7 @@ export struct CameraGuide {
                 }
                 if (this.recordingState === RecordingState.RECORDING) {
                   Button($r('app.string.pause_recording'))
-                    .onClick(() => { void videoRecordingService.pause(); this.recordingState = RecordingState.PAUSED; })
+                    .onClick(() => { void this.pauseVideoRecording(); })
                   Button($r('app.string.stop_recording'))
                     .backgroundColor(Color.Red)
                     .fontColor(Color.White)
@@ -500,7 +594,7 @@ export struct CameraGuide {
                 }
                 if (this.recordingState === RecordingState.PAUSED) {
                   Button($r('app.string.resume_recording'))
-                    .onClick(() => { void videoRecordingService.resume(); this.recordingState = RecordingState.RECORDING; })
+                    .onClick(() => { void this.resumeVideoRecording(); })
                   Button($r('app.string.stop_recording'))
                     .backgroundColor(Color.Red)
                     .fontColor(Color.White)
@@ -521,8 +615,8 @@ export struct CameraGuide {
             .fontColor($r('app.color.easy_shot_text_primary'))
             .backgroundColor(this.previewState.isPreviewing ? $r('app.color.easy_shot_shutter_active') : $r('app.color.easy_shot_shutter_disabled'))
             .enabled(this.previewState.isPreviewing)
-            .accessibilityText('拍照按钮')
-            .accessibilityDescription('点击拍摄照片')
+            .accessibilityText($r('app.string.capture_button_accessibility'))
+            .accessibilityDescription($r('app.string.capture_button_accessibility_description'))
             .onClick(() => {
               void this.capturePhoto();
             })
@@ -551,7 +645,10 @@ export struct CameraGuide {
 
             Button($r('app.string.remote_shutter'))
               .onClick(() => {
-                companionSessionService.sendRemoteShutter();
+                const accepted = companionSessionService.sendRemoteShutter();
+                if (!accepted) {
+                  promptAction.showToast({ message: $r('app.string.remote_command_unavailable') });
+                }
               })
           }
 

@@ -1,15 +1,23 @@
 import { router } from '@ohos.router';
 import { common } from '@kit.AbilityKit';
 import { promptAction } from '@kit.ArkUI';
-import { ConnectionLevel, PreviewMode, SessionRole } from '../core/session/SessionState';
+import { ConnectionLevel, PreviewMode, SessionPhase, SessionRole } from '../core/session/SessionState';
 import { PreviewFramePayload } from '../core/session/SessionMessage';
 import { SessionSnapshot, companionSessionService } from '../features/companion/CompanionSessionService';
+import {
+  advanceCompanionCountdown,
+  initializeCompanionAudioCues,
+  startCompanionCountdown,
+} from '../features/companion/CompanionSessionActions';
+import {
+  buildCompanionPreviewSyncParams,
+  deriveCompanionPreviewHintKind,
+} from '../features/companion/CompanionSessionPreviewActions';
 import { previewSyncService } from '../features/companion/PreviewSyncService';
 import { GuideOverlayRenderer } from '../features/realtimeGuide/GuideOverlayRenderer';
 import { RawfileResourceManagerLike } from '../features/poseTemplate/data/PoseTemplateRepository';
 import { PoseTemplate } from '../features/poseTemplate/model/PoseTemplate';
 import { poseTemplateStore } from '../features/poseTemplate/state/PoseTemplateStore';
-import { audioCueService } from '../features/audio/AudioCueService';
 
 const COUNTDOWN_OPTIONS: number[] = [0, 3, 5, 10];
 
@@ -28,27 +36,40 @@ export struct CompanionSession {
   private templates: PoseTemplate[] = [];
 
   aboutToAppear(): void {
-    const templateState = poseTemplateStore.loadTemplatesFromRawfile(getContext().resourceManager as RawfileResourceManagerLike);
+    const templateState = poseTemplateStore.loadTemplatesFromRawfile(
+      getContext().resourceManager as RawfileResourceManagerLike,
+      getContext(this),
+    );
     this.templates = templateState.templates;
     this.previewMode = previewSyncService.resolveMode(ConnectionLevel.GOOD, true);
 
-    if (this.previewMode === PreviewMode.THUMBNAIL) {
-      promptAction.showToast({ message: '网络较慢，已切换为缩略图预览', duration: 2500 });
-    } else if (this.previewMode === PreviewMode.STATE_ONLY) {
-      promptAction.showToast({ message: '网络不佳，仅同步状态信息', duration: 2500 });
+    const previewHintKind = deriveCompanionPreviewHintKind(this.previewMode);
+    if (previewHintKind === 'thumbnail') {
+      promptAction.showToast({ message: $r('app.string.preview_thumbnail_network_hint'), duration: 2500 });
+    } else if (previewHintKind === 'state_only') {
+      promptAction.showToast({ message: $r('app.string.preview_state_only_network_hint'), duration: 2500 });
     }
 
     previewSyncService.setOnRemoteFrame((frame: PreviewFramePayload) => {
       this.remoteFrameBase64 = frame.thumbnailBase64;
     });
 
-    void audioCueService.initialize(getContext(this) as common.UIAbilityContext);
+    companionSessionService.onSnapshotChanged((snapshot: SessionSnapshot) => {
+      this.snapshot = snapshot;
+      if (snapshot.sessionState.phase === SessionPhase.REVIEW_SYNC) {
+        this.cancelCountdown();
+        this.isSyncing = false;
+      }
+    });
+
+    void this.initializeAudioCues();
   }
 
   aboutToDisappear(): void {
     this.cancelCountdown();
     previewSyncService.stopSync();
     previewSyncService.setOnRemoteFrame(null);
+    companionSessionService.onSnapshotChanged(null);
   }
 
   private refreshView(): void {
@@ -63,25 +84,49 @@ export struct CompanionSession {
     return this.snapshot.sessionState.role === SessionRole.COMPANION;
   }
 
+  private showRemoteCommandUnavailable(): void {
+    promptAction.showToast({
+      message: $r('app.string.remote_command_unavailable'),
+      duration: 2000,
+    });
+  }
+
+  private async initializeAudioCues(): Promise<void> {
+    const initialized = await initializeCompanionAudioCues(getContext(this) as common.UIAbilityContext);
+    if (!initialized) {
+      promptAction.showToast({ message: $r('app.string.audio_cues_unavailable') });
+    }
+  }
+
   private startCountdown(): void {
-    if (this.countdownSeconds === 0) {
-      companionSessionService.sendRemoteShutter();
-      void audioCueService.playCountdownEnd();
+    const startResult = startCompanionCountdown(this.countdownSeconds);
+    if (startResult.type === 'remote_command_unavailable') {
+      this.showRemoteCommandUnavailable();
+      return;
+    }
+
+    if (startResult.type === 'shutter_triggered') {
       this.refreshView();
       return;
     }
-    this.countdownRemaining = this.countdownSeconds;
-    companionSessionService.sendRemoteCountdown(this.countdownSeconds);
+
+    this.countdownRemaining = startResult.remaining;
     this.countdownTimerId = setInterval(() => {
-      this.countdownRemaining--;
-      if (this.countdownRemaining <= 0) {
-        this.cancelCountdown();
-        void audioCueService.playCountdownEnd();
-        companionSessionService.sendRemoteShutter();
-        this.refreshView();
-      } else {
-        void audioCueService.playCountdownTick();
+      const advanceResult = advanceCompanionCountdown(this.countdownRemaining);
+      if (advanceResult.type === 'tick') {
+        this.countdownRemaining = advanceResult.remaining;
+        return;
       }
+
+      if (advanceResult.type === 'completed') {
+        this.cancelCountdown();
+        this.refreshView();
+        return;
+      }
+
+      this.cancelCountdown();
+      this.showRemoteCommandUnavailable();
+      this.refreshView();
     }, 1000);
   }
 
@@ -91,6 +136,20 @@ export struct CompanionSession {
       this.countdownTimerId = -1;
     }
     this.countdownRemaining = -1;
+  }
+
+  private openCameraGuideForPreviewSync(): void {
+    const params = buildCompanionPreviewSyncParams(
+      this.selectedTemplateIndex,
+      this.templates,
+      this.snapshot.guideState.templateId,
+    );
+
+    promptAction.showToast({
+      message: $r('app.string.preview_sync_open_camera_hint'),
+      duration: 2500,
+    });
+    router.pushUrl({ url: 'pages/CameraGuide', params });
   }
 
   build() {
@@ -136,6 +195,54 @@ export struct CompanionSession {
           .borderRadius(8)
         }
 
+        if (this.snapshot.reviewSync !== null) {
+          Column({ space: 10 }) {
+            Text($r('app.string.review_sync_title'))
+              .fontSize(18)
+              .fontWeight(FontWeight.Medium)
+
+            Text($r('app.string.review_sync_desc'))
+              .fontSize(13)
+              .opacity(0.72)
+
+            if (this.snapshot.reviewSync.thumbnailBase64.length > 0) {
+              Image('data:image/jpeg;base64,' + this.snapshot.reviewSync.thumbnailBase64)
+                .width('100%')
+                .height(180)
+                .objectFit(ImageFit.Contain)
+                .borderRadius(8)
+                .backgroundColor('#1A000000')
+            } else {
+              Text($r('app.string.review_sync_no_thumbnail'))
+                .fontSize(13)
+                .opacity(0.6)
+            }
+
+            Text(this.snapshot.reviewSync.templateTitle)
+              .fontSize(16)
+              .fontWeight(FontWeight.Medium)
+
+            Text($r('app.string.guide_score_prefix', this.snapshot.reviewSync.alignmentScore.toFixed(2)))
+              .fontSize(14)
+
+            Text($r('app.string.keypoint_count_prefix', `${this.snapshot.reviewSync.matchedPoints}/${this.snapshot.reviewSync.totalPoints}`))
+              .fontSize(14)
+
+            if (this.snapshot.reviewSync.styleTag.length > 0) {
+              Text($r('app.string.style_prefix', this.snapshot.reviewSync.styleTag))
+                .fontSize(14)
+            }
+
+            Text($r('app.string.review_sync_retake_hint_prefix', this.snapshot.reviewSync.retakeHint))
+              .fontSize(14)
+              .fontColor($r('app.color.easy_shot_text_secondary'))
+          }
+          .padding(16)
+          .width('100%')
+          .borderRadius(18)
+          .backgroundColor('#12000000')
+        }
+
         Column({ space: 8 }) {
           Text(this.isHostRole() ? $r('app.string.host_control_panel') : $r('app.string.companion_control_panel'))
             .fontSize(18)
@@ -154,7 +261,10 @@ export struct CompanionSession {
             Button($r('app.string.sync_guide_state'))
               .onClick(() => {
                 companionSessionService.startGuiding();
-                companionSessionService.sendGuideStateUpdate();
+                const accepted = companionSessionService.sendGuideStateUpdate();
+                if (!accepted) {
+                  this.showRemoteCommandUnavailable();
+                }
                 this.refreshView();
               })
 
@@ -163,7 +273,10 @@ export struct CompanionSession {
                 if (this.templates.length > 0) {
                   this.selectedTemplateIndex = (this.selectedTemplateIndex + 1) % this.templates.length;
                   const tmpl = this.templates[this.selectedTemplateIndex];
-                  companionSessionService.sendTemplateSwitch(tmpl.id, tmpl.title);
+                  const accepted = companionSessionService.sendTemplateSwitch(tmpl.id, tmpl.title);
+                  if (!accepted) {
+                    this.showRemoteCommandUnavailable();
+                  }
                 }
                 this.refreshView();
               })
@@ -174,24 +287,27 @@ export struct CompanionSession {
               .onClick(() => {
                 if (this.isSyncing) {
                   previewSyncService.stopSync();
+                  this.isSyncing = false;
                 } else {
-                  previewSyncService.startSync(
-                    this.snapshot.sessionState.sessionId,
-                    async (): Promise<string> => '',
-                  );
+                  this.openCameraGuideForPreviewSync();
                 }
-                this.isSyncing = previewSyncService.isActive();
               })
 
             Button($r('app.string.pause_preview'))
               .onClick(() => {
-                companionSessionService.sendPausePreview();
+                const accepted = companionSessionService.sendPausePreview();
+                if (!accepted) {
+                  this.showRemoteCommandUnavailable();
+                }
                 this.refreshView();
               })
 
             Button($r('app.string.resume_preview'))
               .onClick(() => {
-                companionSessionService.sendResumePreview();
+                const accepted = companionSessionService.sendResumePreview();
+                if (!accepted) {
+                  this.showRemoteCommandUnavailable();
+                }
                 this.refreshView();
               })
           }
@@ -204,7 +320,11 @@ export struct CompanionSession {
               .fontColor($r('app.color.easy_shot_text_on_accent'))
               .enabled(!this.peerReady)
               .onClick(() => {
-                companionSessionService.sendReadySignal();
+                const accepted = companionSessionService.sendReadySignal();
+                if (!accepted) {
+                  this.showRemoteCommandUnavailable();
+                  return;
+                }
                 this.peerReady = true;
                 this.refreshView();
               })
@@ -236,7 +356,10 @@ export struct CompanionSession {
               Button($r('app.string.cancel_countdown'))
                 .onClick(() => {
                   this.cancelCountdown();
-                  companionSessionService.sendRemoteShutterCancel('user_cancelled');
+                  const accepted = companionSessionService.sendRemoteShutterCancel('user_cancelled');
+                  if (!accepted) {
+                    this.showRemoteCommandUnavailable();
+                  }
                   this.refreshView();
                 })
             } else {
@@ -254,7 +377,10 @@ export struct CompanionSession {
 
           Button($r('app.string.enable_tripod_mode'))
             .onClick(() => {
-              companionSessionService.sendSetHostMode('tripod');
+              const accepted = companionSessionService.sendSetHostMode('tripod');
+              if (!accepted) {
+                this.showRemoteCommandUnavailable();
+              }
               this.refreshView();
             })
             .width('100%')

@@ -6,19 +6,192 @@
         },
         {
             "name": "camera_preview_status_idle",
-            "value": "Camera preview is idle."
         },
         {
-            "name": "app_title",
-            "value": "Easy Shot"
-        },
-        {
-            "name": "featured_template",
-            "value": "Featured Template"
-        },
-        {
-            "name": "view_details",
-            "value": "View Details"
+            "name": "capture_failed",
+            "value": "Photo capture failed. Confirm the camera preview is running, then try again.""value": "Camera preview is idle."{
+                {
+                    "name": "mock_device_discovery_hint",
+                    "value": "These are local demo devices for flow testing when distributed hardware discovery is unavailable."
+                },
+                {
+                    "name": "mock_device_badge",
+                    "value": "Demo Device"
+                },
+                "value": "Camera preview is idle."
+            },
+            {
+                "name": "capture_failed",
+                "value": "Photo capture failed. Confirm the camera preview is running, then try again."
+            },
+            {
+                "name": "mock_device_discovery_hint",
+                "value": "These are local demo devices for flow testing when distributed hardware discovery is unavailable."
+            },
+            {
+                "name": "mock_device_badge",
+                "value": "Demo Device"
+            },
+            {
+                "name": "preview_thumbnail_network_hint",
+                "value": "Network is slow. Switched to thumbnail preview."
+            },
+            {
+                "name": "preview_state_only_network_hint",
+                "value": "Network is weak. Syncing state only."
+            },
+            {
+                "name": "preview_sync_open_camera_hint",
+                "value": "Preview sync will start on the camera guide page."
+            },
+            {
+                "name": "template_editor_title",
+                "value": "Custom Templates"
+            },
+            {
+                "name": "template_editor_description",
+                "value": "Create your own pose templates and save them into the local template list."
+            },
+            {
+                "name": "template_editor_enter",
+                "value": "Create Template"
+            },
+            {
+                "name": "template_editor_name_label",
+                "value": "Template Name"
+            },
+            {
+                "name": "template_editor_name_placeholder",
+                "value": "For example: Over-the-shoulder glance"
+            },
+            {
+                "name": "template_editor_description_label",
+                "value": "Description"
+            },
+            {
+                "name": "template_editor_description_placeholder",
+                "value": "Describe the key points of this pose..."
+            },
+            {
+                "name": "template_editor_style_tags_label",
+                "value": "Style Tags (comma separated)"
+            },
+            {
+                "name": "template_editor_style_tags_placeholder",
+                "value": "fresh, editorial, daily"
+            },
+            {
+                "name": "template_editor_verbal_steps_label",
+                "value": "Guidance Steps (one per line)"
+            },
+            {
+                "name": "template_editor_verbal_steps_placeholder",
+                "value": "Step 1: Turn slightly sideways\nStep 2: Look back softly\nStep 3: Look toward the camera"
+            },
+            {
+                "name": "template_editor_tolerance_label",
+                "value": "Tolerance: %s"
+            },
+            {
+                "name": "template_editor_tolerance_accessibility",
+                "value": "Pose match tolerance, currently %s percent"
+            },
+            {
+                "name": "template_editor_keypoints_label",
+                "value": "Keypoints (%s)"
+            },
+            {
+                "name": "template_editor_add_keypoint",
+                "value": "+ Add"
+            },
+            {
+                "name": "template_editor_keypoint_name_prefix",
+                "value": "Keypoint"
+            },
+            {
+                "name": "template_editor_remove_keypoint_accessibility",
+                "value": "Remove keypoint %s"
+            },
+            {
+                "name": "template_editor_keypoint_item_accessibility",
+                "value": "Keypoint %s, name %s, position %s, %s"
+            },
+            {
+                "name": "template_editor_saved",
+                "value": "✓ Saved"
+            },
+            {
+                "name": "template_editor_save",
+                "value": "Save Template"
+            },
+            {
+                "name": "template_editor_requirements_hint",
+                "value": "A name and at least 3 keypoints are required"
+            },
+            {
+                "name": "template_editor_back",
+                "value": "Back"
+            },
+            {
+                "name": "template_editor_default_style_tag",
+                "value": "Custom"
+            },
+            {
+                "name": "template_editor_default_scene_tag",
+                "value": "Custom"
+            },
+            {
+                "name": "photo_history_title",
+                "value": "Photo History"
+            },
+            {
+                "name": "photo_history_description",
+                "value": "Review recent shoots, score trends, and template usage."
+            },
+            {
+                "name": "photo_history_enter",
+                "value": "Open Photo History"
+            },
+            {
+                "name": "photo_history_total_photos",
+                "value": "Total Shots"
+            },
+            {
+                "name": "photo_history_average_score",
+                "value": "Average Score"
+            },
+            {
+                "name": "photo_history_streak_days",
+                "value": "Streak"
+            },
+            {
+                "name": "photo_history_streak_suffix",
+                "value": "d"
+            },
+            {
+                "name": "photo_history_best_score",
+                "value": "Best Score"
+            },
+            {
+                "name": "photo_history_templates_used",
+                "value": "Templates Used"
+            },
+            {
+                "name": "photo_history_recent_title",
+                "value": "Recent Entries"
+            },
+            {
+                "name": "photo_history_empty",
+                "value": "No photo history yet"
+            },
+            {
+                "name": "photo_history_back",
+                "value": "Back"
+            },
+            {
+                "name": "photo_history_load_failed",
+                "value": "Photo history could not be loaded. Please try again later."
+            },
         },
         {
             "name": "start_shooting",
@@ -49,8 +222,36 @@
             "value": "Camera Guide"
         },
         {
+            "name": "camera_preview_accessibility",
+            "value": "Camera preview"
+        },
+        {
             "name": "capture_button",
             "value": "Capture"
+        },
+        {
+            "name": "capture_button_accessibility",
+            "value": "Capture button"
+        },
+        {
+            "name": "capture_button_accessibility_description",
+            "value": "Tap to capture a photo"
+        },
+        {
+            "name": "camera_mode_photo",
+            "value": "Photo Mode"
+        },
+        {
+            "name": "camera_mode_photo_short",
+            "value": "Photo"
+        },
+        {
+            "name": "camera_mode_video",
+            "value": "Video"
+        },
+        {
+            "name": "camera_mode_recording",
+            "value": "Recording"
         },
         {
             "name": "enable_preview",
@@ -77,6 +278,14 @@
             "value": "Photo Review"
         },
         {
+            "name": "photo_review_video_accessibility",
+            "value": "Captured video, template: %s"
+        },
+        {
+            "name": "photo_review_photo_accessibility",
+            "value": "Captured photo, template: %s"
+        },
+        {
             "name": "no_photo",
             "value": "No photo available"
         },
@@ -86,7 +295,7 @@
         },
         {
             "name": "ai_review_placeholder",
-            "value": "Photo analysis will be available in a future version, including composition scoring, pose matching, and improvement suggestions."
+            "value": "No review is available yet. Please try again or check the related settings."
         },
         {
             "name": "retake_photo",
@@ -105,12 +314,184 @@
             "value": "Save failed: "
         },
         {
+            "name": "review_metadata_save_failed",
+            "value": "Photo metadata could not be saved. History or map data may be missing."
+        },
+        {
+            "name": "capture_notification_unavailable",
+            "value": "Capture notification could not be sent, but the photo was kept successfully."
+        },
+        {
+            "name": "share_photo",
+            "value": "Share Photo"
+        },
+        {
+            "name": "share_video",
+            "value": "Share Video"
+        },
+        {
+            "name": "share_success",
+            "value": "Share sheet opened"
+        },
+        {
+            "name": "share_failed",
+            "value": "Share failed. Please try again later."
+        },
+        {
             "name": "authorization_failed",
             "value": "Authorization failed"
         },
         {
+            "name": "save_to_gallery",
+            "value": "Save to Gallery"
+        },
+        {
+            "name": "retake_video",
+            "value": "Record Again"
+        },
+        {
+            "name": "video_review_note",
+            "value": "Video captures currently skip pose heatmaps and AI review. You can preview, save, or share the clip first."
+        },
+        {
+            "name": "video_recording_prepare_failed",
+            "value": "Video recording setup failed. Check camera and microphone permissions, then try again."
+        },
+        {
+            "name": "video_recording_start_failed",
+            "value": "Video recording could not start. Please try again."
+        },
+        {
+            "name": "video_recording_stop_failed",
+            "value": "Video saving failed. Please record again."
+        },
+        {
+            "name": "video_recording_pause_failed",
+            "value": "Video recording could not pause. Please try again."
+        },
+        {
+            "name": "video_recording_resume_failed",
+            "value": "Video recording could not resume. Please try again."
+        },
+        {
+            "name": "audio_cues_unavailable",
+            "value": "Audio cues are unavailable. The app will continue in silent mode."
+        },
+        {
+            "name": "media_type_video",
+            "value": "Video"
+        },
+        {
+            "name": "video_history_score_na",
+            "value": "No pose score for video"
+        },
+        {
             "name": "device_pairing_title",
             "value": "Device Pairing"
+        },
+        {
+            "name": "bluetooth_fallback_title",
+            "value": "Bluetooth Fallback"
+        },
+        {
+            "name": "bluetooth_fallback_description",
+            "value": "If distributed discovery is unavailable, try scanning nearby devices over Bluetooth."
+        },
+        {
+            "name": "bluetooth_fallback_enter",
+            "value": "Use Bluetooth Pairing"
+        },
+        {
+            "name": "bluetooth_pairing_title",
+            "value": "Bluetooth Pairing"
+        },
+        {
+            "name": "bluetooth_pairing_page_accessibility",
+            "value": "Bluetooth pairing page"
+        },
+        {
+            "name": "bluetooth_pairing_description",
+            "value": "Search for nearby Easy Shot devices"
+        },
+        {
+            "name": "bluetooth_pairing_description_accessibility",
+            "value": "Search nearby devices running Easy Shot over Bluetooth"
+        },
+        {
+            "name": "bluetooth_start_scan",
+            "value": "Start Scan"
+        },
+        {
+            "name": "bluetooth_start_scan_accessibility",
+            "value": "Start Bluetooth scan"
+        },
+        {
+            "name": "bluetooth_scan_failed",
+            "value": "Scan failed. Please check whether Bluetooth is enabled."
+        },
+        {
+            "name": "bluetooth_scan_failed_accessibility",
+            "value": "Bluetooth scan failed"
+        },
+        {
+            "name": "bluetooth_connect_failed",
+            "value": "Connection failed. Confirm the target device is available and allows Bluetooth connections."
+        },
+        {
+            "name": "bluetooth_connect_failed_accessibility",
+            "value": "Bluetooth connection failed"
+        },
+        {
+            "name": "bluetooth_scanning",
+            "value": "Scanning..."
+        },
+        {
+            "name": "bluetooth_scanning_accessibility",
+            "value": "Scanning Bluetooth devices"
+        },
+        {
+            "name": "bluetooth_stop_scan",
+            "value": "Stop Scan"
+        },
+        {
+            "name": "bluetooth_stop_scan_accessibility",
+            "value": "Stop Bluetooth scan"
+        },
+        {
+            "name": "bluetooth_connecting",
+            "value": "Connecting..."
+        },
+        {
+            "name": "bluetooth_connecting_accessibility",
+            "value": "Connecting to Bluetooth device"
+        },
+        {
+            "name": "bluetooth_found_device_count",
+            "value": "%s devices found"
+        },
+        {
+            "name": "bluetooth_found_device_count_accessibility",
+            "value": "%s Bluetooth devices found"
+        },
+        {
+            "name": "bluetooth_signal_prefix",
+            "value": "Signal: %s dBm"
+        },
+        {
+            "name": "bluetooth_connect",
+            "value": "Connect"
+        },
+        {
+            "name": "bluetooth_connect_accessibility",
+            "value": "Connect to device %s"
+        },
+        {
+            "name": "bluetooth_device_item_accessibility",
+            "value": "Device %s, signal strength %s"
+        },
+        {
+            "name": "bluetooth_no_device_hint_accessibility",
+            "value": "No Bluetooth devices found yet, continuing to scan"
         },
         {
             "name": "enter_companion_session",
@@ -183,6 +564,30 @@
         {
             "name": "cloud_advice_description",
             "value": "Get cloud-based pose analysis and improvement suggestions after shooting."
+        },
+        {
+            "name": "cloud_advice_unavailable_hint",
+            "value": "Cloud advice endpoint is not configured, so this toggle is disabled."
+        },
+        {
+            "name": "advice_mode_cloud",
+            "value": "Showing cloud AI advice."
+        },
+        {
+            "name": "advice_mode_local_only",
+            "value": "Local only mode is active, so this review uses mock advice."
+        },
+        {
+            "name": "advice_mode_cloud_disabled",
+            "value": "Cloud advice is off, so this review uses mock advice."
+        },
+        {
+            "name": "advice_mode_api_unconfigured",
+            "value": "Cloud advice API is not configured, so this review uses mock advice."
+        },
+        {
+            "name": "advice_mode_cloud_failed",
+            "value": "Cloud advice is temporarily unavailable, so this review fell back to mock advice."
         },
         {
             "name": "allow_upload_title",
@@ -313,6 +718,18 @@
             "value": "Camera Kit preview wired through XComponent surface with guide overlay."
         },
         {
+            "name": "detector_status_loading",
+            "value": "Checking MindSpore model status…"
+        },
+        {
+            "name": "detector_status_loaded",
+            "value": "MindSpore model loaded. Using real pose detection."
+        },
+        {
+            "name": "detector_status_mock",
+            "value": "No usable MindSpore model found. Using local mock detection."
+        },
+        {
             "name": "preview_status_prefix",
             "value": "Preview status: %s"
         },
@@ -419,6 +836,26 @@
         {
             "name": "session_diagnostics",
             "value": "Session diagnostics"
+        },
+        {
+            "name": "remote_command_unavailable",
+            "value": "This remote action is not allowed in the current session phase."
+        },
+        {
+            "name": "review_sync_title",
+            "value": "Review Sync"
+        },
+        {
+            "name": "review_sync_desc",
+            "value": "The host completed a capture. This is the synced review summary."
+        },
+        {
+            "name": "review_sync_no_thumbnail",
+            "value": "Thumbnail unavailable. Score and retake hint were still synchronized."
+        },
+        {
+            "name": "review_sync_retake_hint_prefix",
+            "value": "Retake hint: %s"
         },
         {
             "name": "sync_active_prefix",
@@ -725,6 +1162,18 @@
             "value": "Open Style Guide"
         },
         {
+            "name": "style_guide_search_placeholder",
+            "value": "Enter the photo style you want..."
+        },
+        {
+            "name": "style_guide_match_summary",
+            "value": "Style keywords: %s. Matched %s templates."
+        },
+        {
+            "name": "style_guide_no_match_summary",
+            "value": "No style tags matched \"%s\". Try another keyword."
+        },
+        {
             "name": "exit_tripod_mode",
             "value": "Exit Tripod Mode"
         },
@@ -805,6 +1254,10 @@
             "value": "Resume"
         },
         {
+            "name": "video_recording_template_title",
+            "value": "Video Recording"
+        },
+        {
             "name": "accessibility_title",
             "value": "Accessibility"
         },
@@ -817,6 +1270,38 @@
             "value": "Screen Orientation"
         },
         {
+            "name": "font_scale_small",
+            "value": "Small"
+        },
+        {
+            "name": "font_scale_normal",
+            "value": "Normal"
+        },
+        {
+            "name": "font_scale_large",
+            "value": "Large"
+        },
+        {
+            "name": "font_scale_extra_large",
+            "value": "Extra Large"
+        },
+        {
+            "name": "orientation_auto",
+            "value": "Auto"
+        },
+        {
+            "name": "orientation_portrait",
+            "value": "Portrait"
+        },
+        {
+            "name": "orientation_landscape",
+            "value": "Landscape"
+        },
+        {
+            "name": "orientation_set_failed",
+            "value": "Screen orientation could not be changed. Please try again later."
+        },
+        {
             "name": "storage_title",
             "value": "Storage"
         },
@@ -825,12 +1310,80 @@
             "value": "Clean files older than 30 days"
         },
         {
+            "name": "resource_readiness_title",
+            "value": "Resource Readiness"
+        },
+        {
+            "name": "resource_model_title",
+            "value": "Pose Model"
+        },
+        {
+            "name": "resource_cloud_advice_title",
+            "value": "Cloud Advice"
+        },
+        {
+            "name": "resource_audio_title",
+            "value": "Audio Cues"
+        },
+        {
+            "name": "resource_avatar_title",
+            "value": "Template Avatars"
+        },
+        {
+            "name": "resource_status_ready",
+            "value": "Ready"
+        },
+        {
+            "name": "resource_status_pending",
+            "value": "Missing"
+        },
+        {
+            "name": "resource_model_ready",
+            "value": "%s is available"
+        },
+        {
+            "name": "resource_model_missing",
+            "value": "%s is missing. The app currently uses the local mock detector."
+        },
+        {
+            "name": "resource_cloud_configured",
+            "value": "style_advice/manifest.json has apiBase configured: %s"
+        },
+        {
+            "name": "resource_cloud_missing",
+            "value": "style_advice/manifest.json has an empty apiBase, so the app falls back to the local mock."
+        },
+        {
+            "name": "resource_audio_ready",
+            "value": "%s audio cue rawfiles are available"
+        },
+        {
+            "name": "resource_audio_missing",
+            "value": "Missing %s/%s audio cues: %s"
+        },
+        {
+            "name": "resource_avatar_none_declared",
+            "value": "Templates do not declare avatar rawfile references"
+        },
+        {
+            "name": "resource_avatar_ready",
+            "value": "%s referenced avatar rawfiles are available"
+        },
+        {
+            "name": "resource_avatar_missing",
+            "value": "Missing %s/%s template avatar rawfiles: %s"
+        },
+        {
             "name": "photo_map_title",
             "value": "Photo Map"
         },
         {
             "name": "photo_map_description",
             "value": "View your photography footprint and recommended spots"
+        },
+        {
+            "name": "photo_map_open",
+            "value": "Open Map"
         },
         {
             "name": "photo_pins_count",
@@ -851,6 +1404,58 @@
         {
             "name": "poi_recommendations",
             "value": "Popular Spots"
+        },
+        {
+            "name": "photo_map_load_failed",
+            "value": "Photo map could not be loaded. Please try again later."
+        },
+        {
+            "name": "reconnect_attempting",
+            "value": "Reconnecting... (%s/%s)"
+        },
+        {
+            "name": "reconnect_attempting_accessibility",
+            "value": "Reconnection attempt %s"
+        },
+        {
+            "name": "reconnect_cancel",
+            "value": "Cancel"
+        },
+        {
+            "name": "reconnect_cancel_accessibility",
+            "value": "Cancel reconnection"
+        },
+        {
+            "name": "reconnect_failed",
+            "value": "Connection lost"
+        },
+        {
+            "name": "reconnect_failed_accessibility",
+            "value": "Connection to companion device lost"
+        },
+        {
+            "name": "reconnect_re_pair",
+            "value": "Re-pair"
+        },
+        {
+            "name": "reconnect_re_pair_accessibility",
+            "value": "Re-pair device"
+        },
+        {
+            "name": "photo_history_page_accessibility",
+            "value": "Photo history page"
+        },
+        {
+            "name": "photo_history_recent_accessibility",
+            "value": "Recent photo history entries"
+        },
+        {
+            "name": "photo_history_empty_accessibility",
+            "value": "No photo history yet"
+        },
+        {
+            "name": "photo_history_back_accessibility",
+            "value": "Back"
         }
     ]
 }

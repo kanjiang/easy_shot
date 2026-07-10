@@ -10,6 +10,7 @@ export interface PhotoHistoryEntry {
   timestamp: number;
   latitude: number;
   longitude: number;
+  mediaType?: string;
 }
 
 export interface PhotoStats {
@@ -27,23 +28,25 @@ export class PhotoHistoryService {
   private entries: PhotoHistoryEntry[] = [];
   private prefs: preferences.Preferences | null = null;
 
-  initialize(context: Context): void {
-    const options: preferences.Options = { name: HISTORY_PREFS_NAME };
-    this.prefs = preferences.getPreferencesSync(context, options);
-    const raw: string = this.prefs.getSync('entries', '[]') as string;
     try {
+      const options: preferences.Options = { name: HISTORY_PREFS_NAME };
+      this.prefs = preferences.getPreferencesSync(context, options);
+      const raw: string = this.prefs.getSync('entries', '[]') as string;
       this.entries = JSON.parse(raw) as PhotoHistoryEntry[];
+      return true;
     } catch (_e) {
+      this.prefs = null;
       this.entries = [];
+      return false;
     }
   }
 
-  addEntry(entry: PhotoHistoryEntry): void {
+  addEntry(entry: PhotoHistoryEntry): boolean {
     this.entries.push(entry);
     if (this.entries.length > MAX_HISTORY) {
       this.entries = this.entries.slice(this.entries.length - MAX_HISTORY);
     }
-    this.persist();
+    return this.persist();
   }
 
   getEntries(): PhotoHistoryEntry[] {
@@ -59,9 +62,12 @@ export class PhotoHistoryService {
       return { totalPhotos: 0, averageScore: 0, bestScore: 0, totalTemplatesUsed: 0, streakDays: 0 };
     }
 
-    const scores = this.entries.map((e: PhotoHistoryEntry) => e.alignmentScore);
-    const avgScore = scores.reduce((a: number, b: number) => a + b, 0) / scores.length;
-    const bestScore = Math.max(...scores);
+    const scoredEntries = this.entries.filter((entry: PhotoHistoryEntry) => entry.mediaType !== 'video');
+    const scores = scoredEntries.map((entry: PhotoHistoryEntry) => entry.alignmentScore);
+    const avgScore = scores.length > 0
+      ? scores.reduce((a: number, b: number) => a + b, 0) / scores.length
+      : 0;
+    const bestScore = scores.length > 0 ? Math.max(...scores) : 0;
     const templateIds = new Set(this.entries.map((e: PhotoHistoryEntry) => e.templateId));
 
     // Calculate streak
@@ -89,10 +95,17 @@ export class PhotoHistoryService {
     };
   }
 
-  private persist(): void {
-    if (this.prefs === null) return;
-    this.prefs.putSync('entries', JSON.stringify(this.entries));
-    this.prefs.flush(() => {});
+  private persist(): boolean {
+    if (this.prefs === null) {
+      return false;
+    }
+    try {
+      this.prefs.putSync('entries', JSON.stringify(this.entries));
+      this.prefs.flush(() => {});
+      return true;
+    } catch (_e) {
+      return false;
+    }
   }
 }
 

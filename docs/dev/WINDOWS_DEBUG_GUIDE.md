@@ -44,6 +44,8 @@
    - [8.2 断点调试](#82-调试应用断点调试)
    - [8.3 Hot Reload](#83-hot-reload热重载)
    - [8.4 日志查看](#84-日志查看)
+   - [8.5 MindSpore 模型落位与验证](#85-mindspore-模型落位与验证)
+   - [8.6 外部资源交付清单](#86-外部资源交付清单)
 9. [使用 Previewer 预览](#9-使用-previewer-预览)
 10. [运行单元测试](#10-运行单元测试)
 11. [常见问题排查](#11-常见问题排查)
@@ -273,12 +275,12 @@ app/harmony/                    ← DevEco Studio 打开此目录
         ├── main/
         │   ├── module.json5    ← 模块配置（权限、Ability、页面路由）
         │   ├── ets/            ← ArkTS 源代码
-        │   │   ├── pages/      ← 7 个页面（Index, CameraGuide, ...）
-        │   │   ├── features/   ← 8 个功能模块
+      │   │   ├── pages/      ← 12 个页面文件（Index, CameraGuide, ...）
+      │   │   ├── features/   ← 21 个功能模块目录
         │   │   ├── components/ ← UI 组件
         │   │   └── core/       ← 核心工具（Session, Style, Locale）
         │   └── resources/      ← 资源文件（i18n, 主题, 模板）
-        └── src/test/ets/       ← 13 个测试套件
+      └── src/test/ets/       ← 26 个测试套件
 ```
 
 ---
@@ -583,6 +585,75 @@ hdc shell hilog -r
 hdc shell hilog
 ```
 
+### 8.5 MindSpore 模型落位与验证
+
+`MindSporePoseDetector` 现在会按两条路径尝试加载真实模型：
+
+1. **打包进应用 rawfile**：`rawfile/models/pose_estimation.ms`
+2. **运行时文件目录**：`${filesDir}/models/pose_estimation.ms`
+
+推荐优先使用 **rawfile** 方式，因为它最稳定，不依赖额外的拷贝脚本。
+
+#### 方式 A：随应用一起打包（推荐）
+
+1. 将真实的 `.ms` 模型文件放入：
+   ```text
+   app/harmony/entry/src/main/resources/rawfile/models/pose_estimation.ms
+   ```
+2. 保持 `app/harmony/entry/src/main/resources/rawfile/models/manifest.json` 中的 `rawfilePath` 为：
+   ```json
+   { "rawfilePath": "models/pose_estimation.ms" }
+   ```
+3. 重新 `Run` 到真机，确保 HAP 被重新打包安装。
+
+#### 方式 B：运行时文件目录（不把模型提交进仓库时）
+
+1. 保持 `manifest.json` 中的 `filesRelativePath` 与运行时拷贝位置一致，默认值为：
+   ```json
+   { "filesRelativePath": "models/pose_estimation.ms" }
+   ```
+2. 由你自己的初始化脚本、测试桩或运行时下载逻辑，把模型放入 `${filesDir}/models/pose_estimation.ms`。
+3. 重新启动应用后进入相机引导页验证。
+
+> `Previewer` 不能验证 MindSpore 模型加载；必须使用真机。
+
+#### 真机验证信号
+
+进入 `CameraGuide` 页面后，标题下方会显示当前检测器状态：
+
+- 成功示例：`MindSpore model loaded from rawfile: models/pose_estimation.ms`
+- 成功示例：`MindSpore model loaded from filesDir: <实际路径>`
+- 失败示例：`MindSpore model not found. Expected rawfile: ... | filesDir: ...`
+- 失败示例：`MindSpore model was found but failed to initialize. Checked ...`
+
+如果看到 `loaded from ...`，说明已经切到真实 MindSpore 检测器；如果仍显示 `not found` 或 `failed to initialize`，应用会自动回退到 `MockPoseDetector`。
+
+### 8.6 外部资源交付清单
+
+当前仓库已经把代码侧降级路径补齐，但还有 3 类真实外部资源需要单独交付：
+
+1. **MindSpore 模型文件**
+   - 目标路径：`app/harmony/entry/src/main/resources/rawfile/models/pose_estimation.ms`
+   - 备选路径：运行时 `${filesDir}/models/pose_estimation.ms`
+   - 验收方式：进入 `CameraGuide`，确认标题下方状态从 `not found` 变为 `loaded from ...`
+
+2. **提示音 OGG 文件**
+   - 目标目录：`app/harmony/entry/src/main/resources/rawfile/audio/`
+   - 必需文件：`shutter.ogg`、`countdown_tick.ogg`、`countdown_end.ogg`
+   - 当前行为：文件缺失时应用会静默降级，并在第一次触发时记录一次 `AudioCueService: missing rawfile cue ...` 日志
+   - 验收方式：拍照、倒计时开始、倒计时结束各触发一次，确认有声音且 hilog 不再出现缺失 rawfile 警告
+
+3. **云端建议后端地址**
+   - 配置文件：`app/harmony/entry/src/main/resources/rawfile/style_advice/manifest.json`
+   - 必填字段：`apiBase`
+   - 要求：填写真实可访问的 `https://...` 地址，不能留空，也不要使用 `example.com` 占位域名
+   - 当前行为：未配置时设置页会禁用云端建议相关开关，拍后点评自动回落本地 mock
+
+补充说明：
+
+- 模板头像占位 PNG 已经提交到 `rawfile/avatars/**`，当前不再阻塞运行；后续只需要替换成正式素材，不需要再改代码。
+- 设置页的“资源就绪状态”卡会直接显示缺失路径，建议每次交付完模型、音频或 apiBase 后先在这里做首轮验收。
+
 ---
 
 ## 9. 使用 Previewer 预览
@@ -634,7 +705,7 @@ DevEco Studio 内置 Previewer 可以在不连接真机的情况下预览 UI，�
 
 ## 10. 运行单元测试
 
-项目包含 **13 个测试套件、55+ 个测试用例**，使用 `@ohos/hypium` 测试框架。
+项目包含 **30 个测试套件、165 个测试用例**，使用 `@ohos/hypium` 测试框架。
 
 ### 10.1 在 DevEco Studio 中运行全部测试
 
@@ -655,19 +726,35 @@ DevEco Studio 内置 Previewer 可以在不连接真机的情况下预览 UI，�
 
 | 测试套件 | 用例数 | 覆盖模块 |
 |----------|--------|----------|
-| PoseTemplateTest | 3 | 模板模型解析 |
+| BluetoothPairingActionsTest | 4 | 蓝牙配对页连接目标与错误提示分支 |
 | CameraControllerTest | 4 | 相机控制器 |
-| PoseDetectionTest | 8 | Pose 检测接口 |
+| PoseDetectionTest | 12 | Pose 检测接口与模型状态回退分支 |
 | KeypointMatcherTest | 6 | 关键点匹配算法 |
+| IndexViewActionsTest | 5 | 首页筛选项构建与模板过滤分支 |
 | NavigationFlowTest | 3 | 页面导航路由 |
 | RemoteShutterTest | 4 | 远程快门 E2E |
-| CompanionSessionServiceTest | 4 | 伴侣会话状态机 |
+| AudioCueServiceTest | 2 | 提示音初始化与 rawfile 缺失降级 |
+| BluetoothPairingServiceTest | 3 | 蓝牙扫描/连接失败上下文 |
+| CameraGuideActionsTest | 8 | 拍摄页 review sync、录制控制与 detector 状态展示分支 |
+| CompanionSessionActionsTest | 5 | 伴拍页提示音初始化与倒计时远程命令分支 |
+| CompanionSessionPreviewActionsTest | 5 | 伴拍页预览提示与回跳相机模板参数分支 |
+| DevicePairingActionsTest | 4 | 配对页 fallback、mock 提示与 guiding 控制分支 |
+| CompanionSessionServiceTest | 6 | 伴侣会话状态机与 review sync |
 | DistributedTransportTest | 4 | 分布式数据传输 |
-| SettingsTest | 3 | 设置持久化 |
-| StyleAdviceTest | 4 | 风格建议服务 |
-| DeviceDiscoveryServiceTest | 4 | 设备发现服务 |
-| PreviewSyncServiceTest | 4 | 预览同步服务 |
-| PoseAlignmentServiceTest | 4 | 姿态对齐服务 |
+| PhotoHistoryServiceTest | 2 | 历史统计对视频兼容 |
+| PhotoMapServiceTest | 2 | 地图热点推荐 |
+| PhotoReviewSideEffectsTest | 4 | 复盘页元数据保存与通知失败分支 |
+| PhotoReviewViewActionsTest | 9 | 复盘页保存结果、AI 评审状态与路由参数分支 |
+| NotificationServiceTest | 3 | 通知发布返回值与槽位容错 |
+| SettingsTest | 5 | 设置持久化与资源就绪诊断 |
+| SettingsViewActionsTest | 6 | 设置页云开关、缺失路径摘要与方向设置结果分支 |
+| PhotoShareServiceTest | 2 | 图片/视频分享导出 |
+| StyleAdviceTest | 10 | 风格建议服务 |
+| StyleGuideViewActionsTest | 6 | 风格指南页搜索匹配与标签格式化分支 |
+| DeviceDiscoveryServiceTest | 5 | 设备发现服务 |
+| PreviewSyncServiceTest | 10 | 预览同步服务 |
+| PoseAlignmentServiceTest | 10 | 姿态对齐服务与 detector 注入分支 |
+| PoseTemplateTest | 6 | 姿势模板模型与仓库加载 |
 
 ---
 
@@ -773,6 +860,18 @@ DevEco Studio 内置 Previewer 可以在不连接真机的情况下预览 UI，�
    ```
 4. 关闭不必要的后台程序
 
+### 问题 9：MindSpore 模型没有生效
+
+**现象**：进入 `CameraGuide` 后，标题下方显示 `MindSpore model not found...` 或 `MindSpore model was found but failed to initialize...`。
+
+**排查**：
+1. 确认你是在**真机**上验证，而不是 Previewer
+2. 确认 `.ms` 文件确实位于 `rawfile/models/pose_estimation.ms`，或运行时目录中的 `${filesDir}/models/pose_estimation.ms`
+3. 确认 `app/harmony/entry/src/main/resources/rawfile/models/manifest.json` 中的路径配置与你实际放置位置一致
+4. 如果使用 rawfile 方式，修改模型文件后务必重新编译并重新安装应用，避免旧 HAP 缓存
+5. 如果状态提示为 `failed to initialize`，优先检查模型格式是否兼容当前 MindSpore Lite 运行时，而不是只看文件是否存在
+6. 如果状态提示为 `not found`，直接按提示里的 `rawfile` / `filesDir` 路径逐项核对
+
 ---
 
 ## 附录 A：本项目权限清单
@@ -814,4 +913,26 @@ DevEco Studio 内置 Previewer 可以在不连接真机的情况下预览 UI，�
 - [ ] 编译并运行到真机（`Shift + F10`）
 - [ ] 验证应用启动，首页模板列表可正常显示
 - [ ] 授权相机权限，验证拍照流程
-- [ ] 运行 13 个测试套件，全部通过
+- [ ] 如需真实姿态检测，放入 `.ms` 模型并在 `CameraGuide` 页面确认显示 `MindSpore model loaded from ...`
+- [ ] 运行 28 个测试套件，全部通过
+
+## 运行前排障清单
+
+- [ ] 如果项目还没完成同步或左侧存在红色报错，不要直接编译，先看下方“问题 1：项目同步失败”
+- [ ] 如果 `Run`/安装阶段报签名相关错误，先看下方“问题 2：签名错误”，确认 `build-profile.json5` 与签名材料已经对齐
+- [ ] 如果 `hdc list targets` 为空、设备列表不显示真机，先看下方“问题 3：设备未识别”
+- [ ] 如果编译阶段出现 `@kit.*` 或其他模块找不到，先看下方“问题 4：编译报错 \"Cannot find module\"”
+- [ ] 如果应用启动后没有权限弹窗、相机黑屏或分布式能力不起效，先看下方“问题 6：应用权限弹窗不出现”并回查权限声明与系统授权状态
+- [ ] 如果你是在 Previewer 或模拟器里验证 Camera Kit、分布式能力、MindSpore、真实文件路径，先停下来切回真机
+- [ ] 如果 `.ms` 模型已经放入但 `CameraGuide` 仍显示 `not found` 或 `failed to initialize`，先看下方“问题 9：MindSpore 模型没有生效”
+
+## 真机验证检查清单
+
+- [ ] 进入 `Settings` 页面，确认“资源就绪状态”卡与当前交付一致：模型、音频和云端 `apiBase` 都显示为 ready 或明确缺失路径
+- [ ] 从首页进入模板详情，再进入 `CameraGuide`，确认相机预览能正常启动，检测器状态文案与当前资源状态一致
+- [ ] 完成一次照片拍摄，确认能进入 `PhotoReview`，评分/模板信息正常显示，返回后 `PhotoHistory` 与 `PhotoMap` 能看到新增记录
+- [ ] 如果已交付真实音频 rawfile，验证拍照、倒计时 tick、倒计时结束三个提示音都能触发，且日志不再出现缺失音频告警
+- [ ] 如果已交付真实云端建议后端，确认 `PhotoReview` 的 advice mode 不再停留在 `api_unconfigured`，且请求失败时仍能回退本地 mock
+- [ ] 双机联调一次 `DevicePairing` → `CompanionSession` → `CameraGuide` 流程，确认预览同步、倒计时、远程快门和 review sync 都可用
+- [ ] 人为制造分布式不可用场景，确认 `DevicePairing` 会显示蓝牙 fallback，并能通过 `BluetoothPairing` 进入伴拍页
+- [ ] 结束后检查 `hilog`，确认没有新的连续错误日志；允许存在未交付外部资源对应的降级提示，但应与当前资源状态一致

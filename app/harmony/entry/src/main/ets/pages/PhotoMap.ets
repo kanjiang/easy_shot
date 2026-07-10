@@ -1,18 +1,30 @@
 import { router } from '@ohos.router';
+import { promptAction } from '@kit.ArkUI';
 
 import { photoMapService, PhotoMapPin, POIRecommendation } from '../features/map/PhotoMapService';
+import { resolvePhotoMapRecommendations } from '../features/map/PhotoMapViewActions';
 
 @Entry
 @Component
 struct PhotoMap {
   @State private pins: PhotoMapPin[] = [];
   @State private recommendations: POIRecommendation[] = [];
-  @State private currentLat: number = 0;
-  @State private currentLon: number = 0;
 
   aboutToAppear(): void {
-    photoMapService.initialize(getContext(this));
+    const initialized = photoMapService.initialize(getContext(this));
+    if (!initialized) {
+      promptAction.showToast({ message: $r('app.string.photo_map_load_failed') });
+    }
     this.pins = photoMapService.getPins();
+    this.refreshRecommendations();
+  }
+
+  private refreshRecommendations(): void {
+    const result = resolvePhotoMapRecommendations(
+      this.pins,
+      (lat: number, lon: number) => photoMapService.getRecommendedPOIs(lat, lon)
+    );
+    this.recommendations = result.recommendations;
   }
 
   build() {
@@ -63,9 +75,17 @@ struct PhotoMap {
 
           ForEach(this.pins.slice(-20).reverse(), (pin: PhotoMapPin) => {
             Row({ space: 12 }) {
-              Text('📍')
+              Text(pin.mediaType === 'video' ? '🎬' : '📍')
                 .fontSize(16)
               Column({ space: 2 }) {
+                if (pin.mediaType === 'video') {
+                  Text($r('app.string.media_type_video'))
+                    .fontSize(11)
+                    .padding({ left: 6, right: 6, top: 2, bottom: 2 })
+                    .borderRadius(10)
+                    .backgroundColor('#12007DFF')
+                    .fontColor($r('app.color.easy_shot_primary'))
+                }
                 Text(`${pin.latitude.toFixed(4)}, ${pin.longitude.toFixed(4)}`)
                   .fontSize(14)
                 Text(new Date(pin.timestamp).toLocaleDateString())

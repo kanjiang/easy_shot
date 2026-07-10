@@ -1,3 +1,4 @@
+import { util } from '@kit.ArkTS';
 import { describe, expect, it } from '@ohos/hypium';
 
 import {
@@ -8,7 +9,10 @@ import {
   parsePoseTemplate,
 } from '../../../main/ets/features/poseTemplate/model/PoseTemplate';
 import { PoseTemplateRepository } from '../../../main/ets/features/poseTemplate/data/PoseTemplateRepository';
+import { RawfilePoseTemplateRepository } from '../../../main/ets/features/poseTemplate/data/RawfilePoseTemplateRepository';
+import { RawfileResourceManagerLike } from '../../../main/ets/features/poseTemplate/data/PoseTemplateRepository';
 import { PoseTemplateStore } from '../../../main/ets/features/poseTemplate/state/PoseTemplateStore';
+import { CustomPoseTemplateStorage } from '../../../main/ets/features/poseTemplate/state/CustomPoseTemplateStorage';
 
 class FakePoseTemplateRepository implements PoseTemplateRepository {
   constructor(private readonly templates: PoseTemplate[]) {
@@ -24,6 +28,23 @@ class FakePoseTemplateRepository implements PoseTemplateRepository {
   }
 
   loadTemplatesFromRawfile(): PoseTemplate[] {
+    return [...this.templates];
+  }
+}
+
+class FakeCustomPoseTemplateStorage implements CustomPoseTemplateStorage {
+  private templates: PoseTemplate[];
+
+  constructor(templates: PoseTemplate[] = []) {
+    this.templates = [...templates];
+  }
+
+  loadTemplates(): PoseTemplate[] {
+    return [...this.templates];
+  }
+
+  saveTemplate(_context: Object, template: PoseTemplate): PoseTemplate[] {
+    this.templates = [template, ...this.templates.filter((item: PoseTemplate) => item.id !== template.id)];
     return [...this.templates];
   }
 }
@@ -59,6 +80,24 @@ function createTemplateJson(): Record<string, Object | string | number | boolean
   };
 }
 
+class FakeRawfileResourceManager implements RawfileResourceManagerLike {
+  constructor(private readonly contents: Record<string, string>) {
+  }
+
+  getRawFd(): never {
+    throw new Error('getRawFd should not be used in this test');
+  }
+
+  getRawFileContentSync(path: string): Uint8Array {
+    const content: string | undefined = this.contents[path];
+    if (content === undefined) {
+      throw new Error('Missing rawfile: ' + path);
+    }
+    const encoder = new util.TextEncoder('utf-8');
+    return encoder.encodeInto(content);
+  }
+}
+
 export default function poseTemplateTest(): void {
   describe('PoseTemplate', () => {
     it('parses required fields from valid JSON', 0, () => {
@@ -92,6 +131,74 @@ export default function poseTemplateTest(): void {
       expect(state.templates.length).assertEqual(1);
       expect(state.featuredTemplate?.id).assertEqual('pose_sweet_scissors_cheek_v1');
       expect(state.selectedTemplateId).assertEqual('pose_sweet_scissors_cheek_v1');
+    });
+
+    it('merges custom templates ahead of rawfile templates', 0, () => {
+      const rawTemplate: PoseTemplate = parsePoseTemplate(createTemplateJson());
+      const customTemplate: PoseTemplate = {
+        ...rawTemplate,
+        id: 'custom_test_template',
+        title: '我的模板',
+      };
+      const repository: PoseTemplateRepository = new FakePoseTemplateRepository([rawTemplate]);
+      const customStorage: CustomPoseTemplateStorage = new FakeCustomPoseTemplateStorage([customTemplate]);
+      const store: PoseTemplateStore = new PoseTemplateStore(repository, customStorage);
+
+      const state = store.loadTemplatesFromRawfile({} as Object as never, {} as Object as never);
+
+      expect(state.templates.length).assertEqual(2);
+      expect(state.templates[0].id).assertEqual('custom_test_template');
+      expect(state.templates[1].id).assertEqual('pose_sweet_scissors_cheek_v1');
+    });
+
+    it('addCustomTemplate selects saved custom template', 0, () => {
+      const rawTemplate: PoseTemplate = parsePoseTemplate(createTemplateJson());
+      const customTemplate: PoseTemplate = {
+        ...rawTemplate,
+        id: 'custom_saved_template',
+        title: '保存后的模板',
+      };
+      const repository: PoseTemplateRepository = new FakePoseTemplateRepository([rawTemplate]);
+      const customStorage: CustomPoseTemplateStorage = new FakeCustomPoseTemplateStorage();
+      const store: PoseTemplateStore = new PoseTemplateStore(repository, customStorage);
+
+      store.loadTemplatesFromRawfile({} as Object as never, {} as Object as never);
+      const state = store.addCustomTemplate({} as Object as never, customTemplate);
+
+      expect(state.templates.length).assertEqual(2);
+      expect(state.featuredTemplate?.id).assertEqual('custom_saved_template');
+      expect(state.selectedTemplateId).assertEqual('custom_saved_template');
+    });
+
+    it('selectTemplate can select a custom template already merged into state', 0, () => {
+      const rawTemplate: PoseTemplate = parsePoseTemplate(createTemplateJson());
+      const customTemplate: PoseTemplate = {
+        ...rawTemplate,
+        id: 'custom_selectable_template',
+        title: '可选中的自定义模板',
+      };
+      const repository: PoseTemplateRepository = new FakePoseTemplateRepository([rawTemplate]);
+      const customStorage: CustomPoseTemplateStorage = new FakeCustomPoseTemplateStorage([customTemplate]);
+      const store: PoseTemplateStore = new PoseTemplateStore(repository, customStorage);
+
+      store.loadTemplatesFromRawfile({} as Object as never, {} as Object as never);
+      const state = store.selectTemplate('custom_selectable_template');
+
+      expect(state.featuredTemplate?.id).assertEqual('custom_selectable_template');
+      expect(state.selectedTemplateId).assertEqual('custom_selectable_template');
+    });
+
+    it('downgrades missing avatar rawfile to empty string during repository load', 0, () => {
+      const repository = new RawfilePoseTemplateRepository();
+      const resourceManager = new FakeRawfileResourceManager({
+        'templates/manifest.json': JSON.stringify({ templates: ['pose.json'] }),
+        'templates/pose.json': JSON.stringify(createTemplateJson()),
+      });
+
+      const templates = repository.loadTemplatesFromRawfile(resourceManager);
+
+      expect(templates.length).assertEqual(1);
+      expect(templates[0].avatarImage).assertEqual('');
     });
   });
 }

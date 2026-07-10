@@ -4,6 +4,7 @@ export enum SessionMessageType {
   SESSION_INVITE = 'session_invite',
   SESSION_ACCEPT = 'session_accept',
   SESSION_REJECT = 'session_reject',
+  SESSION_REVIEW_SYNC = 'session_review_sync',
   GUIDE_STATE_UPDATE = 'guide_state_update',
   REMOTE_SHUTTER = 'remote_shutter',
   REMOTE_SHUTTER_CANCEL = 'remote_shutter_cancel',
@@ -38,6 +39,18 @@ export interface SessionAcceptPayload {
 
 export interface SessionRejectPayload {
   reason: string;
+}
+
+export interface SessionReviewSyncPayload {
+  templateId: string;
+  templateTitle: string;
+  styleTag: string;
+  alignmentScore: number;
+  matchedPoints: number;
+  totalPoints: number;
+  captureTimestamp: number;
+  retakeHint: string;
+  thumbnailBase64: string;
 }
 
 export interface RemoteShutterPayload {

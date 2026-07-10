@@ -1,18 +1,25 @@
 import { http } from '@kit.NetworkKit';
 import { StyleAdvice, StyleAdviceRequest } from './StyleAdviceModel';
 import { StyleAdviceClient } from './StyleAdviceClient';
+import {
+  isCloudStyleAdviceApiBaseConfigured,
+  normalizeCloudStyleAdviceApiBase,
+} from './StyleAdviceConfig';
 
-const DEFAULT_API_BASE: string = 'https://api.easyshot.example.com/v1';
 const REQUEST_TIMEOUT_MS: number = 15000;
 
 export class CloudStyleAdviceClient implements StyleAdviceClient {
   private apiBase: string;
 
-  constructor(apiBase: string = DEFAULT_API_BASE) {
-    this.apiBase = apiBase;
+  constructor(apiBase: string) {
+    this.apiBase = normalizeCloudStyleAdviceApiBase(apiBase);
   }
 
   async fetchAdvice(request: StyleAdviceRequest): Promise<StyleAdvice> {
+    if (!isCloudStyleAdviceApiBaseConfigured(this.apiBase)) {
+      throw new Error('Cloud style advice API base is not configured');
+    }
+
     const httpRequest: http.HttpRequest = http.createHttp();
 
     try {

@@ -22,17 +22,17 @@ export struct ReconnectBanner {
       Column({ space: 8 }) {
         Row({ space: 8 }) {
           LoadingProgress().width(16).height(16)
-          Text(`正在重连... (${this.reconnectState.attempt}/${this.reconnectState.maxAttempts})`)
+          Text($r('app.string.reconnect_attempting', String(this.reconnectState.attempt), String(this.reconnectState.maxAttempts)))
             .fontSize(14)
             .fontColor(Color.Orange)
-            .accessibilityText(`正在尝试第${this.reconnectState.attempt}次重连`)
+            .accessibilityText($r('app.string.reconnect_attempting_accessibility', String(this.reconnectState.attempt)))
         }
 
         Row({ space: 12 }) {
-          Button('取消')
+          Button($r('app.string.reconnect_cancel'))
             .fontSize(12)
             .height(28)
-            .accessibilityText('取消重连')
+            .accessibilityText($r('app.string.reconnect_cancel_accessibility'))
             .onClick(() => {
               sessionReconnectService.cancel();
             })
@@ -44,15 +44,15 @@ export struct ReconnectBanner {
       .backgroundColor('#20FF8800')
     } else if (this.reconnectState.status === ReconnectStatus.FAILED) {
       Column({ space: 8 }) {
-        Text('连接已断开')
+        Text($r('app.string.reconnect_failed'))
           .fontSize(14)
           .fontColor(Color.Red)
-          .accessibilityText('与伴侣设备的连接已断开')
+          .accessibilityText($r('app.string.reconnect_failed_accessibility'))
 
-        Button('重新配对')
+        Button($r('app.string.reconnect_re_pair'))
           .fontSize(13)
           .height(32)
-          .accessibilityText('重新配对设备')
+          .accessibilityText($r('app.string.reconnect_re_pair_accessibility'))
           .onClick(() => {
             router.pushUrl({ url: 'pages/DevicePairing' });
           })

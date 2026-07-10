@@ -4,11 +4,12 @@ export interface CompanionDevice {
   deviceId: string;
   deviceName: string;
   deviceType: string;
+  discoverySource?: 'distributed' | 'mock';
 }
 
 const MOCK_DEVICES: CompanionDevice[] = [
-  { deviceId: 'mock-phone-a', deviceName: 'Pura Demo A', deviceType: 'phone' },
-  { deviceId: 'mock-phone-b', deviceName: 'Pura Demo B', deviceType: 'phone' },
+  { deviceId: 'mock-phone-a', deviceName: 'Pura Demo A', deviceType: 'phone', discoverySource: 'mock' },
+  { deviceId: 'mock-phone-b', deviceName: 'Pura Demo B', deviceType: 'phone', discoverySource: 'mock' },
 ];
 
 export class DeviceDiscoveryService {
@@ -39,6 +40,7 @@ export class DeviceDiscoveryService {
         deviceId: info.deviceId,
         deviceName: info.deviceName,
         deviceType: String(info.deviceTypeId),
+        discoverySource: 'distributed',
       }));
     } catch (_error) {
       return MOCK_DEVICES;

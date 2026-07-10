@@ -1,13 +1,35 @@
+import { util } from '@kit.ArkTS';
+import { fileIo as fs } from '@kit.CoreFileKit';
 import { mindSporeLite } from '@kit.MindSporeLiteKit';
 import { resourceManager } from '@kit.LocalizationKit';
 
 import { Keypoint } from '../poseTemplate/model/PoseTemplate';
 import { DetectedKeypoint, PoseDetectionResult, PoseDetector } from './PoseDetector';
 
-const MODEL_RAW_PATH: string = 'models/pose_estimation.ms';
+const MODEL_MANIFEST_RAW_PATH: string = 'models/manifest.json';
+const DEFAULT_MODEL_RAW_PATH: string = 'models/pose_estimation.ms';
+const DEFAULT_MODEL_FILES_RELATIVE_PATH: string = 'models/pose_estimation.ms';
 const INPUT_SIZE: number = 256;
 const NUM_KEYPOINTS: number = 17;
 const MIN_CONFIDENCE: number = 0.3;
+
+interface MindSporeModelManifest {
+  rawfilePath?: string;
+  filesRelativePath?: string;
+}
+
+interface ModelLoadCandidate {
+  source: 'rawfile' | 'filesDir';
+  path: string;
+}
+
+export interface MindSporeModelStatus {
+  loaded: boolean;
+  source: 'rawfile' | 'filesDir' | 'mock';
+  path: string;
+  message: string;
+  attempts: ModelLoadCandidate[];
+}
 
 const COCO_KEYPOINT_NAMES: string[] = [
   'nose', 'left_eye', 'right_eye', 'left_ear', 'right_ear',
@@ -22,35 +44,67 @@ export class MindSporePoseDetector implements PoseDetector {
   private frameBuffer: ArrayBuffer | null = null;
   private frameWidth: number = 0;
   private frameHeight: number = 0;
+  private modelStatus: MindSporeModelStatus = {
+    loaded: false,
+    source: 'mock',
+    path: '',
+    message: 'MindSpore model not loaded',
+    attempts: [],
+  };
 
-  async loadModel(resMgr: resourceManager.ResourceManager): Promise<boolean> {
+  async loadModel(resMgr: resourceManager.ResourceManager, filesDir: string = ''): Promise<boolean> {
+    const manifest: MindSporeModelManifest = this.readModelManifest(resMgr);
+    const attempts: ModelLoadCandidate[] = [];
+    let initializationFailed: boolean = false;
+
+    const rawfilePath: string = manifest.rawfilePath ?? DEFAULT_MODEL_RAW_PATH;
+    attempts.push({ source: 'rawfile', path: rawfilePath });
+
     try {
-      const rawContent: Uint8Array = resMgr.getRawFileContentSync(MODEL_RAW_PATH);
+      const rawContent: Uint8Array = resMgr.getRawFileContentSync(rawfilePath);
       const modelBuffer: ArrayBuffer = rawContent.buffer.slice(
         rawContent.byteOffset,
         rawContent.byteOffset + rawContent.byteLength,
       );
 
-      const msContext: mindSporeLite.Context = new mindSporeLite.Context();
-      msContext.target = ['cpu'];
-      msContext.cpu = { threadNum: 2, threadAffinityMode: mindSporeLite.ThreadAffinityMode.BIG_CORES_FIRST };
-
-      this.model = await mindSporeLite.loadModelFromBuffer(modelBuffer, msContext);
-      this.modelLoaded = this.model !== null;
-      return this.modelLoaded;
+      const success: boolean = await this.loadModelFromBuffer(modelBuffer);
+      if (success) {
+        this.updateModelStatus(true, 'rawfile', rawfilePath, attempts,
+          this.buildLoadedMessage('rawfile', rawfilePath));
+        return true;
+      }
+      initializationFailed = true;
     } catch (_error) {
+    }
+
+    const relativeFilesPath: string = manifest.filesRelativePath ?? DEFAULT_MODEL_FILES_RELATIVE_PATH;
+    const filesPath: string = this.resolveFilesPath(filesDir, relativeFilesPath);
+    if (filesPath.length > 0) {
+      attempts.push({ source: 'filesDir', path: filesPath });
+      const success: boolean = await this.loadModelFromPath(filesPath);
+      if (success) {
+        this.updateModelStatus(true, 'filesDir', filesPath, attempts,
+          this.buildLoadedMessage('filesDir', filesPath));
+        return true;
+      }
+      if (this.fileExists(filesPath)) {
+        initializationFailed = true;
+      }
+    }
+
+    this.updateModelStatus(false, 'mock', '', attempts,
+      this.buildUnavailableMessage(attempts, initializationFailed));
+    return false;
+  }
+
+  protected async loadModelFromPath(modelPath: string): Promise<boolean> {
+    if (!this.fileExists(modelPath)) {
       this.modelLoaded = false;
       return false;
     }
-  }
 
-  async loadModelFromPath(modelPath: string): Promise<boolean> {
     try {
-      const msContext: mindSporeLite.Context = new mindSporeLite.Context();
-      msContext.target = ['cpu'];
-      msContext.cpu = { threadNum: 2, threadAffinityMode: mindSporeLite.ThreadAffinityMode.BIG_CORES_FIRST };
-
-      this.model = await mindSporeLite.loadModelFromFile(modelPath, msContext);
+      this.model = await mindSporeLite.loadModelFromFile(modelPath, this.createContext());
       this.modelLoaded = this.model !== null;
       return this.modelLoaded;
     } catch (_error) {
@@ -102,10 +156,120 @@ export class MindSporePoseDetector implements PoseDetector {
     return this.modelLoaded;
   }
 
+  getStatus(): MindSporeModelStatus {
+    return {
+      loaded: this.modelStatus.loaded,
+      source: this.modelStatus.source,
+      path: this.modelStatus.path,
+      message: this.modelStatus.message,
+      attempts: [...this.modelStatus.attempts],
+    };
+  }
+
   release(): void {
     this.model = null;
     this.modelLoaded = false;
     this.frameBuffer = null;
+    this.modelStatus = {
+      loaded: false,
+      source: 'mock',
+      path: '',
+      message: 'MindSpore model released',
+      attempts: [],
+    };
+  }
+
+  protected async loadModelFromBuffer(modelBuffer: ArrayBuffer): Promise<boolean> {
+    try {
+      this.model = await mindSporeLite.loadModelFromBuffer(modelBuffer, this.createContext());
+      this.modelLoaded = this.model !== null;
+      return this.modelLoaded;
+    } catch (_error) {
+      this.modelLoaded = false;
+      return false;
+    }
+  }
+
+  protected createContext(): mindSporeLite.Context {
+    const msContext: mindSporeLite.Context = new mindSporeLite.Context();
+    msContext.target = ['cpu'];
+    msContext.cpu = { threadNum: 2, threadAffinityMode: mindSporeLite.ThreadAffinityMode.BIG_CORES_FIRST };
+    return msContext;
+  }
+
+  protected readModelManifest(resMgr: resourceManager.ResourceManager): MindSporeModelManifest {
+    try {
+      const rawContent: Uint8Array = resMgr.getRawFileContentSync(MODEL_MANIFEST_RAW_PATH);
+      const decoder = new util.TextDecoder('utf-8');
+      const content: string = decoder.decodeToString(rawContent);
+      return JSON.parse(content) as MindSporeModelManifest;
+    } catch (_error) {
+      return {
+        rawfilePath: DEFAULT_MODEL_RAW_PATH,
+        filesRelativePath: DEFAULT_MODEL_FILES_RELATIVE_PATH,
+      };
+    }
+  }
+
+  protected resolveFilesPath(filesDir: string, relativePath: string): string {
+    if (filesDir.length === 0) {
+      return '';
+    }
+
+    const normalizedRelativePath: string = relativePath.replace(/^[/\\]+/, '');
+    return filesDir + '/' + normalizedRelativePath;
+  }
+
+  protected fileExists(path: string): boolean {
+    try {
+      fs.statSync(path);
+      return true;
+    } catch (_error) {
+      return false;
+    }
+  }
+
+  protected updateModelStatus(
+    loaded: boolean,
+    source: 'rawfile' | 'filesDir' | 'mock',
+    path: string,
+    attempts: ModelLoadCandidate[],
+    message: string,
+  ): void {
+    this.modelStatus = {
+      loaded,
+      source,
+      path,
+      message,
+      attempts: [...attempts],
+    };
+  }
+
+  private buildLoadedMessage(source: 'rawfile' | 'filesDir', path: string): string {
+    const sourceLabel: string = source === 'rawfile' ? 'rawfile' : 'filesDir';
+    return 'MindSpore model loaded from ' + sourceLabel + ': ' + path;
+  }
+
+  private buildUnavailableMessage(attempts: ModelLoadCandidate[], initializationFailed: boolean): string {
+    const formattedAttempts: string = attempts
+      .map((attempt: ModelLoadCandidate) => this.formatCandidate(attempt))
+      .join(' | ');
+
+    if (formattedAttempts.length === 0) {
+      return initializationFailed
+        ? 'MindSpore model was found but failed to initialize'
+        : 'MindSpore model not found';
+    }
+
+    if (initializationFailed) {
+      return 'MindSpore model was found but failed to initialize. Checked ' + formattedAttempts;
+    }
+
+    return 'MindSpore model not found. Expected ' + formattedAttempts;
+  }
+
+  private formatCandidate(candidate: ModelLoadCandidate): string {
+    return candidate.source + ': ' + candidate.path;
   }
 
   private preprocessFrame(buffer: ArrayBuffer, width: number, height: number): Float32Array {

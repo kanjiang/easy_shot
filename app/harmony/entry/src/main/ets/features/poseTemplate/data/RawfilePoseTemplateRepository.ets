@@ -34,10 +34,19 @@ export class RawfilePoseTemplateRepository implements PoseTemplateRepository {
     const templateContent: string = this.readRawfileText(resourceManager, 'templates/' + templateFileName);
     const parsedContent: Record<string, Object | string | number | boolean | Array<Object | string | number | boolean>> =
       JSON.parse(templateContent) as Record<string, Object | string | number | boolean | Array<Object | string | number | boolean>>;
-    return parsePoseTemplate(parsedContent);
+    const template: PoseTemplate = parsePoseTemplate(parsedContent);
+    return {
+      ...template,
+      avatarImage: this.resolveAvatarImage(resourceManager, template.avatarImage),
+    };
   }
 
   private readRawfileText(resourceManager: RawfileResourceManagerLike, rawfilePath: string): string {
+    if (typeof resourceManager.getRawFileContentSync === 'function') {
+      const decoder = new util.TextDecoder('utf-8');
+      return decoder.decodeToString(resourceManager.getRawFileContentSync(rawfilePath));
+    }
+
     const rawFileDescriptor: RawFileDescriptorLike = resourceManager.getRawFd(rawfilePath);
     const buffer: ArrayBuffer = new ArrayBuffer(rawFileDescriptor.length);
     const readLength: number = fs.readSync(rawFileDescriptor.fd, buffer, {
@@ -50,5 +59,24 @@ export class RawfilePoseTemplateRepository implements PoseTemplateRepository {
     const byteView: Uint8Array = new Uint8Array(buffer.slice(0, readLength));
     const decoder = new util.TextDecoder('utf-8');
     return decoder.decodeToString(byteView);
+  }
+
+  private resolveAvatarImage(resourceManager: RawfileResourceManagerLike, avatarImage: string): string {
+    if (avatarImage.length === 0) {
+      return '';
+    }
+
+    try {
+      if (typeof resourceManager.getRawFileContentSync === 'function') {
+        resourceManager.getRawFileContentSync(avatarImage);
+        return avatarImage;
+      }
+
+      const rawFileDescriptor: RawFileDescriptorLike = resourceManager.getRawFd(avatarImage);
+      fs.closeSync(rawFileDescriptor.fd);
+      return avatarImage;
+    } catch (_error) {
+      return '';
+    }
   }
 }

@@ -24,6 +24,7 @@ import {
   SessionMessageEnvelope,
   SessionMessageType,
   SessionRejectPayload,
+  SessionReviewSyncPayload,
   SessionWarningPayload,
   createSessionEnvelope,
 } from '../../core/session/SessionMessage';
@@ -36,6 +37,7 @@ import { Context } from '@kit.AbilityKit';
 export interface SessionSnapshot {
   sessionState: SessionState;
   guideState: GuideStateSnapshot;
+  reviewSync: SessionReviewSyncPayload | null;
   discoveredDevices: CompanionDevice[];
   recentEvents: string[];
 }
@@ -44,12 +46,14 @@ export class CompanionSessionService {
   private readonly discoveryService: DeviceDiscoveryService = new DeviceDiscoveryService();
   private sessionState: SessionState = createIdleSessionState();
   private guideState: GuideStateSnapshot = createDefaultGuideState();
+  private latestReviewSync: SessionReviewSyncPayload | null = null;
   private discoveredDevices: CompanionDevice[] = [];
   private recentEvents: string[] = [];
   private sessionSequence: number = 0;
   private remoteCaptureCallback: (() => void) | null = null;
   private peerReadyCallback: (() => void) | null = null;
   private hostModeCallback: ((mode: HostMode) => void) | null = null;
+  private snapshotChangedCallback: ((snapshot: SessionSnapshot) => void) | null = null;
   private distributedReady: boolean = false;
 
   async initializeDistributed(context: Context): Promise<boolean> {
@@ -84,12 +88,20 @@ export class CompanionSessionService {
     this.hostModeCallback = callback;
   }
 
+  onSnapshotChanged(callback: ((snapshot: SessionSnapshot) => void) | null): void {
+    this.snapshotChangedCallback = callback;
+    if (callback !== null) {
+      callback(this.getSnapshot());
+    }
+  }
+
   startDiscovery(role: SessionRole): CompanionDevice[] {
     this.sessionState = {
       ...this.sessionState,
       role,
       phase: SessionPhase.DISCOVERING,
     };
+    this.latestReviewSync = null;
     this.discoveredDevices = this.discoveryService.listCandidateDevices();
     this.appendEvent('Discovery started for role ' + role + '.');
     return this.discoveredDevices;
@@ -104,6 +116,7 @@ export class CompanionSessionService {
       peerDeviceName: device.deviceName,
       isConnected: false,
     };
+    this.latestReviewSync = null;
 
     const invite: SessionMessageEnvelope<SessionInvitePayload> = createSessionEnvelope(
       SessionMessageType.SESSION_INVITE,
@@ -128,6 +141,7 @@ export class CompanionSessionService {
       peerDeviceName: device.deviceName,
       isConnected: true,
     };
+    this.latestReviewSync = null;
 
     const accept: SessionMessageEnvelope<SessionAcceptPayload> = createSessionEnvelope(
       SessionMessageType.SESSION_ACCEPT,
@@ -163,6 +177,7 @@ export class CompanionSessionService {
       ...this.sessionState,
       phase: SessionPhase.GUIDING,
     };
+    this.latestReviewSync = null;
     this.guideState = {
       ...this.guideState,
       templateId: 'pose_sweet_scissors_cheek_v1',
@@ -183,12 +198,14 @@ export class CompanionSessionService {
       peerDeviceName,
       isConnected: true,
     };
+    this.latestReviewSync = null;
     this.appendEvent('Host session started with ' + peerDeviceName + '.');
     return this.sessionState;
   }
 
   updateGuideState(nextGuideState: GuideStateSnapshot): void {
     this.sessionState.phase = SessionPhase.GUIDING;
+    this.latestReviewSync = null;
     this.guideState = nextGuideState;
     this.appendEvent('Guide state updated.');
   }
@@ -201,6 +218,8 @@ export class CompanionSessionService {
         return this.handleSessionAccept(message as SessionMessageEnvelope<SessionAcceptPayload>);
       case SessionMessageType.SESSION_REJECT:
         return this.handleSessionReject(message as SessionMessageEnvelope<SessionRejectPayload>);
+      case SessionMessageType.SESSION_REVIEW_SYNC:
+        return this.handleReviewSync(message as SessionMessageEnvelope<SessionReviewSyncPayload>);
       case SessionMessageType.GUIDE_STATE_UPDATE:
         return this.handleGuideStateUpdate(message as GuideStateMessage);
       case SessionMessageType.REMOTE_COUNTDOWN:
@@ -237,6 +256,17 @@ export class CompanionSessionService {
       this.sessionState.sessionId,
       this.sessionState.role,
       this.guideState,
+    );
+    void this.broadcastMessage(message);
+    return this.dispatchMessage(message);
+  }
+
+  sendReviewSync(payload: SessionReviewSyncPayload): boolean {
+    const message = createSessionEnvelope(
+      SessionMessageType.SESSION_REVIEW_SYNC,
+      this.sessionState.sessionId,
+      this.sessionState.role,
+      payload,
     );
     void this.broadcastMessage(message);
     return this.dispatchMessage(message);
@@ -333,12 +363,14 @@ export class CompanionSessionService {
     void this.broadcastMessage(message);
     const accepted = this.dispatchMessage(message);
     if (accepted) {
+      this.latestReviewSync = null;
       this.guideState = {
         ...this.guideState,
         templateId,
         templateTitle,
         primaryPrompt: 'Template switched. Align with the new pose silhouette.',
       };
+      this.emitSnapshotChanged();
     }
     return accepted;
   }
@@ -355,6 +387,7 @@ export class CompanionSessionService {
     return {
       sessionState: { ...this.sessionState },
       guideState: { ...this.guideState },
+      reviewSync: this.latestReviewSync === null ? null : { ...this.latestReviewSync },
       discoveredDevices: [...this.discoveredDevices],
       recentEvents: [...this.recentEvents],
     };
@@ -366,6 +399,7 @@ export class CompanionSessionService {
       phase: SessionPhase.ENDED,
       isConnected: false,
     };
+    this.latestReviewSync = null;
     this.appendEvent('Session ended.');
 
     if (this.distributedReady) {
@@ -429,10 +463,32 @@ export class CompanionSessionService {
       phase: SessionPhase.GUIDING,
       isConnected: true,
     };
+    this.latestReviewSync = null;
     this.guideState = {
       ...message.payload,
     };
     this.appendEvent('Guide state synchronized.');
+    return true;
+  }
+
+  private handleReviewSync(message: SessionMessageEnvelope<SessionReviewSyncPayload>): boolean {
+    this.sessionState = {
+      ...this.sessionState,
+      sessionId: message.sessionId,
+      phase: SessionPhase.REVIEW_SYNC,
+      isConnected: true,
+    };
+    this.latestReviewSync = {
+      ...message.payload,
+    };
+    this.guideState = {
+      ...this.guideState,
+      countdownStatus: CountdownStatus.IDLE,
+      primaryPrompt: message.payload.retakeHint.length > 0
+        ? message.payload.retakeHint
+        : this.guideState.primaryPrompt,
+    };
+    this.appendEvent('Review synchronized for ' + message.payload.templateTitle + '.');
     return true;
   }
 
@@ -587,12 +643,20 @@ export class CompanionSessionService {
       phase: SessionPhase.ENDED,
       isConnected: false,
     };
+    this.latestReviewSync = null;
     this.appendEvent('Session disconnected: ' + message.payload.reason + '.');
     return message.payload.allowReconnect;
   }
 
   private appendEvent(eventText: string): void {
     this.recentEvents = [eventText, ...this.recentEvents].slice(0, 8);
+    this.emitSnapshotChanged();
+  }
+
+  private emitSnapshotChanged(): void {
+    if (this.snapshotChangedCallback !== null) {
+      this.snapshotChangedCallback(this.getSnapshot());
+    }
   }
 
   private nextSessionId(): string {
@@ -606,7 +670,8 @@ export class CompanionSessionService {
     this.sessionState.isConnected = true;
     this.sessionState.phase = SessionPhase.CONNECTED;
     this.sessionState.sessionId = this.nextSessionId();
-    this.logEvent(`Reconnected to ${deviceName}`);
+    this.latestReviewSync = null;
+    this.appendEvent('Reconnected to ' + deviceName + '.');
   }
 }
 

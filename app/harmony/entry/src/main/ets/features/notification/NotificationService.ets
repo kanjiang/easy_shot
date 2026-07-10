@@ -4,18 +4,22 @@ import { BusinessError } from '@kit.BasicServicesKit';
 export class NotificationService {
   private slotCreated: boolean = false;
 
-  async ensureSlot(): Promise<void> {
-    if (this.slotCreated) return;
+  async ensureSlot(): Promise<boolean> {
+    if (this.slotCreated) {
+      return true;
+    }
     try {
       const slot: notificationManager.NotificationSlot = {
         notificationType: notificationManager.SlotType.SOCIAL_COMMUNICATION,
         level: notificationManager.SlotLevel.LEVEL_DEFAULT,
       };
-      await notificationManager.addSlot(slot);
+      await this.addNotificationSlot(slot);
       this.slotCreated = true;
+      return true;
     } catch (_e) {
       // Slot may already exist
       this.slotCreated = true;
+      return true;
     }
   }
 
@@ -32,14 +36,17 @@ export class NotificationService {
           },
         },
       };
-      await notificationManager.publish(request);
+      await this.publishNotification(request);
     } catch (_e) {
       // Notification permission may not be granted
     }
   }
 
-  async notifyCaptureComplete(templateTitle: string, score: number): Promise<void> {
-    await this.ensureSlot();
+  async notifyCaptureComplete(templateTitle: string, score: number): Promise<boolean> {
+    const slotReady = await this.ensureSlot();
+    if (!slotReady) {
+      return false;
+    }
     try {
       const request: notificationManager.NotificationRequest = {
         id: 1002,
@@ -51,9 +58,10 @@ export class NotificationService {
           },
         },
       };
-      await notificationManager.publish(request);
+      await this.publishNotification(request);
+      return true;
     } catch (_e) {
-      // Ignore
+      return false;
     }
   }
 
@@ -70,7 +78,7 @@ export class NotificationService {
           },
         },
       };
-      await notificationManager.publish(request);
+      await this.publishNotification(request);
     } catch (_e) {
       // Ignore
     }
@@ -82,6 +90,14 @@ export class NotificationService {
     } catch (_e) {
       // Ignore
     }
+  }
+
+  protected async addNotificationSlot(slot: notificationManager.NotificationSlot): Promise<void> {
+    await notificationManager.addSlot(slot);
+  }
+
+  protected async publishNotification(request: notificationManager.NotificationRequest): Promise<void> {
+    await notificationManager.publish(request);
   }
 }
 

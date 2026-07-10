@@ -24,6 +24,8 @@
 
 ## 前置：macOS 鸿蒙开发环境配置
 
+> 完整版请优先参考 [macOS 调试编译指南](../macos-harmonyos-dev-setup.md)。本章节保留为计划内最小前置说明。
+
 执行 M1 之前，必须先按下列步骤在 macOS 准备好开发环境。完成后 `hdc` 与 `ohpm` 应当可在终端调用。
 
 > 适用范围: macOS 12 (Monterey) 及以上；Apple Silicon 与 Intel 都支持，但建议 16GB 内存以上，磁盘预留 ≥ 30GB（DevEco + SDK + 模拟器系统镜像）。
@@ -248,7 +250,7 @@ Expected: BUILD SUCCESSFUL。
 
 ### macOS 环境
 
-按 `docs/plans/2026-04-28-easy-shot-harmony-m1-plan.md` 中的 “前置：macOS 鸿蒙开发环境配置” 章节准备好 DevEco Studio、HarmonyOS SDK、`hdc`、`ohpm`、`hvigorw`。
+按 `docs/macos-harmonyos-dev-setup.md` 准备好 DevEco Studio、HarmonyOS SDK、`hdc`、`ohpm`、`hvigorw`。
 
 ### 常用命令
 

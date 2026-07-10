@@ -3,6 +3,7 @@ import { getStyleLabel } from '../core/style/StyleTags';
 import { localeHelper } from '../core/locale/LocaleHelper';
 import { Difficulty, PoseTemplate } from '../features/poseTemplate/model/PoseTemplate';
 import { RawfileResourceManagerLike } from '../features/poseTemplate/data/PoseTemplateRepository';
+import { buildIndexFilterOptions, filterIndexTemplates } from '../features/poseTemplate/state/IndexViewActions';
 import { PoseTemplateState, poseTemplateStore } from '../features/poseTemplate/state/PoseTemplateStore';
 import { favoritesStore } from '../features/favorites/FavoritesStore';
 import { TemplateDetail } from './TemplateDetail';
@@ -25,7 +26,10 @@ struct Index {
   aboutToAppear(): void {
     localeHelper.setResourceManager(getContext().resourceManager);
     favoritesStore.initialize(getContext());
-    this.templateState = poseTemplateStore.loadTemplatesFromRawfile(getContext().resourceManager as RawfileResourceManagerLike);
+    this.templateState = poseTemplateStore.loadTemplatesFromRawfile(
+      getContext().resourceManager as RawfileResourceManagerLike,
+      getContext(this),
+    );
     this.allTemplates = this.templateState.templates;
     this.buildFilterOptions();
 
@@ -36,33 +40,19 @@ struct Index {
   }
 
   private buildFilterOptions(): void {
-    const styles: Set<string> = new Set<string>();
-    const scenes: Set<string> = new Set<string>();
-    for (const t of this.allTemplates) {
-      for (const s of t.styleTags) {
-        styles.add(s);
-      }
-      for (const sc of t.sceneTags) {
-        scenes.add(sc);
-      }
-    }
-    this.availableStyles = Array.from(styles);
-    this.availableScenes = Array.from(scenes);
+    const options = buildIndexFilterOptions(this.allTemplates);
+    this.availableStyles = options.styles;
+    this.availableScenes = options.scenes;
   }
 
   private getFilteredTemplates(): PoseTemplate[] {
-    return this.allTemplates.filter((t: PoseTemplate): boolean => {
-      if (this.filterStyle !== ALL_FILTER && !t.styleTags.includes(this.filterStyle)) {
-        return false;
-      }
-      if (this.filterScene !== ALL_FILTER && !t.sceneTags.includes(this.filterScene)) {
-        return false;
-      }
-      if (this.filterDifficulty !== ALL_FILTER && t.difficulty !== this.filterDifficulty) {
-        return false;
-      }
-      return true;
-    });
+    return filterIndexTemplates(
+      this.allTemplates,
+      this.filterStyle,
+      this.filterScene,
+      this.filterDifficulty,
+      ALL_FILTER,
+    );
   }
 
   private selectTemplate(templateId: string): void {
@@ -100,6 +90,14 @@ struct Index {
 
   private navigateToPhotoMap(): void {
     router.pushUrl({ url: 'pages/PhotoMap' });
+  }
+
+  private navigateToPhotoHistory(): void {
+    router.pushUrl({ url: 'pages/PhotoHistory' });
+  }
+
+  private navigateToTemplateEditor(): void {
+    router.pushUrl({ url: 'pages/TemplateEditor' });
   }
 
   build() {
@@ -402,6 +400,46 @@ struct Index {
         .backgroundColor('#0D000000')
         .width('100%')
 
+        Column({ space: 8 }) {
+          Text($r('app.string.photo_history_title'))
+            .fontSize(18)
+            .fontWeight(FontWeight.Medium)
+
+          Text($r('app.string.photo_history_description'))
+            .fontSize(14)
+            .opacity(0.72)
+
+          Button($r('app.string.photo_history_enter'))
+            .onClick(() => {
+              this.navigateToPhotoHistory();
+            })
+            .width('100%')
+        }
+        .padding(16)
+        .borderRadius(16)
+        .backgroundColor('#0D000000')
+        .width('100%')
+
+        Column({ space: 8 }) {
+          Text($r('app.string.template_editor_title'))
+            .fontSize(18)
+            .fontWeight(FontWeight.Medium)
+
+          Text($r('app.string.template_editor_description'))
+            .fontSize(14)
+            .opacity(0.72)
+
+          Button($r('app.string.template_editor_enter'))
+            .onClick(() => {
+              this.navigateToTemplateEditor();
+            })
+            .width('100%')
+        }
+        .padding(16)
+        .borderRadius(16)
+        .backgroundColor('#0D000000')
+        .width('100%')
+
         // Photo Map Entry
         Column({ space: 8 }) {
           Text($r('app.string.photo_map_title'))
@@ -412,7 +450,7 @@ struct Index {
             .fontSize(14)
             .opacity(0.72)
 
-          Button('🗺️ ' + '打开地图')
+          Button('🗺️ ' + $r('app.string.photo_map_open'))
             .onClick(() => {
               this.navigateToPhotoMap();
             })

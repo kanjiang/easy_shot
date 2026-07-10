@@ -1,8 +1,10 @@
 import { router } from '@ohos.router';
 import { common } from '@kit.AbilityKit';
+import { promptAction } from '@kit.ArkUI';
 import { SessionRole, SessionPhase } from '../core/session/SessionState';
 import { CompanionDevice } from '../features/companion/DeviceDiscoveryService';
 import { SessionSnapshot, companionSessionService } from '../features/companion/CompanionSessionService';
+import { deriveDevicePairingUiState, startDevicePairingGuiding } from '../features/companion/DevicePairingActions';
 
 @Entry
 @Component
@@ -10,6 +12,7 @@ export struct DevicePairing {
   @State private devices: CompanionDevice[] = [];
   @State private snapshot: SessionSnapshot = companionSessionService.getSnapshot();
   @State private distributedReady: boolean = false;
+  @State private distributedInitChecked: boolean = false;
 
   aboutToAppear(): void {
     void this.initDistributed();
@@ -18,6 +21,7 @@ export struct DevicePairing {
   private async initDistributed(): Promise<void> {
     const context: common.UIAbilityContext = getContext(this) as common.UIAbilityContext;
     this.distributedReady = await companionSessionService.initializeDistributed(context);
+    this.distributedInitChecked = true;
     this.refreshView();
   }
 
@@ -29,12 +33,23 @@ export struct DevicePairing {
     return this.snapshot.sessionState.role === SessionRole.COMPANION;
   }
 
+  private navigateToBluetoothPairing(): void {
+    router.pushUrl({ url: 'pages/BluetoothPairing' });
+  }
+
   private refreshView(): void {
     this.snapshot = companionSessionService.getSnapshot();
     this.devices = this.snapshot.discoveredDevices;
   }
 
   build() {
+    const uiState = deriveDevicePairingUiState(
+      this.distributedInitChecked,
+      this.distributedReady,
+      this.devices,
+      this.snapshot.sessionState.phase,
+    );
+
     Column({ space: 10 }) {
       Text($r('app.string.device_pairing_title'))
         .fontSize(24)
@@ -43,6 +58,28 @@ export struct DevicePairing {
       Text($r('app.string.discover_description'))
         .fontSize(14)
         .opacity(0.8)
+
+      if (uiState.showBluetoothFallback) {
+        Column({ space: 8 }) {
+          Text($r('app.string.bluetooth_fallback_title'))
+            .fontSize(16)
+            .fontWeight(FontWeight.Medium)
+
+          Text($r('app.string.bluetooth_fallback_description'))
+            .fontSize(13)
+            .opacity(0.72)
+
+          Button($r('app.string.bluetooth_fallback_enter'))
+            .onClick(() => {
+              this.navigateToBluetoothPairing();
+            })
+            .width('100%')
+        }
+        .padding(12)
+        .borderRadius(12)
+        .backgroundColor('#12000000')
+        .width('100%')
+      }
 
       Text($r('app.string.current_role_prefix', this.snapshot.sessionState.role))
         .fontSize(14)
@@ -81,7 +118,13 @@ export struct DevicePairing {
         Text($r('app.string.nearby_devices'))
           .fontSize(16)
           .fontWeight(FontWeight.Medium)
-      } else if (this.snapshot.sessionState.phase !== SessionPhase.IDLE) {
+
+        if (uiState.showMockDiscoveryHint) {
+          Text($r('app.string.mock_device_discovery_hint'))
+            .fontSize(13)
+            .fontColor($r('app.color.easy_shot_score_medium'))
+        }
+      } else if (uiState.showScanningIndicator) {
         Column({ space: 6 }) {
           LoadingProgress()
             .width(32)
@@ -104,6 +147,15 @@ export struct DevicePairing {
             Text($r('app.string.device_type_prefix', device.deviceType))
               .fontSize(12)
               .opacity(0.6)
+
+            if (device.discoverySource === 'mock') {
+              Text($r('app.string.mock_device_badge'))
+                .fontSize(11)
+                .padding({ left: 6, right: 6, top: 2, bottom: 2 })
+                .borderRadius(10)
+                .backgroundColor('#12007DFF')
+                .fontColor($r('app.color.easy_shot_primary'))
+            }
 
             if (this.isHostRole()) {
               Row({ space: 8 }) {
@@ -142,8 +194,10 @@ export struct DevicePairing {
 
           Button($r('app.string.start_guiding'))
             .onClick(() => {
-              companionSessionService.startGuiding();
-              companionSessionService.sendGuideStateUpdate();
+              const accepted = startDevicePairingGuiding();
+              if (!accepted) {
+                promptAction.showToast({ message: $r('app.string.remote_command_unavailable') });
+              }
               this.refreshView();
             })
         }

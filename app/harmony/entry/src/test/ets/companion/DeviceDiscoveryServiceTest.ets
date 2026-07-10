@@ -16,6 +16,7 @@ export default function deviceDiscoveryServiceTest() {
         expect(device.deviceId.length).assertLarger(0);
         expect(device.deviceName.length).assertLarger(0);
         expect(device.deviceType.length).assertLarger(0);
+        expect(device.discoverySource).assertEqual('mock');
       }
     });
 

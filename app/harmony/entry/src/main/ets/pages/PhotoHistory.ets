@@ -1,4 +1,5 @@
 import { router } from '@ohos.router';
+import { promptAction } from '@kit.ArkUI';
 
 import { photoHistoryService, PhotoHistoryEntry, PhotoStats } from '../features/history/PhotoHistoryService';
 
@@ -9,7 +10,10 @@ struct PhotoHistory {
   @State private recentEntries: PhotoHistoryEntry[] = [];
 
   aboutToAppear(): void {
-    photoHistoryService.initialize(getContext(this));
+    const initialized = photoHistoryService.initialize(getContext(this));
+    if (!initialized) {
+      promptAction.showToast({ message: $r('app.string.photo_history_load_failed') });
+    }
     this.stats = photoHistoryService.getStats();
     this.recentEntries = photoHistoryService.getRecentEntries(30);
   }
@@ -17,42 +21,61 @@ struct PhotoHistory {
   build() {
     Scroll() {
       Column({ space: 16 }) {
-        Text('拍摄历史')
+        Text($r('app.string.photo_history_title'))
           .fontSize(24)
           .fontWeight(FontWeight.Bold)
-          .accessibilityText('拍摄历史记录页面')
+          .accessibilityText($r('app.string.photo_history_page_accessibility'))
 
-        // Stats cards
         Row({ space: 12 }) {
-          this.StatCard(String(this.stats.totalPhotos), '总拍摄')
-          this.StatCard(`${(this.stats.averageScore * 100).toFixed(0)}%`, '平均分')
-          this.StatCard(`${this.stats.streakDays}天`, '连续拍摄')
+          this.StatCard(String(this.stats.totalPhotos), $r('app.string.photo_history_total_photos'))
+          this.StatCard(`${(this.stats.averageScore * 100).toFixed(0)}%`, $r('app.string.photo_history_average_score'))
+          this.StatCard(`${this.stats.streakDays}${$r('app.string.photo_history_streak_suffix')}`,
+            $r('app.string.photo_history_streak_days'))
         }
         .width('100%')
 
         Row({ space: 12 }) {
-          this.StatCard(`${(this.stats.bestScore * 100).toFixed(0)}%`, '最高分')
-          this.StatCard(String(this.stats.totalTemplatesUsed), '使用模板')
+          this.StatCard(`${(this.stats.bestScore * 100).toFixed(0)}%`, $r('app.string.photo_history_best_score'))
+          this.StatCard(String(this.stats.totalTemplatesUsed), $r('app.string.photo_history_templates_used'))
         }
         .width('100%')
 
-        // Recent entries
         if (this.recentEntries.length > 0) {
-          Text('最近记录')
+          Text($r('app.string.photo_history_recent_title'))
             .fontSize(18)
             .fontWeight(FontWeight.Medium)
-            .accessibilityText('最近拍摄记录列表')
+            .accessibilityText($r('app.string.photo_history_recent_accessibility'))
 
           ForEach(this.recentEntries, (entry: PhotoHistoryEntry) => {
             Row({ space: 12 }) {
+              Text(entry.mediaType === 'video' ? '🎬' : '📸')
+                .fontSize(16)
+
               Column({ space: 2 }) {
-                Text(entry.templateTitle)
-                  .fontSize(14)
-                  .fontWeight(FontWeight.Medium)
+                Row({ space: 6 }) {
+                  Text(entry.templateTitle)
+                    .fontSize(14)
+                    .fontWeight(FontWeight.Medium)
+
+                  if (entry.mediaType === 'video') {
+                    Text($r('app.string.media_type_video'))
+                      .fontSize(11)
+                      .padding({ left: 6, right: 6, top: 2, bottom: 2 })
+                      .borderRadius(10)
+                      .backgroundColor('#12007DFF')
+                      .fontColor($r('app.color.easy_shot_primary'))
+                  }
+                }
                 Row({ space: 8 }) {
-                  Text(`${(entry.alignmentScore * 100).toFixed(0)}%`)
-                    .fontSize(12)
-                    .fontColor(entry.alignmentScore >= 0.8 ? Color.Green : entry.alignmentScore >= 0.5 ? Color.Orange : Color.Red)
+                  if (entry.mediaType === 'video') {
+                    Text($r('app.string.video_history_score_na'))
+                      .fontSize(12)
+                      .opacity(0.6)
+                  } else {
+                    Text(`${(entry.alignmentScore * 100).toFixed(0)}%`)
+                      .fontSize(12)
+                      .fontColor(entry.alignmentScore >= 0.8 ? Color.Green : entry.alignmentScore >= 0.5 ? Color.Orange : Color.Red)
+                  }
                   Text(new Date(entry.timestamp).toLocaleString())
                     .fontSize(11)
                     .opacity(0.6)
@@ -64,25 +87,25 @@ struct PhotoHistory {
             .padding(10)
             .borderRadius(8)
             .backgroundColor('#06000000')
-            .accessibilityText(`${entry.templateTitle}，分数${(entry.alignmentScore * 100).toFixed(0)}%`)
+            .accessibilityText(entry.templateTitle)
           }, (entry: PhotoHistoryEntry) => entry.id)
         } else {
           Column({ space: 8 }) {
             Text('📸')
               .fontSize(48)
-            Text('还没有拍摄记录')
+            Text($r('app.string.photo_history_empty'))
               .fontSize(14)
               .opacity(0.6)
-              .accessibilityText('暂无拍摄历史记录')
+              .accessibilityText($r('app.string.photo_history_empty_accessibility'))
           }
           .width('100%')
           .padding(32)
           .alignItems(HorizontalAlign.Center)
         }
 
-        Button('返回')
+        Button($r('app.string.photo_history_back'))
           .width('100%')
-          .accessibilityText('返回首页')
+          .accessibilityText($r('app.string.photo_history_back_accessibility'))
           .onClick(() => { router.back(); })
       }
       .padding(24)
@@ -94,7 +117,7 @@ struct PhotoHistory {
   }
 
   @Builder
-  StatCard(value: string, label: string) {
+  StatCard(value: string, label: ResourceStr) {
     Column({ space: 4 }) {
       Text(value)
         .fontSize(22)
@@ -108,7 +131,7 @@ struct PhotoHistory {
     .borderRadius(10)
     .backgroundColor('#0A000000')
     .alignItems(HorizontalAlign.Center)
-    .accessibilityText(`${label}: ${value}`)
+    .accessibilityText(value)
   }
 
   pageTransition() {

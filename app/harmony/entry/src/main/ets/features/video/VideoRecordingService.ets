@@ -15,6 +15,7 @@ export interface VideoRecordingStatus {
   state: RecordingState;
   durationMs: number;
   filePath: string;
+  lastErrorMessage: string;
 }
 
 export class VideoRecordingService {
@@ -23,11 +24,21 @@ export class VideoRecordingService {
   private startTime: number = 0;
   private durationMs: number = 0;
   private currentFilePath: string = '';
+  private lastErrorMessage: string = '';
   private timerId: number = -1;
   private onDurationUpdate: ((ms: number) => void) | null = null;
 
   getStatus(): VideoRecordingStatus {
-    return { state: this.state, durationMs: this.durationMs, filePath: this.currentFilePath };
+    return {
+      state: this.state,
+      durationMs: this.durationMs,
+      filePath: this.currentFilePath,
+      lastErrorMessage: this.lastErrorMessage,
+    };
+  }
+
+  getLastErrorMessage(): string {
+    return this.lastErrorMessage;
   }
 
   setOnDurationUpdate(cb: (ms: number) => void): void {
@@ -36,6 +47,7 @@ export class VideoRecordingService {
 
   async prepare(context: common.UIAbilityContext): Promise<boolean> {
     try {
+      this.lastErrorMessage = '';
       this.state = RecordingState.PREPARING;
       const random: string = Math.random().toString(36).substring(2, 9);
       const fileName: string = `easy_shot_video_${Date.now()}_${random}.mp4`;
@@ -66,6 +78,7 @@ export class VideoRecordingService {
       return true;
     } catch (e) {
       console.error('VideoRecordingService: prepare failed: ' + JSON.stringify(e));
+      this.lastErrorMessage = 'prepare_failed';
       this.state = RecordingState.IDLE;
       return false;
     }
@@ -78,59 +91,96 @@ export class VideoRecordingService {
     return await this.recorder.getInputSurface();
   }
 
-  async start(): Promise<void> {
+  async start(): Promise<boolean> {
     if (this.recorder === null) {
-      return;
+      this.lastErrorMessage = 'prepare_failed';
+      return false;
     }
-    await this.recorder.start();
-    this.state = RecordingState.RECORDING;
-    this.startTime = Date.now();
-    this.durationMs = 0;
-    this.timerId = setInterval(() => {
-      this.durationMs = Date.now() - this.startTime;
-      if (this.onDurationUpdate !== null) {
-        this.onDurationUpdate(this.durationMs);
-      }
-    }, 200);
+    try {
+      this.lastErrorMessage = '';
+      await this.recorder.start();
+      this.state = RecordingState.RECORDING;
+      this.startTime = Date.now();
+      this.durationMs = 0;
+      this.timerId = setInterval(() => {
+        this.durationMs = Date.now() - this.startTime;
+        if (this.onDurationUpdate !== null) {
+          this.onDurationUpdate(this.durationMs);
+        }
+      }, 200);
+      return true;
+    } catch (e) {
+      console.error('VideoRecordingService: start failed: ' + JSON.stringify(e));
+      this.lastErrorMessage = 'start_failed';
+      this.state = RecordingState.IDLE;
+      return false;
+    }
   }
 
-  async pause(): Promise<void> {
+  async pause(): Promise<boolean> {
     if (this.recorder === null || this.state !== RecordingState.RECORDING) {
-      return;
+      this.lastErrorMessage = 'pause_failed';
+      return false;
     }
-    await this.recorder.pause();
-    this.state = RecordingState.PAUSED;
-    this.durationMs = Date.now() - this.startTime;
-    clearInterval(this.timerId);
+    try {
+      this.lastErrorMessage = '';
+      await this.recorder.pause();
+      this.state = RecordingState.PAUSED;
+      this.durationMs = Date.now() - this.startTime;
+      clearInterval(this.timerId);
+      return true;
+    } catch (e) {
+      console.error('VideoRecordingService: pause failed: ' + JSON.stringify(e));
+      this.lastErrorMessage = 'pause_failed';
+      return false;
+    }
   }
 
-  async resume(): Promise<void> {
+  async resume(): Promise<boolean> {
     if (this.recorder === null || this.state !== RecordingState.PAUSED) {
-      return;
+      this.lastErrorMessage = 'resume_failed';
+      return false;
     }
-    await this.recorder.resume();
-    this.state = RecordingState.RECORDING;
-    this.startTime = Date.now() - this.durationMs;
-    this.timerId = setInterval(() => {
-      this.durationMs = Date.now() - this.startTime;
-      if (this.onDurationUpdate !== null) {
-        this.onDurationUpdate(this.durationMs);
-      }
-    }, 200);
+    try {
+      this.lastErrorMessage = '';
+      await this.recorder.resume();
+      this.state = RecordingState.RECORDING;
+      this.startTime = Date.now() - this.durationMs;
+      this.timerId = setInterval(() => {
+        this.durationMs = Date.now() - this.startTime;
+        if (this.onDurationUpdate !== null) {
+          this.onDurationUpdate(this.durationMs);
+        }
+      }, 200);
+      return true;
+    } catch (e) {
+      console.error('VideoRecordingService: resume failed: ' + JSON.stringify(e));
+      this.lastErrorMessage = 'resume_failed';
+      return false;
+    }
   }
 
   async stop(): Promise<string> {
     if (this.recorder === null) {
+      this.lastErrorMessage = 'stop_failed';
       return '';
     }
-    this.state = RecordingState.STOPPING;
-    clearInterval(this.timerId);
-    this.durationMs = Date.now() - this.startTime;
-    await this.recorder.stop();
-    await this.recorder.release();
-    this.recorder = null;
-    this.state = RecordingState.IDLE;
-    return this.currentFilePath;
+    try {
+      this.lastErrorMessage = '';
+      this.state = RecordingState.STOPPING;
+      clearInterval(this.timerId);
+      this.durationMs = Date.now() - this.startTime;
+      await this.recorder.stop();
+      await this.recorder.release();
+      this.recorder = null;
+      this.state = RecordingState.IDLE;
+      return this.currentFilePath;
+    } catch (e) {
+      console.error('VideoRecordingService: stop failed: ' + JSON.stringify(e));
+      this.lastErrorMessage = 'stop_failed';
+      this.state = RecordingState.IDLE;
+      return '';
+    }
   }
 
   formatDuration(ms: number): string {

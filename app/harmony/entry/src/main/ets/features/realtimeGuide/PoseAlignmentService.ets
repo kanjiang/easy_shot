@@ -2,7 +2,7 @@ import { Keypoint } from '../poseTemplate/model/PoseTemplate';
 import { PoseDetector } from '../poseDetection/PoseDetector';
 import { KeypointDistance, matchKeypoints } from '../poseDetection/KeypointMatcher';
 import { MockPoseDetector } from '../poseDetection/MockPoseDetector';
-import { MindSporePoseDetector } from '../poseDetection/MindSporePoseDetector';
+import { MindSporeModelStatus, MindSporePoseDetector } from '../poseDetection/MindSporePoseDetector';
 import { resourceManager } from '@kit.LocalizationKit';
 
 export interface PoseAlignmentResult {
@@ -29,12 +29,21 @@ const mockDetector: PoseDetector = new MockPoseDetector();
 const mindSporeDetector: MindSporePoseDetector = new MindSporePoseDetector();
 let activeDetector: PoseDetector = mockDetector;
 
-export async function initializeMindSporeDetector(resMgr: resourceManager.ResourceManager): Promise<boolean> {
-  const success: boolean = await mindSporeDetector.loadModel(resMgr);
+export async function initializeMindSporeDetector(
+  resMgr: resourceManager.ResourceManager,
+  filesDir: string = '',
+): Promise<boolean> {
+  const success: boolean = await mindSporeDetector.loadModel(resMgr, filesDir);
   if (success) {
     activeDetector = mindSporeDetector;
+  } else {
+    activeDetector = mockDetector;
   }
   return success;
+}
+
+export function getPoseDetectorStatus(): MindSporeModelStatus {
+  return mindSporeDetector.getStatus();
 }
 
 export function setFrameData(buffer: ArrayBuffer, width: number, height: number): void {

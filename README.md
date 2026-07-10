@@ -12,8 +12,8 @@
 - 设计：[`docs/specs/2026-04-28-pose-coach-app-design.md`](docs/specs/2026-04-28-pose-coach-app-design.md)
 - M1（HarmonyOS 工程基础 + 模板系统）：[`docs/plans/2026-04-28-easy-shot-harmony-m1-plan.md`](docs/plans/2026-04-28-easy-shot-harmony-m1-plan.md)
 - M2（单屏实时引导 + 双机导拍 Beta）：[`docs/plans/2026-04-29-easy-shot-harmony-m2-dual-device-plan.md`](docs/plans/2026-04-29-easy-shot-harmony-m2-dual-device-plan.md)
-- 开发指南（Windows）：[`docs/dev/windows-setup.md`](docs/dev/windows-setup.md)
-- 开发指南（macOS）：见 M1 plan 顶部 “前置：macOS 鸿蒙开发环境配置” 章节
+- 开发指南（Windows）：[`docs/dev/WINDOWS_DEBUG_GUIDE.md`](docs/dev/WINDOWS_DEBUG_GUIDE.md)
+- 开发指南（macOS）：[`docs/macos-harmonyos-dev-setup.md`](docs/macos-harmonyos-dev-setup.md)
 
 ## 工程目录
 
@@ -34,19 +34,19 @@ HarmonyOS NEXT V1 代码已落盘，覆盖 M1 + M2 所有核心函数。
 
 | 模块 | 文件数 | 说明 |
 |------|--------|------|
-| pages | 7 | Index（含筛选） / TemplateDetail / CameraGuide / PhotoReview / DevicePairing / CompanionSession / Settings |
-| components | 1 | KeypointHeatmap |
+| pages | 12 | Index / TemplateDetail / TemplateEditor / CameraGuide / PhotoReview / PhotoHistory / PhotoMap / DevicePairing / BluetoothPairing / CompanionSession / StyleGuide / Settings |
+| components | 2 | KeypointHeatmap / ReconnectBanner |
 | core/session | 4 | SessionState / SessionMessage（15 种消息） / SessionSerializer / SessionFallbackPolicy |
 | core/style | 1 | StyleTags |
 | core/locale | 1 | LocaleHelper |
 | core/rules | 1 | LightingCompositionRules（逆光/曝光/构图规则引擎） |
-| features/camera | 1 | CameraController（Camera Kit + 预览缩略图） |
-| features/companion | 5 | DeviceDiscoveryService / CompanionSessionService / CompanionCommandHandler / DistributedTransport / PreviewSyncService |
+| features/camera | 3 | CameraController / CameraGuideActions / PhotoMetadataService |
+| features/companion | 8 | DeviceDiscoveryService / CompanionSessionService / CompanionCommandHandler / CompanionSessionActions / DevicePairingActions / DistributedTransport / PreviewSyncService / SessionReconnectService |
 | features/poseDetection | 4 | PoseDetector 接口 / MockPoseDetector / MindSporePoseDetector / KeypointMatcher |
-| features/poseTemplate | 3 | 模型 / Repository / Store |
+| features/poseTemplate | 5 | PoseTemplate / PoseTemplateRepository / RawfilePoseTemplateRepository / CustomPoseTemplateStorage / PoseTemplateStore |
 | features/realtimeGuide | 3 | GuideOverlayRenderer / GuidePromptSelector / PoseAlignmentService |
-| features/settings | 2 | SettingsModel / SettingsStore |
-| features/styleAdvice | 5 | 模型 / 接口 / Mock / Cloud / Service |
+| features/settings | 3 | RuntimeResourceReadinessService / SettingsModel / SettingsStore |
+| features/styleAdvice | 6 | StyleAdviceModel / StyleAdviceClient / MockStyleAdviceClient / CloudStyleAdviceClient / StyleAdviceConfig / StyleAdviceService |
 | entryability | 1 | EntryAbility |
 
 ### 资源
@@ -58,23 +58,40 @@ HarmonyOS NEXT V1 代码已落盘，覆盖 M1 + M2 所有核心函数。
 
 ### 测试
 
-13 个测试套件，55+ 个用例：
+30 个测试套件，165 个用例：
 
 | 测试套件 | 用例数 |
 |----------|--------|
+| AudioCueServiceTest | 2 |
+| BluetoothPairingActionsTest | 4 |
+| BluetoothPairingServiceTest | 3 |
+| CameraGuideActionsTest | 14 |
 | CameraControllerTest | 4 |
-| CompanionSessionServiceTest | 4 |
+| CompanionSessionActionsTest | 5 |
+| CompanionSessionPreviewActionsTest | 5 |
+| DevicePairingActionsTest | 4 |
+| CompanionSessionServiceTest | 6 |
 | RemoteShutterTest | 4 |
 | DistributedTransportTest | 4 |
-| DeviceDiscoveryServiceTest | 4 |
-| PreviewSyncServiceTest | 4 |
+| DeviceDiscoveryServiceTest | 5 |
+| PreviewSyncServiceTest | 10 |
+| PhotoHistoryServiceTest | 2 |
+| PhotoMapServiceTest | 2 |
+| PhotoMapViewActionsTest | 4 |
+| IndexViewActionsTest | 5 |
 | NavigationFlowTest | 3 |
+| PhotoReviewSideEffectsTest | 4 |
+| PhotoReviewViewActionsTest | 9 |
+| NotificationServiceTest | 3 |
 | KeypointMatcherTest | 6 |
-| PoseDetectionTest | 8 |
-| PoseAlignmentServiceTest | 4 |
-| PoseTemplateTest | 3 |
-| SettingsTest | 3 |
-| StyleAdviceTest | 4 |
+| PoseDetectionTest | 12 |
+| PoseAlignmentServiceTest | 10 |
+| PoseTemplateTest | 6 |
+| PhotoShareServiceTest | 2 |
+| SettingsTest | 5 |
+| SettingsViewActionsTest | 6 |
+| StyleAdviceTest | 10 |
+| StyleGuideViewActionsTest | 6 |
 
 ### 权限
 
@@ -84,6 +101,6 @@ HarmonyOS NEXT V1 代码已落盘，覆盖 M1 + M2 所有核心函数。
 
 ### 统计
 
-- 源文件：40 个 .ets（main）+ 14 个 .ets（test）
-- 总文件：68+ 个（含 JSON / JSON5 资源配置）
+- 源文件：69 个 .ets（main）+ 24 个 .ets（test）
+- 总文件：126 个（app/harmony 下全部文件）
 - 代码行数：~9500+

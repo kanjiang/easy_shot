@@ -50,5 +50,42 @@ export default function companionSessionServiceTest(): void {
       expect(snapshot.sessionState.phase).assertEqual(SessionPhase.CAPTURING);
       expect(snapshot.recentEvents.length > 0).assertTrue();
     });
+
+    it('connectToDevice restores a connected session snapshot', 0, () => {
+      const service: CompanionSessionService = new CompanionSessionService();
+
+      service.connectToDevice('ble-peer-1', 'BLE Peer');
+      const snapshot = service.getSnapshot();
+
+      expect(snapshot.sessionState.peerDeviceId).assertEqual('ble-peer-1');
+      expect(snapshot.sessionState.peerDeviceName).assertEqual('BLE Peer');
+      expect(snapshot.sessionState.phase).assertEqual(SessionPhase.CONNECTED);
+      expect(snapshot.sessionState.isConnected).assertTrue();
+      expect(snapshot.sessionState.sessionId.length > 0).assertTrue();
+    });
+
+    it('stores review sync summary and enters review phase', 0, () => {
+      const service: CompanionSessionService = new CompanionSessionService();
+
+      service.startHostSession('mock-peer', 'Mock Peer');
+      const accepted = service.sendReviewSync({
+        templateId: 'pose-1',
+        templateTitle: 'Pose One',
+        styleTag: 'sweet_daily',
+        alignmentScore: 0.92,
+        matchedPoints: 15,
+        totalPoints: 17,
+        captureTimestamp: 1710000000000,
+        retakeHint: 'Lift the right shoulder slightly.',
+        thumbnailBase64: 'mock-thumb',
+      });
+      const snapshot = service.getSnapshot();
+
+      expect(accepted).assertTrue();
+      expect(snapshot.sessionState.phase).assertEqual(SessionPhase.REVIEW_SYNC);
+      expect(snapshot.reviewSync !== null).assertTrue();
+      expect(snapshot.reviewSync?.templateTitle).assertEqual('Pose One');
+      expect(snapshot.reviewSync?.matchedPoints).assertEqual(15);
+    });
   });
 }

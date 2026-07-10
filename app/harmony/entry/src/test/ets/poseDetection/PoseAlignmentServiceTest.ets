@@ -1,6 +1,40 @@
 import { describe, it, expect } from '@ohos/hypium';
-import { estimatePoseAlignment, detectAndAlign, isUsingRealDetector } from '../../../main/ets/features/realtimeGuide/PoseAlignmentService';
+import {
+  estimatePoseAlignment,
+  detectAndAlign,
+  getPoseDetectorStatus,
+  isUsingRealDetector,
+} from '../../../main/ets/features/realtimeGuide/PoseAlignmentService';
+import { PoseDetectionResult, PoseDetector } from '../../../main/ets/features/poseDetection/PoseDetector';
 import { Keypoint } from '../../../main/ets/features/poseTemplate/model/PoseTemplate';
+
+class ReadyPoseDetectorDouble implements PoseDetector {
+  constructor(private readonly detectedKeypoints: PoseDetectionResult['keypoints']) {}
+
+  detect(_referenceKeypoints: Keypoint[]): PoseDetectionResult {
+    return {
+      keypoints: this.detectedKeypoints,
+      timestamp: 1710000000000,
+    };
+  }
+
+  isReady(): boolean {
+    return true;
+  }
+}
+
+class NotReadyPoseDetectorDouble implements PoseDetector {
+  detect(_referenceKeypoints: Keypoint[]): PoseDetectionResult {
+    return {
+      keypoints: [],
+      timestamp: 1710000000000,
+    };
+  }
+
+  isReady(): boolean {
+    return false;
+  }
+}
 
 export default function poseAlignmentServiceTest() {
   describe('PoseAlignmentService', () => {
@@ -43,6 +77,12 @@ export default function poseAlignmentServiceTest() {
       expect(isUsingRealDetector()).assertFalse();
     });
 
+    it('getPoseDetectorStatus exposes mock fallback before model load', 0, () => {
+      const status = getPoseDetectorStatus();
+      expect(status.loaded).assertFalse();
+      expect(status.source).assertEqual('mock');
+    });
+
     it('detectAndAlign with tight tolerance reduces matches', 0, () => {
       const keypoints: Keypoint[] = [
         { name: 'nose', x: 0.5, y: 0.3 },
@@ -51,6 +91,38 @@ export default function poseAlignmentServiceTest() {
       const tightResult = detectAndAlign(keypoints, 0.001);
       const looseResult = detectAndAlign(keypoints, 0.5);
       expect(looseResult.matchedPoints).assertLargerOrEqual(tightResult.matchedPoints);
+    });
+
+    it('detectAndAlign returns zero when injected detector is not ready', 0, () => {
+      const keypoints: Keypoint[] = [
+        { name: 'nose', x: 0.5, y: 0.3 },
+        { name: 'left_eye', x: 0.45, y: 0.25 },
+      ];
+
+      const result = detectAndAlign(keypoints, 0.1, new NotReadyPoseDetectorDouble());
+
+      expect(result.score).assertEqual(0);
+      expect(result.matchedPoints).assertEqual(0);
+      expect(result.totalPoints).assertEqual(2);
+      expect(result.keypointDistances.length).assertEqual(0);
+    });
+
+    it('detectAndAlign uses injected ready detector output for matching', 0, () => {
+      const keypoints: Keypoint[] = [
+        { name: 'nose', x: 0.5, y: 0.3 },
+        { name: 'left_eye', x: 0.45, y: 0.25 },
+      ];
+      const detector = new ReadyPoseDetectorDouble([
+        { name: 'nose', x: 0.5, y: 0.3, confidence: 0.98 },
+        { name: 'left_eye', x: 0.45, y: 0.25, confidence: 0.95 },
+      ]);
+
+      const result = detectAndAlign(keypoints, 0.01, detector);
+
+      expect(result.score).assertEqual(1);
+      expect(result.matchedPoints).assertEqual(2);
+      expect(result.totalPoints).assertEqual(2);
+      expect(result.keypointDistances.length).assertEqual(2);
     });
   });
 }

@@ -9,6 +9,7 @@ export interface PhotoMapPin {
   photoPath: string;
   timestamp: number;
   templateId: string;
+  mediaType?: string;
 }
 
 export interface POIRecommendation {
@@ -26,23 +27,25 @@ export class PhotoMapService {
   private pins: PhotoMapPin[] = [];
   private prefs: preferences.Preferences | null = null;
 
-  initialize(context: Context): void {
-    const options: preferences.Options = { name: PINS_PREFS_NAME };
-    this.prefs = preferences.getPreferencesSync(context, options);
-    const raw: string = this.prefs.getSync('pins', '[]') as string;
     try {
+      const options: preferences.Options = { name: PINS_PREFS_NAME };
+      this.prefs = preferences.getPreferencesSync(context, options);
+      const raw: string = this.prefs.getSync('pins', '[]') as string;
       this.pins = JSON.parse(raw) as PhotoMapPin[];
+      return true;
     } catch (_e) {
+      this.prefs = null;
       this.pins = [];
+      return false;
     }
   }
 
-  addPin(pin: PhotoMapPin): void {
+  addPin(pin: PhotoMapPin): boolean {
     this.pins.push(pin);
     if (this.pins.length > MAX_PINS) {
       this.pins = this.pins.slice(this.pins.length - MAX_PINS);
     }
-    this.persist();
+    return this.persist();
   }
 
   getPins(): PhotoMapPin[] {
@@ -99,12 +102,17 @@ export class PhotoMapService {
     return R * c;
   }
 
-  private persist(): void {
+  private persist(): boolean {
     if (this.prefs === null) {
-      return;
+      return false;
     }
-    this.prefs.putSync('pins', JSON.stringify(this.pins));
-    this.prefs.flush(() => {});
+    try {
+      this.prefs.putSync('pins', JSON.stringify(this.pins));
+      this.prefs.flush(() => {});
+      return true;
+    } catch (_e) {
+      return false;
+    }
   }
 }
 

@@ -6,19 +6,192 @@
         },
         {
             "name": "camera_preview_status_idle",
-            "value": "相机预览未启动。"
         },
         {
-            "name": "app_title",
-            "value": "Easy Shot"
-        },
-        {
-            "name": "featured_template",
-            "value": "推荐模板"
-        },
-        {
-            "name": "view_details",
-            "value": "查看详情"
+            "name": "capture_failed",
+            "value": "拍照失败，请确认相机预览正常后重试。""value": "相机预览未启动。"{
+                {
+                    "name": "mock_device_discovery_hint",
+                    "value": "当前显示的是本地演示设备，用于无真机分布式环境下的流程联调。"
+                },
+                {
+                    "name": "mock_device_badge",
+                    "value": "演示设备"
+                },
+                "value": "相机预览未启动。"
+            },
+            {
+                "name": "capture_failed",
+                "value": "拍照失败，请确认相机预览正常后重试。"
+            },
+            {
+                "name": "mock_device_discovery_hint",
+                "value": "当前显示的是本地演示设备，用于无真机分布式环境下的流程联调。"
+            },
+            {
+                "name": "mock_device_badge",
+                "value": "演示设备"
+            },
+            {
+                "name": "preview_thumbnail_network_hint",
+                "value": "网络较慢，已切换为缩略图预览"
+            },
+            {
+                "name": "preview_state_only_network_hint",
+                "value": "网络不佳，仅同步状态信息"
+            },
+            {
+                "name": "preview_sync_open_camera_hint",
+                "value": "将在拍摄页开启预览同步"
+            },
+            {
+                "name": "template_editor_title",
+                "value": "自定义模板"
+            },
+            {
+                "name": "template_editor_description",
+                "value": "创建自己的姿势模板，并保存到本地模板列表。"
+            },
+            {
+                "name": "template_editor_enter",
+                "value": "创建模板"
+            },
+            {
+                "name": "template_editor_name_label",
+                "value": "模板名称"
+            },
+            {
+                "name": "template_editor_name_placeholder",
+                "value": "例如：侧身回眸"
+            },
+            {
+                "name": "template_editor_description_label",
+                "value": "描述"
+            },
+            {
+                "name": "template_editor_description_placeholder",
+                "value": "描述这个姿势的要点..."
+            },
+            {
+                "name": "template_editor_style_tags_label",
+                "value": "风格标签（逗号分隔）"
+            },
+            {
+                "name": "template_editor_style_tags_placeholder",
+                "value": "清新, 文艺, 日系"
+            },
+            {
+                "name": "template_editor_verbal_steps_label",
+                "value": "引导步骤（每行一步）"
+            },
+            {
+                "name": "template_editor_verbal_steps_placeholder",
+                "value": "第一步：面向侧方\n第二步：微微回头\n第三步：目光看向镜头"
+            },
+            {
+                "name": "template_editor_tolerance_label",
+                "value": "容差: %s"
+            },
+            {
+                "name": "template_editor_tolerance_accessibility",
+                "value": "姿势匹配容差，当前 %s%%"
+            },
+            {
+                "name": "template_editor_keypoints_label",
+                "value": "关键点 (%s)"
+            },
+            {
+                "name": "template_editor_add_keypoint",
+                "value": "+ 添加"
+            },
+            {
+                "name": "template_editor_keypoint_name_prefix",
+                "value": "关键点"
+            },
+            {
+                "name": "template_editor_remove_keypoint_accessibility",
+                "value": "删除关键点 %s"
+            },
+            {
+                "name": "template_editor_keypoint_item_accessibility",
+                "value": "关键点 %s，名称 %s，位置 %s, %s"
+            },
+            {
+                "name": "template_editor_saved",
+                "value": "✓ 已保存"
+            },
+            {
+                "name": "template_editor_save",
+                "value": "保存模板"
+            },
+            {
+                "name": "template_editor_requirements_hint",
+                "value": "需要填写名称且至少 3 个关键点"
+            },
+            {
+                "name": "template_editor_back",
+                "value": "返回"
+            },
+            {
+                "name": "template_editor_default_style_tag",
+                "value": "自定义"
+            },
+            {
+                "name": "template_editor_default_scene_tag",
+                "value": "自定义"
+            },
+            {
+                "name": "photo_history_title",
+                "value": "拍摄历史"
+            },
+            {
+                "name": "photo_history_description",
+                "value": "查看最近拍摄记录、得分变化和模板使用情况。"
+            },
+            {
+                "name": "photo_history_enter",
+                "value": "查看拍摄历史"
+            },
+            {
+                "name": "photo_history_total_photos",
+                "value": "总拍摄"
+            },
+            {
+                "name": "photo_history_average_score",
+                "value": "平均分"
+            },
+            {
+                "name": "photo_history_streak_days",
+                "value": "连续拍摄"
+            },
+            {
+                "name": "photo_history_streak_suffix",
+                "value": "天"
+            },
+            {
+                "name": "photo_history_best_score",
+                "value": "最高分"
+            },
+            {
+                "name": "photo_history_templates_used",
+                "value": "使用模板"
+            },
+            {
+                "name": "photo_history_recent_title",
+                "value": "最近记录"
+            },
+            {
+                "name": "photo_history_empty",
+                "value": "还没有拍摄记录"
+            },
+            {
+                "name": "photo_history_back",
+                "value": "返回"
+            },
+            {
+                "name": "photo_history_load_failed",
+                "value": "拍摄历史加载失败，请稍后重试。"
+            },
         },
         {
             "name": "start_shooting",
@@ -49,8 +222,36 @@
             "value": "拍照引导"
         },
         {
+            "name": "camera_preview_accessibility",
+            "value": "相机预览"
+        },
+        {
             "name": "capture_button",
             "value": "拍照"
+        },
+        {
+            "name": "capture_button_accessibility",
+            "value": "拍照按钮"
+        },
+        {
+            "name": "capture_button_accessibility_description",
+            "value": "点击拍摄照片"
+        },
+        {
+            "name": "camera_mode_photo",
+            "value": "照片模式"
+        },
+        {
+            "name": "camera_mode_photo_short",
+            "value": "照片"
+        },
+        {
+            "name": "camera_mode_video",
+            "value": "视频"
+        },
+        {
+            "name": "camera_mode_recording",
+            "value": "录制中"
         },
         {
             "name": "enable_preview",
@@ -77,6 +278,14 @@
             "value": "拍照复盘"
         },
         {
+            "name": "photo_review_video_accessibility",
+            "value": "拍摄的视频，模板: %s"
+        },
+        {
+            "name": "photo_review_photo_accessibility",
+            "value": "拍摄的照片，模板: %s"
+        },
+        {
             "name": "no_photo",
             "value": "暂无照片"
         },
@@ -86,7 +295,7 @@
         },
         {
             "name": "ai_review_placeholder",
-            "value": "拍照分析功能将在后续版本中提供，将包括构图评分、姿势匹配度和改进建议。"
+            "value": "暂未生成点评结果，请稍后重试或检查相关设置。"
         },
         {
             "name": "retake_photo",
@@ -105,12 +314,184 @@
             "value": "保存失败: "
         },
         {
+            "name": "review_metadata_save_failed",
+            "value": "照片元数据保存失败，历史记录或地图信息可能未写入。"
+        },
+        {
+            "name": "capture_notification_unavailable",
+            "value": "拍摄完成通知发送失败，但照片已正常保留。"
+        },
+        {
+            "name": "share_photo",
+            "value": "分享照片"
+        },
+        {
+            "name": "share_video",
+            "value": "分享视频"
+        },
+        {
+            "name": "share_success",
+            "value": "已打开分享面板"
+        },
+        {
+            "name": "share_failed",
+            "value": "分享失败，请稍后重试"
+        },
+        {
             "name": "authorization_failed",
             "value": "授权失败"
         },
         {
+            "name": "save_to_gallery",
+            "value": "保存到相册"
+        },
+        {
+            "name": "retake_video",
+            "value": "重新录制"
+        },
+        {
+            "name": "video_review_note",
+            "value": "当前视频暂不进行姿态热力图与 AI 点评，可先回看、保存或分享。"
+        },
+        {
+            "name": "video_recording_prepare_failed",
+            "value": "视频录制初始化失败，请检查相机与麦克风权限后重试。"
+        },
+        {
+            "name": "video_recording_start_failed",
+            "value": "视频录制启动失败，请稍后重试。"
+        },
+        {
+            "name": "video_recording_stop_failed",
+            "value": "视频保存失败，请重试录制。"
+        },
+        {
+            "name": "video_recording_pause_failed",
+            "value": "视频暂停失败，请稍后重试。"
+        },
+        {
+            "name": "video_recording_resume_failed",
+            "value": "视频继续录制失败，请稍后重试。"
+        },
+        {
+            "name": "audio_cues_unavailable",
+            "value": "提示音初始化失败，当前将静音运行。"
+        },
+        {
+            "name": "media_type_video",
+            "value": "视频"
+        },
+        {
+            "name": "video_history_score_na",
+            "value": "视频无姿态评分"
+        },
+        {
             "name": "device_pairing_title",
             "value": "设备配对"
+        },
+        {
+            "name": "bluetooth_fallback_title",
+            "value": "蓝牙配对回退"
+        },
+        {
+            "name": "bluetooth_fallback_description",
+            "value": "如果分布式设备发现不可用，可以尝试使用蓝牙扫描附近设备。"
+        },
+        {
+            "name": "bluetooth_fallback_enter",
+            "value": "使用蓝牙配对"
+        },
+        {
+            "name": "bluetooth_pairing_title",
+            "value": "蓝牙配对"
+        },
+        {
+            "name": "bluetooth_pairing_page_accessibility",
+            "value": "蓝牙配对页面"
+        },
+        {
+            "name": "bluetooth_pairing_description",
+            "value": "搜索附近的 Easy Shot 设备"
+        },
+        {
+            "name": "bluetooth_pairing_description_accessibility",
+            "value": "通过蓝牙搜索附近运行 Easy Shot 的设备"
+        },
+        {
+            "name": "bluetooth_start_scan",
+            "value": "开始扫描"
+        },
+        {
+            "name": "bluetooth_start_scan_accessibility",
+            "value": "开始蓝牙扫描"
+        },
+        {
+            "name": "bluetooth_scan_failed",
+            "value": "扫描失败，请检查蓝牙是否开启"
+        },
+        {
+            "name": "bluetooth_scan_failed_accessibility",
+            "value": "蓝牙扫描失败"
+        },
+        {
+            "name": "bluetooth_connect_failed",
+            "value": "连接失败，请确认目标设备已开启并允许蓝牙连接。"
+        },
+        {
+            "name": "bluetooth_connect_failed_accessibility",
+            "value": "蓝牙连接失败"
+        },
+        {
+            "name": "bluetooth_scanning",
+            "value": "正在扫描..."
+        },
+        {
+            "name": "bluetooth_scanning_accessibility",
+            "value": "正在扫描蓝牙设备"
+        },
+        {
+            "name": "bluetooth_stop_scan",
+            "value": "停止扫描"
+        },
+        {
+            "name": "bluetooth_stop_scan_accessibility",
+            "value": "停止蓝牙扫描"
+        },
+        {
+            "name": "bluetooth_connecting",
+            "value": "正在连接..."
+        },
+        {
+            "name": "bluetooth_connecting_accessibility",
+            "value": "正在连接蓝牙设备"
+        },
+        {
+            "name": "bluetooth_found_device_count",
+            "value": "发现 %s 个设备"
+        },
+        {
+            "name": "bluetooth_found_device_count_accessibility",
+            "value": "发现%s个蓝牙设备"
+        },
+        {
+            "name": "bluetooth_signal_prefix",
+            "value": "信号: %s dBm"
+        },
+        {
+            "name": "bluetooth_connect",
+            "value": "连接"
+        },
+        {
+            "name": "bluetooth_connect_accessibility",
+            "value": "连接设备%s"
+        },
+        {
+            "name": "bluetooth_device_item_accessibility",
+            "value": "设备%s，信号强度%s"
+        },
+        {
+            "name": "bluetooth_no_device_hint_accessibility",
+            "value": "暂未发现蓝牙设备，继续搜索中"
         },
         {
             "name": "enter_companion_session",
@@ -183,6 +564,30 @@
         {
             "name": "cloud_advice_description",
             "value": "拍照后获取云端姿势分析和改进建议。"
+        },
+        {
+            "name": "cloud_advice_unavailable_hint",
+            "value": "当前未配置云端建议地址，开关已禁用。"
+        },
+        {
+            "name": "advice_mode_cloud",
+            "value": "当前显示云端 AI 点评。"
+        },
+        {
+            "name": "advice_mode_local_only",
+            "value": "当前为仅本地模式，显示本地 mock 点评。"
+        },
+        {
+            "name": "advice_mode_cloud_disabled",
+            "value": "云端点评未开启，当前显示本地 mock 点评。"
+        },
+        {
+            "name": "advice_mode_api_unconfigured",
+            "value": "云端点评地址未配置，当前显示本地 mock 点评。"
+        },
+        {
+            "name": "advice_mode_cloud_failed",
+            "value": "云端点评暂不可用，当前已回退到本地 mock 点评。"
         },
         {
             "name": "allow_upload_title",
@@ -313,6 +718,18 @@
             "value": "Camera Kit 预览已通过 XComponent 接入，引导叠加层已就绪。"
         },
         {
+            "name": "detector_status_loading",
+            "value": "正在检查 MindSpore 模型状态…"
+        },
+        {
+            "name": "detector_status_loaded",
+            "value": "MindSpore 模型已加载，当前使用真实姿态检测。"
+        },
+        {
+            "name": "detector_status_mock",
+            "value": "未找到可用 MindSpore 模型，当前使用本地 mock 检测。"
+        },
+        {
             "name": "preview_status_prefix",
             "value": "预览状态：%s"
         },
@@ -419,6 +836,26 @@
         {
             "name": "session_diagnostics",
             "value": "会话诊断"
+        },
+        {
+            "name": "remote_command_unavailable",
+            "value": "当前会话阶段不允许执行该远程操作。"
+        },
+        {
+            "name": "review_sync_title",
+            "value": "拍后同步"
+        },
+        {
+            "name": "review_sync_desc",
+            "value": "主机端已完成拍摄，以下为本次照片的同步摘要。"
+        },
+        {
+            "name": "review_sync_no_thumbnail",
+            "value": "当前没有可用缩略图，已同步评分与复拍建议。"
+        },
+        {
+            "name": "review_sync_retake_hint_prefix",
+            "value": "复拍建议：%s"
         },
         {
             "name": "sync_active_prefix",
@@ -725,6 +1162,18 @@
             "value": "进入风格指南"
         },
         {
+            "name": "style_guide_search_placeholder",
+            "value": "输入你想要的拍照风格..."
+        },
+        {
+            "name": "style_guide_match_summary",
+            "value": "风格关键词: %s。共匹配 %s 个模板。"
+        },
+        {
+            "name": "style_guide_no_match_summary",
+            "value": "未找到匹配“%s”的风格标签，尝试其他关键词。"
+        },
+        {
             "name": "exit_tripod_mode",
             "value": "解除支架模式"
         },
@@ -805,6 +1254,10 @@
             "value": "继续"
         },
         {
+            "name": "video_recording_template_title",
+            "value": "视频录制"
+        },
+        {
             "name": "accessibility_title",
             "value": "无障碍"
         },
@@ -817,6 +1270,38 @@
             "value": "屏幕方向"
         },
         {
+            "name": "font_scale_small",
+            "value": "小"
+        },
+        {
+            "name": "font_scale_normal",
+            "value": "标准"
+        },
+        {
+            "name": "font_scale_large",
+            "value": "大"
+        },
+        {
+            "name": "font_scale_extra_large",
+            "value": "特大"
+        },
+        {
+            "name": "orientation_auto",
+            "value": "自动"
+        },
+        {
+            "name": "orientation_portrait",
+            "value": "竖屏"
+        },
+        {
+            "name": "orientation_landscape",
+            "value": "横屏"
+        },
+        {
+            "name": "orientation_set_failed",
+            "value": "屏幕方向切换失败，请稍后重试。"
+        },
+        {
             "name": "storage_title",
             "value": "存储管理"
         },
@@ -825,12 +1310,80 @@
             "value": "清理30天前的文件"
         },
         {
+            "name": "resource_readiness_title",
+            "value": "资源就绪状态"
+        },
+        {
+            "name": "resource_model_title",
+            "value": "姿态模型"
+        },
+        {
+            "name": "resource_cloud_advice_title",
+            "value": "云端建议"
+        },
+        {
+            "name": "resource_audio_title",
+            "value": "提示音资源"
+        },
+        {
+            "name": "resource_avatar_title",
+            "value": "模板头像"
+        },
+        {
+            "name": "resource_status_ready",
+            "value": "已就绪"
+        },
+        {
+            "name": "resource_status_pending",
+            "value": "待补齐"
+        },
+        {
+            "name": "resource_model_ready",
+            "value": "%s 已找到"
+        },
+        {
+            "name": "resource_model_missing",
+            "value": "缺少 %s，当前仅使用本地 mock 检测"
+        },
+        {
+            "name": "resource_cloud_configured",
+            "value": "style_advice/manifest.json 已配置 apiBase: %s"
+        },
+        {
+            "name": "resource_cloud_missing",
+            "value": "style_advice/manifest.json 的 apiBase 为空，当前回落本地 mock"
+        },
+        {
+            "name": "resource_audio_ready",
+            "value": "%s 个提示音 rawfile 已齐全"
+        },
+        {
+            "name": "resource_audio_missing",
+            "value": "缺少 %s/%s 个提示音: %s"
+        },
+        {
+            "name": "resource_avatar_none_declared",
+            "value": "模板未声明头像 rawfile 引用"
+        },
+        {
+            "name": "resource_avatar_ready",
+            "value": "模板引用的 %s 个头像 rawfile 已齐全"
+        },
+        {
+            "name": "resource_avatar_missing",
+            "value": "缺少 %s/%s 个模板头像 rawfile: %s"
+        },
+        {
             "name": "photo_map_title",
             "value": "摄影地图"
         },
         {
             "name": "photo_map_description",
             "value": "查看你的拍照足迹和推荐地点"
+        },
+        {
+            "name": "photo_map_open",
+            "value": "打开地图"
         },
         {
             "name": "photo_pins_count",
@@ -851,6 +1404,58 @@
         {
             "name": "poi_recommendations",
             "value": "热门推荐"
+        },
+        {
+            "name": "photo_map_load_failed",
+            "value": "摄影地图加载失败，请稍后重试。"
+        },
+        {
+            "name": "reconnect_attempting",
+            "value": "正在重连... (%s/%s)"
+        },
+        {
+            "name": "reconnect_attempting_accessibility",
+            "value": "正在尝试第%s次重连"
+        },
+        {
+            "name": "reconnect_cancel",
+            "value": "取消"
+        },
+        {
+            "name": "reconnect_cancel_accessibility",
+            "value": "取消重连"
+        },
+        {
+            "name": "reconnect_failed",
+            "value": "连接已断开"
+        },
+        {
+            "name": "reconnect_failed_accessibility",
+            "value": "与伴侣设备的连接已断开"
+        },
+        {
+            "name": "reconnect_re_pair",
+            "value": "重新配对"
+        },
+        {
+            "name": "reconnect_re_pair_accessibility",
+            "value": "重新配对设备"
+        },
+        {
+            "name": "photo_history_page_accessibility",
+            "value": "拍照历史页面"
+        },
+        {
+            "name": "photo_history_recent_accessibility",
+            "value": "最近的拍照历史记录"
+        },
+        {
+            "name": "photo_history_empty_accessibility",
+            "value": "暂无拍照记录"
+        },
+        {
+            "name": "photo_history_back_accessibility",
+            "value": "返回"
         }
     ]
 }

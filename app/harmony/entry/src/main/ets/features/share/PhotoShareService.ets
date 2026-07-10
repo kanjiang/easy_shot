@@ -3,12 +3,12 @@ import { common, Want } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 
 export class PhotoShareService {
-  async sharePhoto(context: common.UIAbilityContext, filePath: string, title: string): Promise<boolean> {
+  async sharePhoto(context: common.UIAbilityContext, filePath: string, title: string, isVideo: boolean = false): Promise<boolean> {
     try {
       const uri = fileUri.getUriFromPath(filePath);
       const want: Want = {
         action: 'ohos.want.action.sendData',
-        type: 'image/jpeg',
+        type: isVideo ? 'video/mp4' : 'image/jpeg',
         parameters: {
           'ability.params.stream': [uri],
         },
@@ -22,13 +22,16 @@ export class PhotoShareService {
     }
   }
 
-  async exportToGallery(context: common.UIAbilityContext, filePath: string): Promise<boolean> {
+  async exportToGallery(context: common.UIAbilityContext, filePath: string, isVideo: boolean = false): Promise<boolean> {
     // Photos captured by the app are already in app sandbox;
     // use photoAccessHelper to save to public gallery
     try {
       const { photoAccessHelper } = await import('@kit.MediaLibraryKit');
       const helper = photoAccessHelper.getPhotoAccessHelper(context);
-      const assetUri = await helper.createAsset(photoAccessHelper.PhotoType.IMAGE, 'jpg');
+      const assetUri = await helper.createAsset(
+        isVideo ? photoAccessHelper.PhotoType.VIDEO : photoAccessHelper.PhotoType.IMAGE,
+        isVideo ? 'mp4' : 'jpg',
+      );
       // Copy file content
       const { fileIo: fs } = await import('@kit.CoreFileKit');
       const srcFile = fs.openSync(filePath, fs.OpenMode.READ_ONLY);
