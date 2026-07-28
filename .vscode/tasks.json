@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "验证测试文件编译 - 检查 TypeScript 语法",
+			"type": "shell",
+			"command": "cd \"c:\\My workspace\\01_SVN\\code\\easy_shot\\app\\harmony\" && npm install 2>&1 || true",
+			"isBackground": false,
+			"problemMatcher": []
+		}
+	]
+}

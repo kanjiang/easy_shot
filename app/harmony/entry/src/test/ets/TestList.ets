@@ -21,6 +21,8 @@ import keypointMatcherTest from './poseDetection/KeypointMatcherTest';
 import poseAlignmentServiceTest from './poseDetection/PoseAlignmentServiceTest';
 import poseDetectionTest from './poseDetection/PoseDetectionTest';
 import poseTemplateTest from './poseTemplate/PoseTemplateTest';
+import lightingCompositionRulesTest from './rules/LightingCompositionRulesTest';
+import reviewAdviceTest from './rules/ReviewAdviceTest';
 import photoReviewSideEffectsTest from './review/PhotoReviewSideEffectsTest';
 import photoReviewViewActionsTest from './review/PhotoReviewViewActionsTest';
 import photoShareServiceTest from './share/PhotoShareServiceTest';
@@ -55,6 +57,8 @@ export default function registerTests(): void {
   notificationServiceTest();
   poseDetectionTest();
   poseAlignmentServiceTest();
+  lightingCompositionRulesTest();
+  reviewAdviceTest();
   photoReviewSideEffectsTest();
   photoReviewViewActionsTest();
   photoShareServiceTest();

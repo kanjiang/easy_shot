@@ -144,6 +144,12 @@ export interface CameraGuideCaptureReviewParams {
   readonly latitude: string;
   readonly longitude: string;
   readonly captureTimestamp: string;
+  // M3: 本地诊断参数
+  readonly reviewAvgBrightness?: string;
+  readonly reviewFaceROIBrightness?: string;
+  readonly reviewBackgroundBrightness?: string;
+  readonly reviewPersonBBoxJson?: string;
+  readonly reviewDetectedKeypointsJson?: string;
 }
 
 /**
@@ -156,11 +162,16 @@ export function buildCameraGuideCaptureReviewParams(
   lastAlignmentKeypointDistances: number[] | null,
   selectedTemplate: { id: string; title: string; styleTags: string[]; skeleton: { tolerance: number; keypoints: { x: number; y: number }[] } } | null,
   metadata: { latitude: number; longitude: number; captureTimestamp: number },
+  // M3: 新增诊断参数
+  frameStats?: {avgBrightness: number, faceROIBrightness: number, backgroundBrightness?: number},
+  personBBox?: {xmin: number, ymin: number, width: number, height: number},
+  detectedKeypoints?: Array<{name: string, x: number, y: number, score: number}>
 ): CameraGuideCaptureReviewParams {
   const totalPts = selectedTemplate ? selectedTemplate.skeleton.keypoints.length : 0;
   const styleTag = selectedTemplate && selectedTemplate.styleTags.length > 0
     ? selectedTemplate.styleTags[0] : '';
-  return {
+
+  const params: CameraGuideCaptureReviewParams = {
     photoFilePath: filePath,
     templateTitle: guideState.templateTitle,
     templateId: guideState.templateId,
@@ -175,4 +186,23 @@ export function buildCameraGuideCaptureReviewParams(
     longitude: String(metadata.longitude),
     captureTimestamp: String(metadata.captureTimestamp),
   };
+
+  // M3: 添加诊断参数编码
+  if (frameStats) {
+    params.reviewAvgBrightness = frameStats.avgBrightness.toString();
+    params.reviewFaceROIBrightness = frameStats.faceROIBrightness.toString();
+    if (frameStats.backgroundBrightness !== undefined) {
+      params.reviewBackgroundBrightness = frameStats.backgroundBrightness.toString();
+    }
+  }
+
+  if (personBBox) {
+    params.reviewPersonBBoxJson = JSON.stringify(personBBox);
+  }
+
+  if (detectedKeypoints && detectedKeypoints.length > 0) {
+    params.reviewDetectedKeypointsJson = JSON.stringify(detectedKeypoints);
+  }
+
+  return params;
 }

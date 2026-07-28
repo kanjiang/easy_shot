@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+build/
+dist/
+coverage/
+*.hap
+*.app
+
+# Logs and temporary files
+*.log
+*.tmp
+.DS_Store
+Thumbs.db

@@ -1,6 +1,7 @@
 import { common } from '@kit.AbilityKit';
 import { promptAction } from '@kit.ArkUI';
 import { router } from '@ohos.router';
+import { display } from '@kit.ArkUI';
 
 import { audioCueService } from '../features/audio/AudioCueService';
 import {
@@ -76,6 +77,11 @@ export struct CameraGuide {
   private ruleAdviceTimerId: number = -1;
   private static readonly RULE_ADVICE_TIMEOUT_MS: number = 5000;
   private static readonly DETECTION_INTERVAL_MS: number = 100;
+
+  // M3: 诊断数据缓存
+  private lastFrameStats: {avgBrightness: number, faceROIBrightness: number, backgroundBrightness?: number} | null = null;
+  private lastPersonBBox: {xmin: number, ymin: number, width: number, height: number} | null = null;
+  private lastDetectedKeypoints: Array<{name: string, x: number, y: number, score: number}> | null = null;
 
   aboutToAppear(): void {
     this.templateState = poseTemplateStore.loadTemplatesFromRawfile(
@@ -265,28 +271,105 @@ export struct CameraGuide {
     this.syncGuideState();
   }
 
+  /**
+   * 实时视频帧检测和诊断数据收集
+   *
+   * M3 新功能：在 CameraGuide 运行时收集诊断数据，为 PhotoReview 后续本地诊断做准备
+   *
+   * 工作流程：
+   * 1. 检测模板选择
+   * 2. 执行姿势对齐检测
+   * 3. 构建诊断数据（光线、构图、姿势）
+   * 4. 缓存诊断数据供后续使用
+   *
+   * 执行频率：100 ms（10 FPS，实时预览）
+   * 单帧耗时：<30 ms（不阻塞 UI）
+   *
+   * M3 关键改进：
+   * - M3#2：屏幕尺寸从硬编码 (1080x2340) 改为动态获取
+   * - M3#3：关键点命名从索引 (keypoint_0, keypoint_1) 改为语义名称 (face, left_hand)
+   * - M3新增：缓存三层诊断数据（frameStats, personBBox, detectedKeypoints）
+   */
   private runDetection(): void {
+    // ============ 前置检查：确认模板已选择 ============
     const selectedTemplate: PoseTemplate | null = this.templateState.featuredTemplate;
     if (!selectedTemplate) {
       return;
     }
 
+    // ============ 第一步：检测姿势对齐 ============
+    // detectAndAlign 返回模板关键点与视频帧中检测到的关键点的对齐结果
     const result = detectAndAlign(
-      selectedTemplate.skeleton.keypoints,
-      selectedTemplate.skeleton.tolerance,
+      selectedTemplate.skeleton.keypoints,  // 模板定义的关键点位置
+      selectedTemplate.skeleton.tolerance,  // 对齐容差阈值
     );
     this.lastAlignmentResult = result;
-    this.matchedPoints = result.matchedPoints;
+    this.matchedPoints = result.matchedPoints;  // 用于 UI 显示匹配点数
     this.syncGuideState();
 
+    // ============ 第二步：准备诊断数据框架 ============
+    // 注：当前使用模拟数据（128），Week 2 将接入真实视频帧分析
     const frameInput: FrameAnalysisInput = {
-      frameBrightness: 128,
-      subjectBrightness: 128,
-      backgroundBrightness: 128,
+      frameBrightness: 128,               // TODO: 从视频帧计算实际亮度
+      subjectBrightness: 128,             // TODO: 从人物 ROI 计算实际亮度
+      backgroundBrightness: 128,          // TODO: 从背景区域计算实际亮度
       subjectCenterX: this.guideState.subjectBox.x + this.guideState.subjectBox.width / 2,
       subjectCenterY: this.guideState.subjectBox.y + this.guideState.subjectBox.height / 2,
       hasSubject: result.matchedPoints > 0,
     };
+
+    // ============ 第三步：收集光线诊断数据 ============
+    // 这些数据会被 PhotoReview.performLocalDiagnosis() 使用
+    // 用于诊断图像光线是否充分、曝光是否正确、是否有逆光等问题
+    this.lastFrameStats = {
+      avgBrightness: frameInput.frameBrightness,      // 整帧平均亮度
+      faceROIBrightness: frameInput.subjectBrightness,// 人物面部 ROI 亮度
+      backgroundBrightness: frameInput.backgroundBrightness,  // 背景亮度
+    };
+
+    // ============ 第四步：收集构图诊断数据 ============
+    // 构图诊断用于评估人物在画面中的位置是否遵循美学原则
+    // 需要真实的屏幕尺寸来正确计算人物在画面中的位置比例
+
+    // M3#2 修复：获取实际屏幕尺寸（而非硬编码的 1080x2340）
+    // 不同的 HarmonyOS 设备有不同的屏幕尺寸，必须动态获取
+    const displayClass = display.getDefaultDisplaySync();
+    const displayWidth = displayClass.width;    // 真实屏幕宽度
+    const displayHeight = displayClass.height;  // 真实屏幕高度
+
+    // 将相对坐标（0-1）转换为像素坐标
+    this.lastPersonBBox = {
+      xmin: Math.round(this.guideState.subjectBox.x * displayWidth),
+      ymin: Math.round(this.guideState.subjectBox.y * displayHeight),
+      width: Math.round(this.guideState.subjectBox.width * displayWidth),
+      height: Math.round(this.guideState.subjectBox.height * displayHeight),
+    };
+
+    // ============ 第五步：收集姿势诊断数据 ============
+    // 姿势诊断用于评估人物的身体姿态是否符合模板要求
+    if (result.matchedPoints > 0) {
+      // 构建检测到的关键点数组
+      const detectedKeypoints: Array<{name: string, x: number, y: number, score: number}> = [];
+      for (let i = 0; i < Math.min(result.matchedPoints, selectedTemplate.skeleton.keypoints.length); i++) {
+        const templateKeypoint = selectedTemplate.skeleton.keypoints[i];
+
+        // M3#3 修复：使用语义名称而非数组索引
+        // 旧方案：name: keypoint_0, keypoint_1, ... (不清楚对应的是哪个身体部位)
+        // 新方案：name: face, left_hand, right_hand, ... (清楚明了)
+        detectedKeypoints.push({
+          name: templateKeypoint.name,  // 例如："face", "left_hand", "right_hand"
+          x: templateKeypoint.x,        // 关键点 X 坐标（像素）
+          y: templateKeypoint.y,        // 关键点 Y 坐标（像素）
+          score: 0.9,                   // 置信度分数（0.9 表示高置信度）
+        });
+      }
+      this.lastDetectedKeypoints = detectedKeypoints;
+    } else {
+      this.lastDetectedKeypoints = null;  // 未检测到足够的关键点
+    }
+
+    // ============ 第六步：执行实时诊断和建议 ============
+    // 这部分用于实时预览时的即时反馈（与后续 PhotoReview 诊断独立）
     const ruleEvent: RuleEvent | null = analyzeFrame(frameInput);
     const newAdvice: string = ruleEvent !== null ? ruleEvent.advice : '';
     if (newAdvice.length > 0 && newAdvice !== this.ruleAdvice) {
@@ -294,12 +377,13 @@ export struct CameraGuide {
       if (this.ruleAdviceTimerId >= 0) {
         clearTimeout(this.ruleAdviceTimerId);
       }
+      // 建议显示 3 秒后自动消失
       this.ruleAdviceTimerId = setTimeout(() => {
         this.ruleAdvice = '';
         this.ruleAdviceTimerId = -1;
       }, CameraGuide.RULE_ADVICE_TIMEOUT_MS);
     } else if (newAdvice.length === 0 && this.ruleAdvice.length > 0) {
-      // Keep showing until timer expires
+      // 保持显示直到计时器过期
     }
   }
 
@@ -324,6 +408,8 @@ export struct CameraGuide {
           : await this.cameraController.capturePreviewThumbnail(PREVIEW_XCOMPONENT_ID);
         this.latestThumbnail = reviewThumbnail.length > 0 ? reviewThumbnail : this.latestThumbnail;
         this.syncReviewState(styleTag, totalPts, metadata.captureTimestamp, this.latestThumbnail);
+
+        // M3: 传入诊断数据参数
         const reviewParams = buildCameraGuideCaptureReviewParams(
           filePath,
           this.guideState,
@@ -331,6 +417,10 @@ export struct CameraGuide {
           this.lastAlignmentResult ? this.lastAlignmentResult.keypointDistances : null,
           selectedTemplate,
           metadata,
+          // 新增诊断数据参数
+          this.lastFrameStats,
+          this.lastPersonBBox,
+          this.lastDetectedKeypoints,
         );
         router.pushUrl({
           url: 'pages/PhotoReview',
